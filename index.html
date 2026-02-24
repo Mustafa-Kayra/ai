@@ -4303,7 +4303,7 @@
         }
 
         else if (m.role === 'assistant' && typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__')) {
-          const parts = m.content.match(/__PPTX_DOWNLOAD__(blob:[^_]*)__FILENAME__([^_]*)__TITLE__([^_]*)__SLIDES__(\d+)/);
+          const parts = m.content.match(/__PPTX_DOWNLOAD__(blob:.*?)__FILENAME__(.*?)__TITLE__(.*?)__SLIDES__(\d+)/);
           if (parts) {
             const [, blobUrl, fileName, titleText, slidesCount] = parts;
             const card = document.createElement('div');
@@ -9162,6 +9162,12 @@
 
         const chat = chats.find(c => c.id === currentChatId);
         if (chat) {
+          for (let i = chat.messages.length - 1; i >= 0; i--) {
+            if (chat.messages[i].role === 'assistant' && typeof chat.messages[i].content === 'string' && !chat.messages[i].content.startsWith('__PPTX_DOWNLOAD__')) {
+              chat.messages.splice(i, 1);
+              break;
+            }
+          }
           const dlMsg = {
             role: 'assistant',
             content: `__PPTX_DOWNLOAD__${blobUrl}__FILENAME__${filename}.pptx__TITLE__${data.title || 'Sunum'}__SLIDES__${data.slides.length}`,
