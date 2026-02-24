@@ -5598,68 +5598,98 @@
     // ---- TTS
     let currentUtterance = null;
 
+    function cleanTextForSpeech(raw) {
+      return raw
+        .replace(/<[^>]*>/g, '')
+        .replace(/```[\s\S]*?```/g, ' kod blogu ')
+        .replace(/`[^`]+`/g, '')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|\u{FE0F}|\u{20E3}|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]/gu, '')
+        .replace(/[#*_~]/g, '')
+        .replace(/\|/g, ' ')
+        .replace(/---+/g, ' ')
+        .replace(/^\s*[-•]\s+/gm, '')
+        .replace(/^\s*\d+\.\s+/gm, '')
+        .replace(/\n{2,}/g, '. ')
+        .replace(/\n/g, ', ')
+        .replace(/:\s*,/g, ':')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/([.!?])\s*\1+/g, '$1')
+        .trim();
+    }
+
+    function getBestVoice(lang) {
+      const voices = speechSynthesis.getVoices();
+      const langCode = lang.toLowerCase();
+      const preferred = ['google', 'microsoft', 'natural', 'premium', 'enhanced', 'neural'];
+      const candidates = voices.filter(v => v.lang.toLowerCase().startsWith(langCode.split('-')[0]));
+      if (!candidates.length) return null;
+      for (const keyword of preferred) {
+        const match = candidates.find(v => v.name.toLowerCase().includes(keyword));
+        if (match) return match;
+      }
+      return candidates[0];
+    }
+
+    function makeUtterance(text, lang, onEnd, onError) {
+      const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
+      utter.lang = lang;
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      const voice = getBestVoice(lang);
+      if (voice) utter.voice = voice;
+      utter.onend = onEnd;
+      utter.onerror = onError;
+      return utter;
+    }
+
     function voiceConvSpeak(rawText) {
       if (currentUtterance) { speechSynthesis.cancel(); currentUtterance = null; }
-      let text = rawText
-        .replace(/<[^>]*>/g, '')
-        .replace(/```[\s\S]*?```/g, '')
-        .replace(/[#*_~`]/g, '')
-        .replace(/\n+/g, '. ')
-        .trim();
+      const text = cleanTextForSpeech(rawText);
       if (!text) {
         if (voiceConvMode) setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
         return;
       }
-      const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
-      utter.lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
-      utter.rate = 1.0;
-      utter.onend = () => {
+      const lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
+      const resume = () => {
         currentUtterance = null;
         setStatus('Yanit okundu. Konusmaya devam edin...');
-        if (voiceConvMode) {
-          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
-        }
+        if (voiceConvMode) setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 600);
       };
-      utter.onerror = () => {
-        currentUtterance = null;
-        if (voiceConvMode) {
-          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
-        }
+      const doSpeak = () => {
+        currentUtterance = makeUtterance(text, lang, resume, resume);
+        speechSynthesis.speak(currentUtterance);
+        setStatus('Yapay zeka yanit veriyor...');
       };
-      currentUtterance = utter;
-      speechSynthesis.speak(utter);
-      setStatus('Yapay zeka yanit veriyor...');
+      if (speechSynthesis.getVoices().length) {
+        doSpeak();
+      } else {
+        speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
+      }
     }
 
     function speakMessage(idx) {
       if (currentUtterance) {
         speechSynthesis.cancel(); currentUtterance = null; setStatus('Sesli okuma durduruldu.'); return;
       }
-
       const chat = chats.find(c => c.id === currentChatId);
       if (!chat || !chat.messages[idx]) return;
-      let text = chat.messages[idx].content;
-      // Strip markdown/HTML
-      text = text.replace(/<[^>]*>/g, '').replace(/```[\s\S]*?```/g, '').replace(/[#*_~`]/g, '').replace(/\n+/g, '. ').trim();
+      const text = cleanTextForSpeech(chat.messages[idx].content);
       if (!text) return;
-      const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
-      utter.lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
-      utter.rate = 1.0;
-
-      utter.onend = () => {
-        currentUtterance = null; setStatus('Sesli okuma tamamlandi.');
+      const lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
+      const doSpeak = () => {
+        currentUtterance = makeUtterance(text, lang,
+          () => { currentUtterance = null; setStatus('Sesli okuma tamamlandi.'); },
+          () => { currentUtterance = null; }
+        );
+        speechSynthesis.speak(currentUtterance);
+        setStatus('Sesli okunuyor...');
+      };
+      if (speechSynthesis.getVoices().length) {
+        doSpeak();
+      } else {
+        speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
       }
-
-        ;
-
-      utter.onerror = () => {
-        currentUtterance = null;
-      }
-
-        ;
-      currentUtterance = utter;
-      speechSynthesis.speak(utter);
-      setStatus('Sesli okunuyor...');
     }
 
     // ---- Pin/Folder
