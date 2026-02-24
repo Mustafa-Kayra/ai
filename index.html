@@ -2782,16 +2782,19 @@
               class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
               <div class="text-base mb-0.5">&#x1F917;</div>
               <div>Samimi</div>
+              <div class="text-[9px] font-normal text-neutral-500 mt-0.5">Sicak & dogal</div>
             </button>
             <button type="button" data-style="profesyonel" onclick="selectVoiceStyle('profesyonel')"
               class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
               <div class="text-base mb-0.5">&#x1F454;</div>
               <div>Profesyonel</div>
+              <div class="text-[9px] font-normal text-neutral-500 mt-0.5">Net & otoriter</div>
             </button>
             <button type="button" data-style="zkusagi" onclick="selectVoiceStyle('zkusagi')"
               class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
               <div class="text-base mb-0.5">&#x26A1;</div>
               <div>Z Kusagi</div>
+              <div class="text-[9px] font-normal text-neutral-500 mt-0.5">Hizli & enerjik</div>
             </button>
           </div>
           <input type="hidden" id="pref-voice-style" value="samimi">
@@ -5645,32 +5648,40 @@
         .trim();
     }
 
-    function getBestVoice(lang) {
+    const VOICE_STYLE_PARAMS = {
+      samimi:      { rate: 0.92, pitch: 1.10, volume: 1.0,  femaleHints: ['zeynep','yelda','dilek','ayse','samantha','ava','karen','alice','victoria','moira','tessa','fiona','sara','anna','zira','hazel','heera'], maleHints: [] },
+      profesyonel: { rate: 0.80, pitch: 0.90, volume: 0.95, femaleHints: [], maleHints: ['ali','daniel','alex','david','mark','jorge','diego','luca','thomas','james','arthur','eddy','google uk english male','microsoft david'] },
+      zkusagi:     { rate: 1.15, pitch: 1.15, volume: 1.0,  femaleHints: ['samantha','ava','karen','alice','zeynep','yelda','zira','hazel'], maleHints: [] },
+    };
+
+    function getBestVoice(lang, style) {
       const voices = speechSynthesis.getVoices();
       const langCode = lang.toLowerCase();
-      const preferred = ['google', 'microsoft', 'natural', 'premium', 'enhanced', 'neural'];
       const candidates = voices.filter(v => v.lang.toLowerCase().startsWith(langCode.split('-')[0]));
       if (!candidates.length) return null;
-      for (const keyword of preferred) {
-        const match = candidates.find(v => v.name.toLowerCase().includes(keyword));
+      const params = VOICE_STYLE_PARAMS[style || 'samimi'] || VOICE_STYLE_PARAMS.samimi;
+      const hints = [...(params.femaleHints || []), ...(params.maleHints || [])];
+      for (const hint of hints) {
+        const match = candidates.find(v => v.name.toLowerCase().includes(hint));
+        if (match) return match;
+      }
+      const quality = ['google', 'microsoft', 'natural', 'premium', 'enhanced', 'neural'];
+      for (const kw of quality) {
+        const match = candidates.find(v => v.name.toLowerCase().includes(kw));
         if (match) return match;
       }
       return candidates[0];
     }
 
-    const VOICE_STYLE_PARAMS = {
-      samimi:      { rate: 0.93, pitch: 1.05 },
-      profesyonel: { rate: 0.82, pitch: 0.92 },
-      zkusagi:     { rate: 1.12, pitch: 1.12 },
-    };
-
     function makeUtterance(text, lang, onEnd, onError) {
       const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
       utter.lang = lang;
-      const params = VOICE_STYLE_PARAMS[stylePrefs.voiceStyle || 'samimi'] || VOICE_STYLE_PARAMS.samimi;
+      const style = stylePrefs.voiceStyle || 'samimi';
+      const params = VOICE_STYLE_PARAMS[style] || VOICE_STYLE_PARAMS.samimi;
       utter.rate = params.rate;
       utter.pitch = params.pitch;
-      const voice = getBestVoice(lang);
+      utter.volume = params.volume !== undefined ? params.volume : 1.0;
+      const voice = getBestVoice(lang, style);
       if (voice) utter.voice = voice;
       utter.onend = onEnd;
       utter.onerror = onError;
