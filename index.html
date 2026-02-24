@@ -6813,10 +6813,7 @@
           if (parent && !parent.classList.contains('search-hl')) {
             const html = parent.innerHTML;
 
-            const regex = new RegExp(`(${query.replace(/[.*+?^${}
-
-              () | [\]\\]/g, '\\$&')
-              })`, 'gi');
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             parent.innerHTML = html.replace(regex, '<mark class="search-hl" style="background:#f59e0b;color:#000;border-radius:2px;padding:0 2px">$1</mark>');
             count += (parent.innerHTML.match(regex) || []).length;
           }
