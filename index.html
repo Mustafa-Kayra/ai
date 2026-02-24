@@ -873,6 +873,23 @@
       color: #dc2626;
     }
 
+    #voice-conv-btn.vc-active {
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.12);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    }
+
+    #voice-conv-btn.vc-listening {
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.18);
+      animation: vcPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes vcPulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.1); }
+    }
+
     body.light-mode .from-\[\\#0f0f0f\] {
       --tw-gradient-from: #ffffff !important;
     }
@@ -2322,6 +2339,15 @@
               <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
               <line x1="12" y1="19" x2="12" y2="23" />
               <line x1="8" y1="23" x2="16" y2="23" />
+            </svg></button><button id="voice-conv-btn"
+            class="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-green-400 hover:bg-white/5 transition-all shrink-0"
+            title="Sesli Konusma Modu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.4" />
             </svg></button><input type="file" id="file-input" class="hidden" multiple
             accept="image/*,video/*,.pdf" /><textarea id="user-input" rows="1" autocomplete="off"
             placeholder="Mesajinizi buraya yazin..."
@@ -3183,10 +3209,29 @@
 
     // ---- Speech
     let recognition = null;
+    let voiceConvMode = false;
+
+    function toggleVoiceConv() {
+      voiceConvMode = !voiceConvMode;
+      const btn = $('voice-conv-btn');
+      if (voiceConvMode) {
+        btn.classList.add('vc-active');
+        btn.classList.remove('text-neutral-500');
+        setStatus('Sesli konusma modu aktif - Konusmaya baslayin');
+        try { recognition && recognition.start(); } catch(e) {}
+      } else {
+        btn.classList.remove('vc-active');
+        btn.classList.add('text-neutral-500');
+        setStatus('Sesli konusma modu kapandi');
+        if (currentUtterance) { speechSynthesis.cancel(); currentUtterance = null; }
+        try { recognition && recognition.stop(); } catch(e) {}
+      }
+    }
 
     function initSpeech() {
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         $('mic-btn').style.display = 'none';
+        $('voice-conv-btn').style.display = 'none';
         return;
       }
 
@@ -3197,40 +3242,41 @@
       recognition.interimResults = false;
 
       recognition.onstart = () => {
-        $('mic-btn').classList.add('text-red-500'); setStatus('Dinleniyor...');
+        $('mic-btn').classList.add('text-red-500');
+        if (voiceConvMode) $('voice-conv-btn').classList.add('vc-listening');
+        setStatus('Dinleniyor...');
       }
-
-        ;
 
       recognition.onresult = (e) => {
-        const t = e.results[0][0].transcript; const inp = $('user-input'); inp.value += (inp.value ? ' ' : '') + t; inp.dispatchEvent(new Event('input'));
+        const t = e.results[0][0].transcript;
+        const inp = $('user-input');
+        inp.value += (inp.value ? ' ' : '') + t;
+        inp.dispatchEvent(new Event('input'));
+        if (voiceConvMode && t.trim()) {
+          setTimeout(() => handleSend(), 300);
+        }
       }
-
-        ;
 
       recognition.onerror = (e) => {
         setStatus('Ses hatasi: ' + e.error);
+        $('voice-conv-btn').classList.remove('vc-listening');
       }
-
-        ;
 
       recognition.onend = () => {
         $('mic-btn').classList.remove('text-red-500');
+        $('voice-conv-btn').classList.remove('vc-listening');
       }
-
-        ;
 
       $('mic-btn').onclick = () => {
         try {
           recognition.start();
         }
-
         catch (e) {
           if (e.name === 'InvalidStateError') recognition.stop();
         }
       }
 
-        ;
+      $('voice-conv-btn').onclick = toggleVoiceConv;
     }
 
     // ---- Boot
@@ -5257,6 +5303,10 @@
         saveAll();
         renderMessages(chat.messages);
 
+        if (voiceConvMode && assistantMsg.content) {
+          voiceConvSpeak(assistantMsg.content);
+        }
+
         // Finalize canvas if code was detected
         if (isCodeRequest && assistantMsg.content) finalizeCanvas(assistantMsg.content);
         else if (canvasOpen && !isCodeRequest) closeCanvas();
@@ -5547,6 +5597,39 @@
 
     // ---- TTS
     let currentUtterance = null;
+
+    function voiceConvSpeak(rawText) {
+      if (currentUtterance) { speechSynthesis.cancel(); currentUtterance = null; }
+      let text = rawText
+        .replace(/<[^>]*>/g, '')
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/[#*_~`]/g, '')
+        .replace(/\n+/g, '. ')
+        .trim();
+      if (!text) {
+        if (voiceConvMode) setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
+      utter.lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
+      utter.rate = 1.0;
+      utter.onend = () => {
+        currentUtterance = null;
+        setStatus('Yanit okundu. Konusmaya devam edin...');
+        if (voiceConvMode) {
+          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
+        }
+      };
+      utter.onerror = () => {
+        currentUtterance = null;
+        if (voiceConvMode) {
+          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
+        }
+      };
+      currentUtterance = utter;
+      speechSynthesis.speak(utter);
+      setStatus('Yapay zeka yanit veriyor...');
+    }
 
     function speakMessage(idx) {
       if (currentUtterance) {
