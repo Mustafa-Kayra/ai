@@ -2265,6 +2265,7 @@
     .edit-msg-box { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; width: 100%; max-width: 600px; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
 
 <body class="bg-[#0a0a0a] text-slate-200 flex overflow-hidden" style="height: 100vh; height: 100dvh;">
@@ -3006,13 +3007,36 @@
             </select>
           </div>
         </div>
-        <div>
-          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Dil</label>
-          <select id="slide-lang" class="feature-modal-select">
-            <option value="tr" selected>Turkce</option>
-            <option value="en">English</option>
-          </select>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Cikti Formati</label>
+            <select id="slide-format" class="feature-modal-select" onchange="updateSlideFormatHint(this.value)">
+              <option value="html" selected>HTML (Tarayici)</option>
+              <option value="pptx">PPTX (PowerPoint)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Dil</label>
+            <select id="slide-lang" class="feature-modal-select">
+              <option value="tr" selected>Turkce</option>
+              <option value="en">English</option>
+            </select>
+          </div>
         </div>
+        <div>
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Arastirma Modu</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label id="slide-quick-btn" class="flex items-center gap-2 p-2.5 rounded-xl border border-blue-500/40 bg-blue-600/15 cursor-pointer transition-all" onclick="setSlideResearch('quick')">
+              <input type="radio" name="slide-research" value="quick" checked class="accent-blue-500 shrink-0" />
+              <div><div class="text-xs font-bold text-blue-300">Hizli</div><div class="text-[10px] text-neutral-500">Anlık cevap</div></div>
+            </label>
+            <label id="slide-deep-btn" class="flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all" onclick="setSlideResearch('deep')">
+              <input type="radio" name="slide-research" value="deep" class="accent-amber-500 shrink-0" />
+              <div><div class="text-xs font-bold text-neutral-300">Derin Arastirma</div><div class="text-[10px] text-neutral-500">Web + detayli analiz</div></div>
+            </label>
+          </div>
+        </div>
+        <div id="slide-format-hint" class="text-[10px] text-teal-600 px-1"></div>
       </div>
       <button onclick="generateSlides()" class="w-full mt-5 py-3 rounded-xl text-sm font-bold text-white transition-all" style="background:#0d9488">Sunumu Olustur</button>
     </div>
@@ -3054,6 +3078,19 @@
             <option value="long">Uzun (~3000 kelime)</option>
             <option value="comprehensive">Kapsamli (~5000 kelime)</option>
           </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Arastirma Modu</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label id="report-quick-btn" class="flex items-center gap-2 p-2.5 rounded-xl border border-blue-500/40 bg-blue-600/15 cursor-pointer transition-all" onclick="setReportResearch('quick')">
+              <input type="radio" name="report-research" value="quick" checked class="accent-blue-500 shrink-0" />
+              <div><div class="text-xs font-bold text-blue-300">Hizli</div><div class="text-[10px] text-neutral-500">Anlık cevap</div></div>
+            </label>
+            <label id="report-deep-btn" class="flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all" onclick="setReportResearch('deep')">
+              <input type="radio" name="report-research" value="deep" class="accent-amber-500 shrink-0" />
+              <div><div class="text-xs font-bold text-neutral-300">Derin Arastirma</div><div class="text-[10px] text-neutral-500">Web + detayli analiz</div></div>
+            </label>
+          </div>
         </div>
       </div>
       <button onclick="generateReport()" class="w-full mt-5 py-3 rounded-xl text-sm font-bold text-white transition-all" style="background:#ea580c">Raporu Olustur</button>
@@ -3382,6 +3419,8 @@
     let prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{"modelA":"gpt-4o-mini","stream":true,"maxTokens":4096,"fontSize":"md","accent":"blue","notifySound":false,"showThinking":true}');
     // Migrate: ensure showThinking exists in saved prefs
     if (prefs.showThinking === undefined) prefs.showThinking = true;
+    let _noCanvas = false;
+    let _pptxMode = false;
     let stylePrefs = JSON.parse(localStorage.getItem(KEY_STYLE) || '{"short":true,"noLecture":true,"turkish":true,"custom":"","voiceStyle":"samimi"}');
     let availableModels = [];
     let customModels = [];
@@ -5677,7 +5716,8 @@
         chat.messages.push(assistantMsg);
 
         // Detect if user is asking for code -> show canvas building
-        const isCodeRequest = /\b(kod|code|uygulama|app|html|css|javascript|react|game|oyun|hesap|calculator|website|site|sayfa|program|yaz|olustur|create|build|make|python|py|c\+\+|cpp|java|rust|golang|script|fonksiyon|function|class|algoritma|algorithm)\b/i.test(text);
+        const _skipCanvasThisTime = _noCanvas; _noCanvas = false;
+        const isCodeRequest = !_skipCanvasThisTime && /\b(kod|code|uygulama|app|html|css|javascript|react|game|oyun|hesap|calculator|website|site|sayfa|program|yaz|olustur|create|build|make|python|py|c\+\+|cpp|java|rust|golang|script|fonksiyon|function|class|algoritma|algorithm)\b/i.test(text);
         if (isCodeRequest) showCanvasBuilding();
 
         // Image gen
@@ -5887,7 +5927,8 @@
         }
 
         // Finalize canvas if code was detected
-        if (isCodeRequest && assistantMsg.content) finalizeCanvas(assistantMsg.content);
+        if (_pptxMode && assistantMsg.content) { generatePptxFromContent(assistantMsg.content); _pptxMode = false; }
+        else if (isCodeRequest && assistantMsg.content) finalizeCanvas(assistantMsg.content);
         else if (canvasOpen && !isCodeRequest) closeCanvas();
       }
 
@@ -8848,17 +8889,48 @@
       setTimeout(() => m.classList.add('hidden'), 200);
     }
 
+    function setSlideResearch(mode) {
+      const qb = $('slide-quick-btn'), db = $('slide-deep-btn');
+      if (mode === 'quick') {
+        qb.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-blue-500/40 bg-blue-600/15 cursor-pointer transition-all';
+        db.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all';
+      } else {
+        db.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-amber-500/40 bg-amber-600/10 cursor-pointer transition-all';
+        qb.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all';
+      }
+    }
+
+    function updateSlideFormatHint(val) {
+      const hint = $('slide-format-hint');
+      if (!hint) return;
+      if (val === 'pptx') hint.textContent = 'PPTX: AI icerik olusturacak, otomatik olarak .pptx dosyasi indirilecek.';
+      else hint.textContent = 'HTML: Canvas panelinde canli onizleme ile acilir.';
+    }
+
     function generateSlides() {
       const topic = ($('slide-topic').value || '').trim();
       const count = $('slide-count').value || '8';
       const style = $('slide-style').value || 'modern';
       const lang = $('slide-lang').value || 'tr';
+      const format = ($('slide-format') ? $('slide-format').value : 'html');
+      const researchMode = document.querySelector('input[name="slide-research"]:checked')?.value || 'quick';
       if (!topic) { setStatus('Lutfen konu girin.'); $('slide-topic').focus(); return; }
       closeSlideModal();
-      const styleMap = { modern:'modern, minimalist, koyu arka plan (#0f0f0f), beyaz/mavi tipografi', corporate:'kurumsal, beyaz arka plan, lacivert/gri renk skalasi, profesyonel', creative:'yaratici, gradyan arka planlar, canli renkler, bold tipografi', academic:'akademik, temiz beyaz arka plan, siyah metin, serif font' };
+
       const langInstr = lang === 'en' ? 'Write all content in English.' : 'Tum icerik Turkce olsun.';
-      const prompt = `Asagidaki konu icin ${count} slaytlik, tam calisan HTML/CSS/JS sunumu hazirla:\n\nKonu: ${topic}\nStil: ${styleMap[style]}\n${langInstr}\n\nONEMLI GEREKSINIMLER:\n- Tek bir HTML dosyasi ver (tum CSS ve JS inline)\n- Her slayt tam ekran, ayri bir <div class="slide"> olsun\n- Slaytlar arasi gecis: sol/sag ok butonlari + klavye okları + swipe\n- Slayt numarasi ve toplam goster (orn: 3 / ${count})\n- Her slayt: buyuk baslik, 3-5 madde nokta, ikon veya sembol\n- Guzel giris animasyonlari (fadeIn, slideIn)\n- Tam responsive, mobil uyumlu\n- Son slayt: Ozet veya Sorular/Tesekkurler\n- Sadece HTML dosyasi ver, aciklama yapma`;
-      $('user-input').value = prompt;
+      const researchPrefix = researchMode === 'deep' ? 'Derin arastirma modu: ' : '';
+
+      if (format === 'pptx') {
+        _noCanvas = true;
+        _pptxMode = true;
+        const styleMap = { modern:'sade ve profesyonel', corporate:'kurumsal ve resmi', creative:'yaratici ve dinamik', academic:'akademik ve sade' };
+        const pptxPrompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla ve JSON formatinda ver:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'modern'}\n${langInstr}\n\nKEDINLIKLE sadece asagidaki JSON formatini ver, baska hicbir aciklama veya metin yazma:\n\n{"title":"Sunum Basligi","slides":[{"title":"Slayt Basligi","bullets":["Madde 1","Madde 2","Madde 3"],"notes":"Konusmaci notu"},...]}\n\nHer slayt icin 3-5 madde noktasi olsun. Son slayt Tesekkurler/Sorular olsun.`;
+        $('user-input').value = pptxPrompt;
+      } else {
+        const styleMap = { modern:'modern, minimalist, koyu arka plan (#0f0f0f), beyaz/mavi tipografi', corporate:'kurumsal, beyaz arka plan, lacivert/gri renk skalasi, profesyonel', creative:'yaratici, gradyan arka planlar, canli renkler, bold tipografi', academic:'akademik, temiz beyaz arka plan, siyah metin, serif font' };
+        const prompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik, tam calisan HTML/CSS/JS sunumu hazirla:\n\nKonu: ${topic}\nStil: ${styleMap[style]}\n${langInstr}\n\nONEMLI GEREKSINIMLER:\n- Tek bir HTML dosyasi ver (tum CSS ve JS inline)\n- Her slayt tam ekran, ayri bir <div class="slide"> olsun\n- Slaytlar arasi gecis: sol/sag ok butonlari + klavye oklari + swipe\n- Slayt numarasi ve toplam goster (orn: 3 / ${count})\n- Her slayt: buyuk baslik, 3-5 madde nokta\n- Guzel animasyonlar (fadeIn, slideIn)\n- Tam responsive, mobil uyumlu\n- Son slayt: Sorular / Tesekkurler\n- Sadece HTML dosyasi ver, baska hicbir aciklama ekleme`;
+        $('user-input').value = prompt;
+      }
       handleSend();
     }
 
@@ -8875,13 +8947,27 @@
       setTimeout(() => m.classList.add('hidden'), 200);
     }
 
+    function setReportResearch(mode) {
+      const qb = $('report-quick-btn'), db = $('report-deep-btn');
+      if (mode === 'quick') {
+        qb.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-blue-500/40 bg-blue-600/15 cursor-pointer transition-all';
+        db.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all';
+      } else {
+        db.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-amber-500/40 bg-amber-600/10 cursor-pointer transition-all';
+        qb.className = 'flex items-center gap-2 p-2.5 rounded-xl border border-[#333] cursor-pointer transition-all';
+      }
+    }
+
     function generateReport() {
       const topic = ($('report-topic').value || '').trim();
       const type = $('report-type').value || 'academic';
       const extra = ($('report-sections').value || '').trim();
       const length = $('report-length').value || 'medium';
+      const researchMode = document.querySelector('input[name="report-research"]:checked')?.value || 'quick';
       if (!topic) { setStatus('Lutfen konu girin.'); $('report-topic').focus(); return; }
       closeReportModal();
+      _noCanvas = true;
+      const researchPrefix = researchMode === 'deep' ? 'Derin arastirma modu: ' : '';
       const typeMap = {
         academic: 'Akademik makale: Ozet, Giris, Literatur Taramasi, Yontem, Bulgular, Tartisma, Sonuc, Kaynakca',
         business: 'Is raporu: Yonetici Ozeti, Durum Analizi, Veri ve Metrikler, Oneriler, Eylem Plani, Ekler',
@@ -8891,9 +8977,52 @@
       };
       const lengthMap = { short:'~800 kelime', medium:'~1500 kelime', long:'~3000 kelime', comprehensive:'~5000 kelime veya daha fazla' };
       const extraSection = extra ? `\nEk olarak su bolumler de eklensin: ${extra}` : '';
-      const prompt = `Asagidaki konu icin kapsamli ve profesyonel bir rapor hazirla:\n\nKonu: ${topic}\nFormat: ${typeMap[type]}${extraSection}\nHedef uzunluk: ${lengthMap[length]}\n\nONEMLI GEREKSINIMLER:\n- Markdown formatinda yaz (## basliklar, ### alt basliklar, maddeler, tablolar)\n- Her bolum en az 2-3 paragraf, derinlemesine icerik\n- Somut veriler, istatistikler ve gercekci ornekler kullan\n- Profesyonel Turkce dil kullan\n- Tablolar ve listeler ile verileri organize et\n- Bolumler arasi akis ve baglanti kur\n- Giris paragrafinda raporun amaci ve kapsamini acikla\n- Sonuc bolumunde ana bulgulari ozetle ve oneride bulun`;
+      const prompt = `${researchPrefix}Asagidaki konu icin kapsamli ve profesyonel bir rapor hazirla:\n\nKonu: ${topic}\nFormat: ${typeMap[type]}${extraSection}\nHedef uzunluk: ${lengthMap[length]}\n\nONEMLI GEREKSINIMLER:\n- Markdown formatinda yaz (## basliklar, ### alt basliklar, maddeler, tablolar)\n- Her bolum en az 2-3 paragraf, derinlemesine icerik\n- Somut veriler, istatistikler ve gercekci ornekler kullan\n- Profesyonel Turkce dil kullan\n- Tablolar ve listeler ile verileri organize et\n- Bolumler arasi akis ve baglanti kur\n- Giris paragrafinda raporun amaci ve kapsamini acikla\n- Sonuc bolumunde ana bulgulari ozetle ve oneride bulun`;
       $('user-input').value = prompt;
       handleSend();
+    }
+
+    // ===== PPTX GENERATION =====
+    function generatePptxFromContent(content) {
+      let data = null;
+      const jsonMatch = content.match(/\{[\s\S]*"slides"[\s\S]*\}/);
+      if (jsonMatch) {
+        try { data = JSON.parse(jsonMatch[0]); } catch(e) { data = null; }
+      }
+      if (!data || !Array.isArray(data.slides) || data.slides.length === 0) {
+        setStatus('PPTX: Icerik ayristirilamadi, manuel indirme gerekli.');
+        return;
+      }
+      try {
+        if (typeof PptxGenJS === 'undefined') { setStatus('PPTX kutuphanesi yukleniyor, tekrar deneyin.'); return; }
+        const pptx = new PptxGenJS();
+        pptx.layout = 'LAYOUT_WIDE';
+        const titleColor = '1e293b';
+        const accentColor = '2563eb';
+        const titleSlide = pptx.addSlide();
+        titleSlide.background = { color: '0f172a' };
+        titleSlide.addText(data.title || 'Sunum', { x: 0.5, y: 1.5, w: '90%', h: 1.5, fontSize: 40, bold: true, color: 'FFFFFF', align: 'center' });
+        titleSlide.addShape(pptx.ShapeType.rect, { x: 3.5, y: 3.2, w: 3, h: 0.05, fill: { color: accentColor } });
+        data.slides.forEach((slide, i) => {
+          const s = pptx.addSlide();
+          s.background = { color: i % 2 === 0 ? '0f172a' : '0c1a2e' };
+          s.addText(slide.title || '', { x: 0.5, y: 0.4, w: '90%', h: 0.8, fontSize: 26, bold: true, color: 'FFFFFF' });
+          s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.25, w: 1.5, h: 0.04, fill: { color: accentColor } });
+          const bullets = Array.isArray(slide.bullets) ? slide.bullets : [];
+          if (bullets.length > 0) {
+            const bulletObjs = bullets.map(b => ({ text: b, options: { bullet: { type: 'bullet', code: '2022' }, color: 'cbd5e1', fontSize: 16, paraSpaceAfter: 8 } }));
+            s.addText(bulletObjs, { x: 0.5, y: 1.5, w: '90%', h: 3.5, valign: 'top' });
+          }
+          const pageNum = `${i + 1} / ${data.slides.length}`;
+          s.addText(pageNum, { x: '85%', y: 6.8, w: '12%', h: 0.3, fontSize: 9, color: '475569', align: 'right' });
+          if (slide.notes) s.addNotes(slide.notes);
+        });
+        const filename = (data.title || 'sunum').replace(/[^a-z0-9\s]/gi, '').trim().replace(/\s+/g, '_') || 'sunum';
+        pptx.writeFile({ fileName: filename + '.pptx' });
+        setStatus('PPTX indirildi: ' + filename + '.pptx');
+      } catch(e) {
+        setStatus('PPTX olusturma hatasi: ' + e.message);
+      }
     }
 
     // ===== EDIT MESSAGE MODAL =====
