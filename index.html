@@ -3697,11 +3697,18 @@
 
     async function signInWithGoogle() {
       if (!supabaseClient) { alert('Supabase baslatılamadı.'); return; }
+      const redirectUrl = window.location.origin;
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname }
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: { access_type: 'offline', prompt: 'consent' }
+        }
       });
-      if (error) alert('Giris hatasi: ' + error.message);
+      if (error) {
+        console.error('OAuth error:', error);
+        alert('Giris hatasi: ' + error.message);
+      }
     }
 
     async function signOutGoogle() {
