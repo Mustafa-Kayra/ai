@@ -236,6 +236,19 @@
       animation-delay: 0.3s;
     }
 
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .live-pulse-dot {
+      animation: live-pulse 1s ease-in-out infinite;
+    }
+    .fmt-btn.active {
+      border-color: #3b82f6;
+      color: #fff;
+      background: rgba(59,130,246,0.15);
+    }
+
     /* Input area */
     .input-box {
       background: #111;
@@ -2315,8 +2328,31 @@
             onclick="startAgentMode()"
             class="px-2 py-1 rounded-lg text-[clamp(9px,2.5vw,11px)] font-semibold text-neutral-500 hover:text-rose-400 bg-white/5 border border-white/5 transition-all shrink-0">Ajan</button>
         </div>
+        <div id="live-screen-preview"
+          class="hidden mb-3 p-3 bg-[#0d1f18] rounded-xl border border-emerald-800/50 animate-in">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 live-pulse-dot"></span>
+              <span class="text-[11px] font-bold text-emerald-400">Canli Ekran Aktif</span>
+            </div>
+            <button onclick="stopLiveScreen()"
+              class="text-neutral-500 hover:text-red-400 text-xs transition-colors px-2 py-0.5 rounded hover:bg-red-500/10">Durdur</button>
+          </div>
+          <video id="live-screen-video" class="w-full max-h-32 object-contain rounded-lg bg-black/30"
+            autoplay muted playsinline></video>
+          <div class="text-[9px] text-emerald-700 mt-1.5">Her mesajinizda ekranin anlık görüntüsü otomatik eklenir</div>
+        </div>
         <div id="file-preview-container"
           class="hidden flex flex-wrap gap-2 mb-3 px-3 py-2 bg-[#111] rounded-xl border border-[#222] animate-in">
+        </div>
+        <div id="format-bar" class="flex items-center gap-1.5 mb-2 flex-wrap">
+          <span class="text-[10px] text-neutral-600 mr-0.5">Format:</span>
+          <button type="button" data-fmt="bullets" onclick="toggleFormat('bullets')"
+            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Madde madde</button>
+          <button type="button" data-fmt="summary" onclick="toggleFormat('summary')"
+            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Ozet</button>
+          <button type="button" data-fmt="detailed" onclick="toggleFormat('detailed')"
+            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Detayli</button>
         </div>
         <div class="input-box flex items-end gap-2 p-2.5"><button id="upload-btn"
             class="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-white hover:bg-white/5 transition-all shrink-0"
@@ -2597,7 +2633,17 @@
           class="text-neutral-500 hover:text-white text-lg">&times;
         </button>
       </div>
-      <div class="space-y-2"><button onclick="exportChat('md')"
+      <div class="space-y-2"><button onclick="shareChat()"
+          class="w-full flex items-center gap-3 p-3 bg-white/[0.02] rounded-xl border border-[#222] hover:bg-white/[0.04] transition-colors text-left">
+          <div
+            class="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </div>
+          <div>
+            <div class="text-sm text-neutral-300 font-medium">Link Olarak Paylas</div>
+            <div class="text-[10px] text-neutral-600">URL'yi panoya kopyala</div>
+          </div>
+        </button><button onclick="exportChat('md')"
           class="w-full flex items-center gap-3 p-3 bg-white/[0.02] rounded-xl border border-[#222] hover:bg-white/[0.04] transition-colors text-left">
           <div
             class="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-400 text-xs font-bold">
@@ -2714,6 +2760,10 @@
         <!-- Theme --><label
           class="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222] cursor-pointer hover:bg-white/[0.04] transition-colors"><span
             class="text-sm text-neutral-300">Acik Tema (Light Mode)</span><input id="pref-theme" type="checkbox"
+            class="accent-blue-600 w-4 h-4"></label>
+        <!-- Auto theme --><label
+          class="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222] cursor-pointer hover:bg-white/[0.04] transition-colors"><div><span
+            class="text-sm text-neutral-300">Otomatik Tema</span><div class="text-[10px] text-neutral-600 mt-0.5">07:00-20:00 acik, gece karanlik</div></div><input id="pref-auto-theme" type="checkbox"
             class="accent-blue-600 w-4 h-4"></label>
         <!-- Font size -->
         <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]"><label
@@ -3179,6 +3229,22 @@
     }
 
 
+    // ---- Response Format
+    let activeFormat = null;
+    const FORMAT_INSTRUCTIONS = {
+      bullets:  'Cevabini madde madde, liste seklinde ver.',
+      summary:  'Cevabini cok kisaca ve ozet olarak ver. Gereksiz detay ekleme.',
+      detailed: 'Cevabini detayli, kapsamli ve aciklamali ver.'
+    };
+
+    function toggleFormat(fmt) {
+      activeFormat = activeFormat === fmt ? null : fmt;
+      document.querySelectorAll('.fmt-btn').forEach(btn => {
+        const on = btn.dataset.fmt === activeFormat;
+        btn.classList.toggle('active', on);
+      });
+    }
+
     // ---- System Prompt
     function buildSystemPrompt() {
       const r = [];
@@ -3191,6 +3257,7 @@
       if (vs === 'profesyonel') r.push("Profesyonel, net ve guvende veren bir dil kullan. Duzgunce yapi kurulmus, odakli cevaplar ver.");
       if (vs === 'zkusagi') r.push("Gen Z / Z kusagi gibi yaz: rahat, eglenceli, guncel slang kullan. Mesela 'ya', 'be', 'bro', 'literally', 'no cap', 'fr', 'slay' gibi. Ama anlasılır kal.");
       if (stylePrefs.custom && stylePrefs.custom.trim()) r.push(stylePrefs.custom.trim());
+      if (activeFormat && FORMAT_INSTRUCTIONS[activeFormat]) r.push(FORMAT_INSTRUCTIONS[activeFormat]);
       const memCtx = buildMemoryContext();
       if (memCtx) r.push(memCtx);
       return r.join(" ");
@@ -3228,6 +3295,14 @@
       }
 
       localStorage.setItem('theme_mode', isLight ? 'light' : 'dark');
+    }
+
+    function applyAutoTheme() {
+      if (!prefs.autoTheme) return;
+      const hour = new Date().getHours();
+      const wantLight = (hour >= 7 && hour < 20);
+      const isLight = document.body.classList.contains('light-mode');
+      if (wantLight !== isLight) toggleTheme();
     }
 
     // ---- Search
@@ -3339,7 +3414,9 @@
         });
       }
 
-      if (localStorage.getItem('theme_mode') === 'light') toggleTheme();
+      if (prefs.autoTheme) { applyAutoTheme(); }
+      else if (localStorage.getItem('theme_mode') === 'light') toggleTheme();
+      loadSharedChat();
 
       if (providerSettings.authMode === 'puter') {
         if (!puter.auth.isSignedIn()) {
@@ -4033,47 +4110,76 @@
       e.target.value = '';
     }
 
+    let liveScreenStream = null;
+    let liveScreenTrack = null;
+
     async function handleScreenCapture() {
+      if (liveScreenStream) { stopLiveScreen(); return; }
       try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: {
-            cursor: "always"
-          }
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false });
+        liveScreenStream = stream;
+        liveScreenTrack = stream.getVideoTracks()[0];
+        liveScreenTrack.onended = () => stopLiveScreen();
+        updateScreenBtn(true);
+        showLiveScreenPreview(stream);
+        setStatus('Ekran paylasimi aktif. Mesaj yazinca ekran otomatik eklenir.');
+      } catch (err) {
+        console.warn('Ekran yakalama basarisiz:', err);
+      }
+    }
 
-          , audio: false
-        });
-        const track = stream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(track);
+    function stopLiveScreen() {
+      if (liveScreenTrack) liveScreenTrack.stop();
+      if (liveScreenStream) liveScreenStream.getTracks().forEach(t => t.stop());
+      liveScreenStream = null;
+      liveScreenTrack = null;
+      updateScreenBtn(false);
+      hideLiveScreenPreview();
+      setStatus('Ekran paylasimi durduruldu.');
+    }
+
+    function updateScreenBtn(active) {
+      const btn = $('screen-capture-btn');
+      if (!btn) return;
+      if (active) {
+        btn.classList.add('text-emerald-400', 'bg-emerald-500/10');
+        btn.classList.remove('text-neutral-500');
+        btn.title = 'Ekran Paylasimini Durdur';
+      } else {
+        btn.classList.remove('text-emerald-400', 'bg-emerald-500/10');
+        btn.classList.add('text-neutral-500');
+        btn.title = 'Canli Ekran Paylasimi Baslat';
+      }
+    }
+
+    function showLiveScreenPreview(stream) {
+      const preview = $('live-screen-preview');
+      if (!preview) return;
+      const video = $('live-screen-video');
+      if (video) video.srcObject = stream;
+      preview.classList.remove('hidden');
+    }
+
+    function hideLiveScreenPreview() {
+      const preview = $('live-screen-preview');
+      if (preview) preview.classList.add('hidden');
+      const video = $('live-screen-video');
+      if (video) video.srcObject = null;
+    }
+
+    async function captureLiveScreenFrame() {
+      if (!liveScreenStream || !liveScreenTrack || liveScreenTrack.readyState !== 'live') return null;
+      try {
+        const imageCapture = new ImageCapture(liveScreenTrack);
         const bitmap = await imageCapture.grabFrame();
-
         const canvas = document.createElement('canvas');
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
-        const ctx = canvas.getContext('bitmaprenderer');
-
-        if (ctx) {
-          ctx.transferFromImageBitmap(bitmap);
-        }
-
-        else {
-          canvas.getContext('2d').drawImage(bitmap, 0, 0);
-        }
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        track.stop();
-
-        selectedFiles.push({
-          id: Date.now() + Math.random(),
-          name: "ekran-goruntusu.jpg",
-          type: "image/jpeg",
-          preview: dataUrl
-        });
-        renderFilePreviews();
-      }
-
-      catch (err) {
-        console.warn("Ekran yakalama iptal edildi veya desteklenmiyor:", err);
-      }
+        const bCtx = canvas.getContext('bitmaprenderer');
+        if (bCtx) { bCtx.transferFromImageBitmap(bitmap); }
+        else { canvas.getContext('2d').drawImage(bitmap, 0, 0); }
+        return canvas.toDataURL('image/jpeg', 0.82);
+      } catch (e) { return null; }
     }
 
     function readFileAsDataURL(file) {
@@ -5057,6 +5163,14 @@
           }
         }
 
+        // Live screen auto-capture
+        if (liveScreenStream) {
+          const frameUrl = await captureLiveScreenFrame();
+          if (frameUrl) {
+            selectedFiles.unshift({ id: Date.now() + Math.random(), name: 'ekran-canli.jpg', type: 'image/jpeg', preview: frameUrl, _liveCapture: true });
+          }
+        }
+
         // Files
         if (selectedFiles.length > 0) {
           setStatus('Dosyalar isleniyor...');
@@ -5413,6 +5527,7 @@
         , 10);
       $('pref-stream').checked = ! !prefs.stream;
       $('pref-theme').checked = document.body.classList.contains('light-mode');
+      if ($('pref-auto-theme')) $('pref-auto-theme').checked = ! !prefs.autoTheme;
 
       // Font size buttons
       ['sm', 'md', 'lg'].forEach(s => {
@@ -5456,14 +5571,19 @@
     async function saveSettings() {
       // Stream
       prefs.stream = $('pref-stream').checked;
+      prefs.autoTheme = $('pref-auto-theme')?.checked || false;
       // Max tokens
       prefs.maxTokens = parseInt($('pref-max-tokens')?.value || 4096);
       prefs.notifySound = $('pref-notify-sound')?.checked || false;
       prefs.showThinking = ! !$('pref-show-thinking')?.checked;
       // Theme
-      const wantLight = $('pref-theme').checked;
-      const isLight = document.body.classList.contains('light-mode');
-      if (wantLight !== isLight) toggleTheme();
+      if (prefs.autoTheme) {
+        applyAutoTheme();
+      } else {
+        const wantLight = $('pref-theme').checked;
+        const isLight = document.body.classList.contains('light-mode');
+        if (wantLight !== isLight) toggleTheme();
+      }
 
       // Style prefs
       stylePrefs = {
@@ -5822,6 +5942,39 @@
       const m = $('export-modal'), c = m.querySelector('div');
       m.classList.add('opacity-0'); c.classList.add('scale-95');
       setTimeout(() => m.classList.add('hidden'), 200);
+    }
+
+    function shareChat() {
+      const chat = chats.find(c => c.id === currentChatId);
+      if (!chat) return;
+      const payload = JSON.stringify({ title: chat.title, messages: chat.messages.map(m => ({ role: m.role, content: typeof m.content === 'string' ? m.content : m.content })) });
+      const encoded = btoa(unescape(encodeURIComponent(payload)));
+      const url = location.origin + location.pathname + '#share=' + encoded;
+      navigator.clipboard.writeText(url).then(() => {
+        setStatus('Paylasim linki kopyalandi!');
+      }).catch(() => {
+        prompt('Linki kopyala:', url);
+      });
+      closeExportModal();
+    }
+
+    function loadSharedChat() {
+      const hash = location.hash;
+      if (!hash.startsWith('#share=')) return;
+      try {
+        const encoded = hash.slice(7);
+        const payload = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+        if (!payload.messages) return;
+        const id = 'shared-' + Date.now();
+        const sharedChat = { id, title: (payload.title || 'Paylasim') + ' (Paylasim)', messages: payload.messages, createdAt: Date.now() };
+        chats.unshift(sharedChat);
+        currentChatId = id;
+        saveAll();
+        renderChatList();
+        renderMessages(sharedChat.messages);
+        history.replaceState(null, '', location.pathname);
+        setStatus('Paylasilan sohbet yuklendi.');
+      } catch (e) { console.warn('Paylasim yuklenemedi:', e); }
     }
 
     function exportChat(format) {
