@@ -2776,6 +2776,27 @@
             class="text-sm text-neutral-300">Her zaman Turkce
             yanitla</span><input id="pref-turkish" type="checkbox" class="accent-blue-600 w-4 h-4"></label>
         <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-2">Ses Stili</label>
+          <div class="grid grid-cols-3 gap-2" id="voice-style-group">
+            <button type="button" data-style="samimi" onclick="selectVoiceStyle('samimi')"
+              class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
+              <div class="text-base mb-0.5">&#x1F917;</div>
+              <div>Samimi</div>
+            </button>
+            <button type="button" data-style="profesyonel" onclick="selectVoiceStyle('profesyonel')"
+              class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
+              <div class="text-base mb-0.5">&#x1F454;</div>
+              <div>Profesyonel</div>
+            </button>
+            <button type="button" data-style="zkusagi" onclick="selectVoiceStyle('zkusagi')"
+              class="voice-style-btn py-2.5 px-2 rounded-xl text-xs font-semibold border border-[#333] text-neutral-400 hover:text-white hover:border-blue-500 transition-all text-center">
+              <div class="text-base mb-0.5">&#x26A1;</div>
+              <div>Z Kusagi</div>
+            </button>
+          </div>
+          <input type="hidden" id="pref-voice-style" value="samimi">
+        </div>
+        <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
           <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-2">Oturum
             Modu</label><select id="pref-auth-mode"
             class="w-full bg-[#0a0a0a] border border-[#222] rounded-lg p-2 text-sm outline-none focus:border-blue-500 transition-colors text-neutral-300">
@@ -2977,7 +2998,7 @@
     let prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{"modelA":"gpt-4o-mini","stream":true,"maxTokens":4096,"fontSize":"md","accent":"blue","notifySound":false,"showThinking":true}');
     // Migrate: ensure showThinking exists in saved prefs
     if (prefs.showThinking === undefined) prefs.showThinking = true;
-    let stylePrefs = JSON.parse(localStorage.getItem(KEY_STYLE) || '{"short":true,"noLecture":true,"turkish":true,"custom":""}');
+    let stylePrefs = JSON.parse(localStorage.getItem(KEY_STYLE) || '{"short":true,"noLecture":true,"turkish":true,"custom":"","voiceStyle":"samimi"}');
     let availableModels = [];
     let customModels = [];
     let puterReady = false;
@@ -3162,6 +3183,10 @@
       if (stylePrefs.short) r.push("Kisa ve direkt cevap ver.");
       if (stylePrefs.noLecture) r.push("Kullanici kod istiyorsa sadece kodu ver, uzun aciklamalar yapma.");
       r.push("Kod verirken ```kod_dili``` formatini kullan.");
+      const vs = stylePrefs.voiceStyle || 'samimi';
+      if (vs === 'samimi') r.push("Samimi, sicak ve dogal bir dille yaz. Resmi olmayan ama saygi cercevesinde bir ton kullan.");
+      if (vs === 'profesyonel') r.push("Profesyonel, net ve guvende veren bir dil kullan. Duzgunce yapi kurulmus, odakli cevaplar ver.");
+      if (vs === 'zkusagi') r.push("Gen Z / Z kusagi gibi yaz: rahat, eglenceli, guncel slang kullan. Mesela 'ya', 'be', 'bro', 'literally', 'no cap', 'fr', 'slay' gibi. Ama anlasılır kal.");
       if (stylePrefs.custom && stylePrefs.custom.trim()) r.push(stylePrefs.custom.trim());
       const memCtx = buildMemoryContext();
       if (memCtx) r.push(memCtx);
@@ -5405,6 +5430,7 @@
       $('pref-short').checked = ! !stylePrefs.short;
       $('pref-no-lecture').checked = ! !stylePrefs.noLecture;
       $('pref-turkish').checked = ! !stylePrefs.turkish;
+      selectVoiceStyle(stylePrefs.voiceStyle || 'samimi');
       $('pref-auth-mode').value = providerSettings.authMode || 'local';
       $('pref-custom').value = stylePrefs.custom || '';
       // Provider fields
@@ -5438,7 +5464,8 @@
 
       // Style prefs
       stylePrefs = {
-        short: $('pref-short').checked, noLecture: $('pref-no-lecture').checked, turkish: $('pref-turkish').checked, custom: $('pref-custom').value || ''
+        short: $('pref-short').checked, noLecture: $('pref-no-lecture').checked, turkish: $('pref-turkish').checked, custom: $('pref-custom').value || '',
+        voiceStyle: $('pref-voice-style').value || 'samimi'
       }
 
         ;
@@ -5631,16 +5658,36 @@
       return candidates[0];
     }
 
+    const VOICE_STYLE_PARAMS = {
+      samimi:      { rate: 0.93, pitch: 1.05 },
+      profesyonel: { rate: 0.82, pitch: 0.92 },
+      zkusagi:     { rate: 1.12, pitch: 1.12 },
+    };
+
     function makeUtterance(text, lang, onEnd, onError) {
       const utter = new SpeechSynthesisUtterance(text.substring(0, 3000));
       utter.lang = lang;
-      utter.rate = 0.95;
-      utter.pitch = 1.0;
+      const params = VOICE_STYLE_PARAMS[stylePrefs.voiceStyle || 'samimi'] || VOICE_STYLE_PARAMS.samimi;
+      utter.rate = params.rate;
+      utter.pitch = params.pitch;
       const voice = getBestVoice(lang);
       if (voice) utter.voice = voice;
       utter.onend = onEnd;
       utter.onerror = onError;
       return utter;
+    }
+
+    function selectVoiceStyle(style) {
+      stylePrefs.voiceStyle = style;
+      document.querySelectorAll('.voice-style-btn').forEach(btn => {
+        const active = btn.dataset.style === style;
+        btn.classList.toggle('border-blue-500', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('bg-blue-600/20', active);
+        btn.classList.toggle('border-[#333]', !active);
+        btn.classList.toggle('text-neutral-400', !active);
+      });
+      $('pref-voice-style').value = style;
     }
 
     function voiceConvSpeak(rawText) {
