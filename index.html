@@ -9209,7 +9209,7 @@
           let stepResult = await callModel([{ role: 'system', content: 'Gorevi uygula.' }, { role: 'user', content: stepPrompt }]);
           allResults.push(stepResult || '-');
 
-          const stepEls = stepsEl.querySelectorAll('div.p-2\\\\.5');
+          const stepEls = Array.from(stepsEl.querySelectorAll('div')).filter(el => el.classList.contains('p-2.5'));
           const lastStep = stepEls[stepEls.length - 1];
           if (lastStep) {
             lastStep.className = 'p-2.5 rounded-lg border text-[12px] border-green-800/30 bg-green-900/10';
