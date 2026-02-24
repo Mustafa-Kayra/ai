@@ -3598,12 +3598,11 @@
     const debouncedSaveAll = debounce(() => _realSaveAll(), 500);
 
     function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '" ': ' &quot; ', "' ": '&#039;' }[m]));
-
+      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
     function escapeJs(s) {
-      return String(s).replace(/'/g, "\\' ").replace(/\n/g, " \\n");
+      return String(s).replace(/'/g, "\\'").replace(/\n/g, "\\n");
     }
 
 
