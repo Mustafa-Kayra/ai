@@ -9175,6 +9175,7 @@
         </div>${detail ? `<div class="text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed">${escapeHtml(detail).substring(0, 300)}</div>` : ''}`;
         stepsEl.appendChild(step);
         win.scrollTop = win.scrollHeight;
+        return step;
       }
 
       function updateStatus(text) { if (statusEl) statusEl.textContent = text; }
@@ -9202,28 +9203,29 @@
         for (let i = 0; i < steps.length; i++) {
           const step = steps[i];
           updateStatus(`Adim ${i + 1}/${steps.length}: ${step.substring(0, 30)}...`);
-          addAgentStep(`Adim ${i + 1}: ${step}`, null);
+          const currentStepEl = addAgentStep(`Adim ${i + 1}: ${step}`, null);
 
           const stepPrompt = `Gorev: "${query}"\nMevcut adim: ${step}\n${allResults.length > 0 ? 'Onceki sonuclar:\n' + allResults.map((r, j) => `Adim ${j + 1}: ${r.substring(0, 300)}`).join('\n') : ''}\nBu adimi detayli uygula.`;
 
           let stepResult = await callModel([{ role: 'system', content: 'Gorevi uygula.' }, { role: 'user', content: stepPrompt }]);
           allResults.push(stepResult || '-');
 
-          const stepEls = Array.from(stepsEl.querySelectorAll('div')).filter(el => el.classList.contains('p-2.5'));
-          const lastStep = stepEls[stepEls.length - 1];
-          if (lastStep) {
-            lastStep.className = 'p-2.5 rounded-lg border text-[12px] border-green-800/30 bg-green-900/10';
-            const icon = lastStep.querySelector('div:first-child');
-            if (icon) {
-              icon.className = 'flex items-center gap-2 text-green-400';
-              icon.querySelector('div')?.replaceWith(Object.assign(document.createElement('span'), { innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>' }));
+          currentStepEl.className = 'p-2.5 rounded-lg border text-[12px] border-green-800/30 bg-green-900/10';
+          const icon = currentStepEl.querySelector('div:first-child');
+          if (icon) {
+            icon.className = 'flex items-center gap-2 text-green-400';
+            const checkbox = icon.querySelector('div');
+            if (checkbox) {
+              const checkSvg = document.createElement('span');
+              checkSvg.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>';
+              checkbox.replaceWith(checkSvg.firstElementChild);
             }
-            lastStep.querySelector('.text-neutral-600')?.remove();
-            const detail = document.createElement('div');
-            detail.className = 'text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed';
-            detail.textContent = (stepResult || '').substring(0, 150) + '...';
-            lastStep.appendChild(detail);
           }
+          currentStepEl.querySelector('.text-neutral-600')?.remove();
+          const detail = document.createElement('div');
+          detail.className = 'text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed';
+          detail.textContent = (stepResult || '').substring(0, 150) + '...';
+          currentStepEl.appendChild(detail);
         }
 
         updateStatus('Sonuclar derleniyor...');
