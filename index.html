@@ -94,6 +94,8 @@
       color: #e2e8f0;
     }
 
+    body.hide-thinking .thinking-block { display: none !important; }
+
     /* Thinking block */
     .thinking-block {
       background: #111;
@@ -2418,7 +2420,9 @@
               <line x1="12" y1="19" x2="20" y2="19" />
             </svg>Terminal </button></div>
       </div>
-      <div class="flex items-center gap-2"><button onclick="toggleChatSearch()"
+      <div class="flex items-center gap-2"><button id="canvas-toggle-btn" onclick="toggleCanvasPanel()"
+          class="p-2 rounded-lg text-neutral-500 hover:text-teal-400 hover:bg-teal-500/5 transition-all hidden"
+          title="Canvas Ac / Kapat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button><button onclick="toggleChatSearch()"
           class="p-2 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5 transition-all"
           title="Sohbette Ara (Ctrl+F)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2">
@@ -3157,17 +3161,17 @@
         <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
           <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-2">Tema
             Rengi</label>
-          <div class="flex gap-2"><button onclick="setAccent('blue')"
+          <div class="flex gap-2"><button onclick="setAccent('blue')" data-accent-color="blue"
               class="w-8 h-8 rounded-full bg-blue-600 border-2 border-transparent hover:border-white transition-all"
-              title="Mavi"></button><button onclick="setAccent('green')"
+              title="Mavi"></button><button onclick="setAccent('green')" data-accent-color="green"
               class="w-8 h-8 rounded-full bg-green-600 border-2 border-transparent hover:border-white transition-all"
-              title="Yesil"></button><button onclick="setAccent('purple')"
+              title="Yesil"></button><button onclick="setAccent('purple')" data-accent-color="purple"
               class="w-8 h-8 rounded-full bg-purple-600 border-2 border-transparent hover:border-white transition-all"
-              title="Mor"></button><button onclick="setAccent('red')"
+              title="Mor"></button><button onclick="setAccent('red')" data-accent-color="red"
               class="w-8 h-8 rounded-full bg-red-600 border-2 border-transparent hover:border-white transition-all"
-              title="Kirmizi"></button><button onclick="setAccent('amber')"
+              title="Kirmizi"></button><button onclick="setAccent('amber')" data-accent-color="amber"
               class="w-8 h-8 rounded-full bg-amber-600 border-2 border-transparent hover:border-white transition-all"
-              title="Amber"></button><button onclick="setAccent('cyan')"
+              title="Amber"></button><button onclick="setAccent('cyan')" data-accent-color="cyan"
               class="w-8 h-8 rounded-full bg-cyan-600 border-2 border-transparent hover:border-white transition-all"
               title="Cyan"></button></div>
         </div>
@@ -3806,6 +3810,8 @@
       initSelectionMenu();
       if (prefs.fontSize) setFontSize(prefs.fontSize);
       if (prefs.accent && prefs.accent !== 'blue') setAccent(prefs.accent);
+      else updateAccentButtons('blue');
+      if (!prefs.showThinking) document.body.classList.add('hide-thinking');
 
       if (typeof marked !== 'undefined') {
         marked.setOptions({
@@ -4142,23 +4148,39 @@
     // ---- Chat Management
     function createNewChat() {
       if (compareActive) exitCompareMode();
-
-      const c = {
-        id: Date.now(), title: 'Yeni Sohbet', messages: []
-      }
-
-        ;
+      const prevChat = chats.find(x => x.id === currentChatId);
+      if (prevChat) prevChat.canvas = Object.keys(canvasFiles).length > 0 ? JSON.parse(JSON.stringify(canvasFiles)) : null;
+      canvasFiles = {};
+      canvasActiveFile = null;
+      if (canvasOpen) closeCanvas();
+      const c = { id: Date.now(), title: 'Yeni Sohbet', messages: [] };
       chats.push(c);
       currentChatId = c.id;
       saveAll(); renderChatList(); renderMessages([]); showWelcome();
+      updateCanvasToggleBtn();
       $('user-input')?.focus();
     }
 
     function loadChat(id) {
       if (compareActive) exitCompareMode();
+      const prevChat = chats.find(x => x.id === currentChatId);
+      if (prevChat) prevChat.canvas = Object.keys(canvasFiles).length > 0 ? JSON.parse(JSON.stringify(canvasFiles)) : null;
       currentChatId = id;
       const c = chats.find(x => x.id === id);
       if (!c) return;
+      canvasFiles = c.canvas ? JSON.parse(JSON.stringify(c.canvas)) : {};
+      canvasActiveFile = Object.keys(canvasFiles)[0] || null;
+      if (canvasOpen) {
+        if (Object.keys(canvasFiles).length > 0) {
+          renderCanvasFileTree();
+          const htmlFile = Object.keys(canvasFiles).find(f => f.endsWith('.html'));
+          if (htmlFile) { selectCanvasFile(htmlFile); updateCanvasPreview(canvasFiles[htmlFile]); switchCanvasTab('preview'); }
+          else if (canvasActiveFile) selectCanvasFile(canvasActiveFile);
+        } else {
+          closeCanvas();
+        }
+      }
+      updateCanvasToggleBtn();
       renderMessages(c.messages); renderChatList();
       if (c.messages.length === 0) showWelcome(); else hideWelcome();
       $('user-input')?.focus();
@@ -6023,6 +6045,7 @@
 
       if ($('pref-notify-sound')) $('pref-notify-sound').checked = ! !prefs.notifySound;
       if ($('pref-show-thinking')) $('pref-show-thinking').checked = ! !prefs.showThinking;
+      updateAccentButtons(prefs.accent || 'blue');
       $('pref-short').checked = ! !stylePrefs.short;
       $('pref-no-lecture').checked = ! !stylePrefs.noLecture;
       $('pref-turkish').checked = ! !stylePrefs.turkish;
@@ -6054,6 +6077,7 @@
       prefs.maxTokens = parseInt($('pref-max-tokens')?.value || 4096);
       prefs.notifySound = $('pref-notify-sound')?.checked || false;
       prefs.showThinking = ! !$('pref-show-thinking')?.checked;
+      document.body.classList.toggle('hide-thinking', !prefs.showThinking);
       // Theme
       if (prefs.autoTheme) {
         applyAutoTheme();
@@ -7829,6 +7853,17 @@
       if (color !== 'blue') document.body.classList.add('accent-' + color);
       prefs.accent = color;
       saveAll();
+      updateAccentButtons(color);
+    }
+
+    function updateAccentButtons(color) {
+      document.querySelectorAll('[data-accent-color]').forEach(btn => {
+        const c = btn.dataset.accentColor;
+        const active = c === color;
+        btn.style.outline = active ? '2px solid white' : '';
+        btn.style.outlineOffset = active ? '2px' : '';
+        btn.style.transform = active ? 'scale(1.2)' : '';
+      });
     }
 
     // ---- Text Selection Context Menu
@@ -7951,6 +7986,30 @@
       return map[ext] || [ext.substring(0, 2).toUpperCase(), 'ft-icon-default'];
     }
 
+    function updateCanvasToggleBtn() {
+      const btn = $('canvas-toggle-btn');
+      if (!btn) return;
+      const hasFiles = Object.keys(canvasFiles).length > 0;
+      btn.classList.toggle('hidden', !hasFiles && !canvasOpen);
+      btn.classList.toggle('text-teal-400', canvasOpen);
+      btn.classList.toggle('bg-teal-500/10', canvasOpen);
+      btn.classList.toggle('text-neutral-500', !canvasOpen);
+    }
+
+    function toggleCanvasPanel() {
+      if (canvasOpen) {
+        closeCanvas();
+      } else if (Object.keys(canvasFiles).length > 0) {
+        openCanvas();
+        renderCanvasFileTree();
+        const htmlFile = Object.keys(canvasFiles).find(f => f.endsWith('.html'));
+        if (htmlFile) { selectCanvasFile(htmlFile); updateCanvasPreview(canvasFiles[htmlFile]); switchCanvasTab('preview'); }
+        else if (canvasActiveFile) selectCanvasFile(canvasActiveFile);
+      } else {
+        setStatus('Canvas icerigi yok.');
+      }
+    }
+
     function openCanvas() {
       const panel = $('canvas-panel');
       const headerTabs = $('header-canvas-tabs');
@@ -7966,6 +8025,7 @@
       }
 
       canvasOpen = true;
+      updateCanvasToggleBtn();
     }
 
     function closeCanvas() {
@@ -7983,11 +8043,12 @@
       }
 
       canvasOpen = false;
-
-      canvasFiles = {}
-
-        ;
-      canvasActiveFile = null;
+      const curChat = chats.find(x => x.id === currentChatId);
+      if (curChat && Object.keys(canvasFiles).length > 0) {
+        curChat.canvas = JSON.parse(JSON.stringify(canvasFiles));
+        saveAll();
+      }
+      updateCanvasToggleBtn();
     }
 
     function switchCanvasTab(tab) {
@@ -8444,6 +8505,9 @@
         if (first) selectCanvasFile(first);
         switchCanvasTab('code');
       }
+
+      const curChat = chats.find(x => x.id === currentChatId);
+      if (curChat) { curChat.canvas = JSON.parse(JSON.stringify(canvasFiles)); saveAll(); }
     }
 
     // ---- Deep Research System
