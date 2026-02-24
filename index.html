@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (typeof pdfjsLib !== 'undefined') {
@@ -901,6 +902,97 @@
     @keyframes vcPulse {
       0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3); }
       50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.1); }
+    }
+
+    #ocr-btn.ocr-active {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+    }
+
+    #ocr-btn.ocr-processing {
+      color: #f59e0b;
+      animation: ocrPulse 0.8s ease-in-out infinite;
+    }
+
+    @keyframes ocrPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    #voice-overlay {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 9999;
+      background: linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.97) 80%, transparent 100%);
+      padding: 28px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      border-top: 1px solid #1a1a1a;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+
+    #voice-overlay.visible {
+      transform: translateY(0);
+    }
+
+    .voice-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 40px;
+    }
+
+    .voice-bar {
+      width: 4px;
+      background: #22c55e;
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+
+    .voice-bar.ai-bar {
+      background: #3b82f6;
+    }
+
+    @keyframes barListen {
+      0%, 100% { height: 6px; }
+      50% { height: 32px; }
+    }
+
+    @keyframes barSpeak {
+      0%, 100% { height: 8px; }
+      50% { height: 36px; }
+    }
+
+    .voice-overlay-state-listening .voice-bar {
+      animation: barListen 0.6s ease-in-out infinite;
+    }
+
+    .voice-overlay-state-listening .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+    .voice-overlay-state-listening .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+    .voice-overlay-state-listening .voice-bar:nth-child(4) { animation-delay: 0.1s; }
+    .voice-overlay-state-listening .voice-bar:nth-child(5) { animation-delay: 0s; }
+
+    .voice-overlay-state-speaking .voice-bar.ai-bar {
+      animation: barSpeak 0.4s ease-in-out infinite;
+    }
+
+    .voice-overlay-state-speaking .voice-bar.ai-bar:nth-child(2) { animation-delay: 0.05s; }
+    .voice-overlay-state-speaking .voice-bar.ai-bar:nth-child(3) { animation-delay: 0.1s; }
+    .voice-overlay-state-speaking .voice-bar.ai-bar:nth-child(4) { animation-delay: 0.15s; }
+    .voice-overlay-state-speaking .voice-bar.ai-bar:nth-child(5) { animation-delay: 0.08s; }
+
+    #voice-interim {
+      font-size: 13px;
+      color: #94a3b8;
+      text-align: center;
+      min-height: 20px;
+      font-style: italic;
+      max-width: 480px;
+      transition: opacity 0.2s;
     }
 
     body.light-mode .from-\[\\#0f0f0f\] {
@@ -2375,6 +2467,12 @@
               <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
               <line x1="12" y1="19" x2="12" y2="23" />
               <line x1="8" y1="23" x2="16" y2="23" />
+            </svg></button><button id="ocr-btn"
+            class="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-amber-400 hover:bg-white/5 transition-all shrink-0"
+            title="OCR Modu - Resimden Metin Cikar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M7 8h2v2H7z" fill="currentColor" opacity="0.5"/>
+              <path d="M11 8h6M11 12h6M7 16h10"/>
             </svg></button><button id="voice-conv-btn"
             class="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-green-400 hover:bg-white/5 transition-all shrink-0"
             title="Sesli Konusma Modu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2402,6 +2500,27 @@
       </div>
     </div>
   </main>
+
+  <!-- Voice Overlay -->
+  <div id="voice-overlay">
+    <div id="voice-bars-container" class="voice-bars">
+      <div class="voice-bar" style="height:6px"></div>
+      <div class="voice-bar" style="height:10px"></div>
+      <div class="voice-bar" style="height:18px"></div>
+      <div class="voice-bar" style="height:10px"></div>
+      <div class="voice-bar" style="height:6px"></div>
+      <div style="width:12px"></div>
+      <div class="voice-bar ai-bar" style="height:8px"></div>
+      <div class="voice-bar ai-bar" style="height:14px"></div>
+      <div class="voice-bar ai-bar" style="height:22px"></div>
+      <div class="voice-bar ai-bar" style="height:14px"></div>
+      <div class="voice-bar ai-bar" style="height:8px"></div>
+    </div>
+    <div id="voice-overlay-label" class="text-sm font-semibold text-neutral-300">Sesli Asistan Aktif</div>
+    <div id="voice-interim" class=""></div>
+    <button onclick="toggleVoiceConv()" class="mt-1 px-5 py-2 rounded-full text-sm font-semibold bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25 transition-all">Kapat</button>
+  </div>
+
   <!-- Canvas Panel -->
   <aside id="canvas-panel" class="canvas-panel hidden">
     <div class="canvas-header">
@@ -3314,20 +3433,44 @@
     let recognition = null;
     let voiceConvMode = false;
 
+    function setVoiceOverlayState(state) {
+      const overlay = $('voice-overlay');
+      const label = $('voice-overlay-label');
+      if (!overlay) return;
+      overlay.classList.remove('voice-overlay-state-listening', 'voice-overlay-state-speaking', 'voice-overlay-state-thinking');
+      if (state === 'listening') {
+        overlay.classList.add('voice-overlay-state-listening');
+        if (label) label.textContent = 'Dinleniyor...';
+      } else if (state === 'speaking') {
+        overlay.classList.add('voice-overlay-state-speaking');
+        if (label) label.textContent = 'Yapay Zeka Konusuyor';
+      } else if (state === 'thinking') {
+        if (label) label.textContent = 'Yanit Hazirlaniyor...';
+      } else {
+        if (label) label.textContent = 'Sesli Asistan Aktif';
+      }
+    }
+
     function toggleVoiceConv() {
       voiceConvMode = !voiceConvMode;
       const btn = $('voice-conv-btn');
+      const overlay = $('voice-overlay');
       if (voiceConvMode) {
         btn.classList.add('vc-active');
         btn.classList.remove('text-neutral-500');
+        if (overlay) overlay.classList.add('visible');
+        setVoiceOverlayState('listening');
         setStatus('Sesli konusma modu aktif - Konusmaya baslayin');
         try { recognition && recognition.start(); } catch(e) {}
       } else {
         btn.classList.remove('vc-active');
         btn.classList.add('text-neutral-500');
+        if (overlay) overlay.classList.remove('visible');
         setStatus('Sesli konusma modu kapandi');
         if (currentUtterance) { speechSynthesis.cancel(); currentUtterance = null; }
         try { recognition && recognition.stop(); } catch(e) {}
+        const interim = $('voice-interim');
+        if (interim) interim.textContent = '';
       }
     }
 
@@ -3342,25 +3485,45 @@
       recognition = new SR();
       recognition.lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
       recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.interimResults = true;
 
       recognition.onstart = () => {
         $('mic-btn').classList.add('text-red-500');
-        if (voiceConvMode) $('voice-conv-btn').classList.add('vc-listening');
+        if (voiceConvMode) {
+          $('voice-conv-btn').classList.add('vc-listening');
+          setVoiceOverlayState('listening');
+        }
         setStatus('Dinleniyor...');
       }
 
       recognition.onresult = (e) => {
-        const t = e.results[0][0].transcript;
-        const inp = $('user-input');
-        inp.value += (inp.value ? ' ' : '') + t;
-        inp.dispatchEvent(new Event('input'));
-        if (voiceConvMode && t.trim()) {
-          setTimeout(() => handleSend(), 300);
+        let interim = '';
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        const interimEl = $('voice-interim');
+        if (interimEl && voiceConvMode) {
+          interimEl.textContent = interim || final || '';
+        }
+        if (final) {
+          const inp = $('user-input');
+          inp.value += (inp.value ? ' ' : '') + final;
+          inp.dispatchEvent(new Event('input'));
+          if (interimEl) interimEl.textContent = '';
+          if (voiceConvMode && final.trim()) {
+            setVoiceOverlayState('thinking');
+            setTimeout(() => handleSend(), 300);
+          }
         }
       }
 
       recognition.onerror = (e) => {
+        if (e.error === 'no-speech' && voiceConvMode) {
+          try { recognition.start(); } catch(err) {}
+          return;
+        }
         setStatus('Ses hatasi: ' + e.error);
         $('voice-conv-btn').classList.remove('vc-listening');
       }
@@ -4104,10 +4267,58 @@
         else if (file.type.startsWith('video/')) fd.preview = URL.createObjectURL(file);
         else fd.preview = null;
         selectedFiles.push(fd);
+        if (ocrMode && file.type.startsWith('image/')) {
+          performOCR(file);
+        }
       }
 
       renderFilePreviews();
       e.target.value = '';
+    }
+
+    // ---- OCR Mode
+    let ocrMode = false;
+
+    function toggleOcr() {
+      ocrMode = !ocrMode;
+      const btn = $('ocr-btn');
+      if (!btn) return;
+      if (ocrMode) {
+        btn.classList.add('ocr-active');
+        btn.title = 'OCR Modu Aktif - Resim yukleyince metin cikarilir';
+        setStatus('OCR modu aktif. Resim yukleyince metin otomatik cikarilir.');
+      } else {
+        btn.classList.remove('ocr-active');
+        btn.title = 'OCR Modu - Resimden Metin Cikar';
+        setStatus('OCR modu kapandi.');
+      }
+    }
+
+    async function performOCR(file) {
+      const btn = $('ocr-btn');
+      try {
+        btn && btn.classList.add('ocr-processing');
+        setStatus('OCR: Resimden metin cikartiliyor...');
+        const result = await Tesseract.recognize(file, 'tur+eng', {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              const pct = Math.round((m.progress || 0) * 100);
+              setStatus(`OCR isleniyor... %${pct}`);
+            }
+          }
+        });
+        const text = result.data.text.trim();
+        if (!text) { setStatus('OCR: Metin bulunamadi.'); return; }
+        const inp = $('user-input');
+        const prefix = inp.value ? inp.value + '\n\n' : '';
+        inp.value = prefix + '[Resimden cikarilan metin]:\n' + text;
+        inp.dispatchEvent(new Event('input'));
+        setStatus(`OCR tamamlandi. ${text.length} karakter cikartildi.`);
+      } catch (err) {
+        setStatus('OCR hatasi: ' + (err.message || err));
+      } finally {
+        btn && btn.classList.remove('ocr-processing');
+      }
     }
 
     let liveScreenStream = null;
@@ -5430,11 +5641,11 @@
           }
 
           await callPuterStream(modA, history, tok => {
-            // First real content token received - hide thinking dots
             const dots = document.getElementById('thinking-dots');
             if (dots) dots.style.display = 'none';
             assistantMsg.content += tok;
             throttledRenderMessages(chat.messages);
+            if (voiceConvMode) queueVoiceStreamChunk(tok);
           });
         }
 
@@ -5446,7 +5657,21 @@
         renderMessages(chat.messages);
 
         if (voiceConvMode && assistantMsg.content) {
-          voiceConvSpeak(assistantMsg.content);
+          if (stylePrefs.streamMode && voiceStreamBuffer.trim()) {
+            flushVoiceStreamBuffer();
+          } else if (!stylePrefs.streamMode) {
+            voiceConvSpeak(assistantMsg.content);
+          }
+          const waitForSpeech = () => {
+            if (speechSynthesis.speaking) {
+              setTimeout(waitForSpeech, 300);
+            } else {
+              voiceStreamBuffer = '';
+              setVoiceOverlayState('listening');
+              setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 600);
+            }
+          };
+          if (stylePrefs.streamMode) setTimeout(waitForSpeech, 400);
         }
 
         // Finalize canvas if code was detected
@@ -5825,24 +6050,63 @@
       if (currentUtterance) { speechSynthesis.cancel(); currentUtterance = null; }
       const text = cleanTextForSpeech(rawText);
       if (!text) {
-        if (voiceConvMode) setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
+        if (voiceConvMode) {
+          setVoiceOverlayState('listening');
+          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 500);
+        }
         return;
       }
       const lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
       const resume = () => {
         currentUtterance = null;
         setStatus('Yanit okundu. Konusmaya devam edin...');
-        if (voiceConvMode) setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 600);
+        if (voiceConvMode) {
+          setVoiceOverlayState('listening');
+          const interimEl = $('voice-interim');
+          if (interimEl) interimEl.textContent = '';
+          setTimeout(() => { try { recognition && recognition.start(); } catch(e) {} }, 600);
+        }
       };
       const doSpeak = () => {
         currentUtterance = makeUtterance(text, lang, resume, resume);
         speechSynthesis.speak(currentUtterance);
         setStatus('Yapay zeka yanit veriyor...');
+        if (voiceConvMode) setVoiceOverlayState('speaking');
       };
       if (speechSynthesis.getVoices().length) {
         doSpeak();
       } else {
         speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
+      }
+    }
+
+    let voiceStreamBuffer = '';
+    let voiceStreamTimer = null;
+
+    function flushVoiceStreamBuffer() {
+      if (!voiceStreamBuffer.trim() || !voiceConvMode) { voiceStreamBuffer = ''; return; }
+      const text = cleanTextForSpeech(voiceStreamBuffer);
+      voiceStreamBuffer = '';
+      if (!text) return;
+      const lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
+      const utter = makeUtterance(text, lang, () => {}, () => {});
+      speechSynthesis.speak(utter);
+    }
+
+    function queueVoiceStreamChunk(chunk) {
+      if (!voiceConvMode) return;
+      voiceStreamBuffer += chunk;
+      const sentenceEnd = /[.!?。]\s/.exec(voiceStreamBuffer);
+      if (sentenceEnd) {
+        const sentence = voiceStreamBuffer.substring(0, sentenceEnd.index + 1);
+        voiceStreamBuffer = voiceStreamBuffer.substring(sentenceEnd.index + 2);
+        const text = cleanTextForSpeech(sentence);
+        if (text) {
+          const lang = stylePrefs.turkish ? 'tr-TR' : 'en-US';
+          const utter = makeUtterance(text, lang, () => {}, () => {});
+          speechSynthesis.speak(utter);
+          setVoiceOverlayState('speaking');
+        }
       }
     }
 
@@ -7356,6 +7620,7 @@
     $('stop-btn')?.addEventListener('click', stopGeneration);
     $('upload-btn')?.addEventListener('click', () => $('file-input').click());
     $('screen-capture-btn')?.addEventListener('click', handleScreenCapture);
+    $('ocr-btn')?.addEventListener('click', toggleOcr);
     $('file-input')?.addEventListener('change', handleFileSelect);
     $('export-chat-btn')?.addEventListener('click', openExportModal);
 
