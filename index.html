@@ -436,6 +436,54 @@
         font-size: 9px;
         padding: 4px 8px;
       }
+
+      /* Slide Preview Modal */
+      #slide-preview-modal > div:first-child {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      #slide-preview-title {
+        font-size: 12px;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #slide-preview-count {
+        display: none;
+      }
+      #slide-preview-dl-btn {
+        padding: 7px 10px;
+        font-size: 11px;
+      }
+      #slide-preview-grid {
+        padding: 10px;
+        gap: 10px;
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Canvas Diff View */
+      #canvas-diff-view {
+        padding: 10px !important;
+        font-size: 11px !important;
+      }
+
+      /* Canvas tabs - 4 tabs on mobile: smaller padding */
+      .canvas-tabs .canvas-tab {
+        padding: 5px 9px;
+        font-size: 11px;
+        gap: 3px;
+      }
+      .canvas-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Settings modal prompt library */
+      #slide-preview-modal .flex.items-center.justify-between {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
     }
 
     /* Small phones: <= 640px */
@@ -473,6 +521,25 @@
 
       .input-box {
         padding: 4px !important;
+      }
+
+      /* Slide preview - full single column */
+      #slide-preview-grid {
+        padding: 8px !important;
+        gap: 8px !important;
+      }
+
+      /* Prompt library save button - wrap on small phones */
+      .prompt-lib-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 4px;
+      }
+
+      /* Diff view smaller font */
+      #canvas-diff-view {
+        font-size: 10px !important;
+        padding: 8px !important;
       }
     }
 
@@ -534,6 +601,31 @@
 
       .code-body pre {
         font-size: 9px;
+      }
+
+      /* Slide preview ultra-compact header */
+      #slide-preview-modal > div:first-child {
+        padding: 8px 10px;
+      }
+      #slide-preview-title {
+        font-size: 11px;
+        max-width: 90px;
+      }
+      #slide-preview-dl-btn {
+        padding: 6px 8px;
+        font-size: 10px;
+      }
+
+      /* Canvas tabs: icon-only on very small screens */
+      .canvas-tabs .canvas-tab {
+        padding: 6px 7px !important;
+        font-size: 0 !important;
+        gap: 0 !important;
+      }
+      .canvas-tabs .canvas-tab svg {
+        width: 13px !important;
+        height: 13px !important;
+        flex-shrink: 0;
       }
     }
 
@@ -2710,7 +2802,7 @@
         <div id="terminal-container" class="w-full h-full"></div>
       </div>
       <!-- Diff Tab -->
-      <div id="canvas-diff-view" class="hidden w-full overflow-auto" style="background:#0d1117;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;">
+      <div id="canvas-diff-view" class="hidden w-full" style="background:#0d1117;padding:16px;font-family:'JetBrains Mono',monospace;font-size:clamp(10px,1.5vw,12px);line-height:1.7;overflow:auto;-webkit-overflow-scrolling:touch;">
         <div id="canvas-diff-content" style="color:#8b949e;text-align:center;padding:40px 0;">Diff gormek icin onceki bir versiyon olmalidir. Geri al/ileri al dusmeleri ile versiyonlar arasinda gecis yapin.</div>
       </div>
     </div>
@@ -3060,18 +3152,18 @@
   </div>
   <!-- Slide Preview Modal -->
   <div id="slide-preview-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[55] flex flex-col">
-    <div class="flex items-center justify-between px-5 py-3 border-b border-[#222] shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="w-7 h-7 rounded-lg bg-teal-600/20 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-        <h3 class="text-sm font-bold text-white" id="slide-preview-title">Sunum Onizlemesi</h3>
-        <span id="slide-preview-count" class="text-[10px] text-neutral-500 bg-[#1a1a1a] px-2 py-0.5 rounded-full"></span>
+    <div class="flex items-center justify-between px-5 py-3 border-b border-[#222] shrink-0 gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <div class="w-7 h-7 shrink-0 rounded-lg bg-teal-600/20 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h3 class="text-sm font-bold text-white truncate" id="slide-preview-title">Sunum Onizlemesi</h3>
+        <span id="slide-preview-count" class="text-[10px] text-neutral-500 bg-[#1a1a1a] px-2 py-0.5 rounded-full shrink-0 hidden sm:inline"></span>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="downloadPptxFromPreview()" id="slide-preview-dl-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all" style="background:#0d9488"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PPTX Indir</button>
-        <button onclick="closeSlidePreview()" class="text-neutral-500 hover:text-white text-lg leading-none">&times;</button>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="downloadPptxFromPreview()" id="slide-preview-dl-btn" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all whitespace-nowrap" style="background:#0d9488;min-height:36px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="hidden xs:inline">PPTX </span>Indir</button>
+        <button onclick="closeSlidePreview()" class="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-500 hover:text-white hover:bg-white/10 text-lg leading-none transition-all">&times;</button>
       </div>
     </div>
-    <div id="slide-preview-grid" class="flex-1 overflow-y-auto p-5 grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));align-content:start;"></div>
+    <div id="slide-preview-grid" class="flex-1 overflow-y-auto p-5 grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));align-content:start;"></div>
   </div>
   <!-- Report Maker Modal -->
   <div id="report-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
@@ -3258,9 +3350,9 @@
           </select>
         </div>
         <div>
-          <div class="flex items-center justify-between ml-1 mb-1.5">
-            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Ozel Sistem Talimati</label>
-            <button onclick="saveSystemPromptToLibrary()" class="text-[9px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-all">+ Kutuphanye Kaydet</button>
+          <div class="flex items-center justify-between gap-2 ml-1 mb-1.5 flex-wrap">
+            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider shrink-0">Ozel Sistem Talimati</label>
+            <button onclick="saveSystemPromptToLibrary()" class="text-[9px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider px-2 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-all whitespace-nowrap" style="min-height:28px">+ Kaydet</button>
           </div>
           <textarea id="pref-custom" rows="3"
             class="w-full bg-[#0a0a0a] border border-[#222] rounded-xl p-3 text-sm outline-none focus:border-blue-500 transition-colors resize-none text-neutral-300"
@@ -3268,7 +3360,7 @@
         </div>
         <!-- System Prompt Library -->
         <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
-          <div class="flex items-center justify-between mb-2">
+          <div class="prompt-lib-header flex items-center justify-between mb-2">
             <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Kaydedilmis Promptlar</label>
             <span id="prompt-library-count" class="text-[9px] text-neutral-600">0 prompt</span>
           </div>
@@ -8324,15 +8416,15 @@
         diff.forEach(d => {
           const esc = d.line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
           if (d.type === 'same') {
-            fileHtml += `<div style="color:#8b949e;padding:0 8px"><span style="display:inline-block;width:60px;color:#444;user-select:none">${lineOld++} ${lineNew++}</span>${esc}</div>`;
+            fileHtml += `<div style="color:#8b949e;padding:0 4px;white-space:pre;display:flex;gap:4px"><span style="min-width:44px;color:#444;user-select:none;flex-shrink:0;text-align:right;padding-right:4px">${lineOld++}</span><span style="min-width:44px;color:#444;user-select:none;flex-shrink:0;text-align:right;padding-right:8px">${lineNew++}</span><span>${esc}</span></div>`;
           } else if (d.type === 'add') {
-            fileHtml += `<div style="background:#0d2818;color:#3fb950;padding:0 8px"><span style="display:inline-block;width:60px;color:#1e4d32;user-select:none">   ${lineNew++}</span><span style="color:#3fb950">+</span> ${esc}</div>`;
+            fileHtml += `<div style="background:#0d2818;color:#3fb950;padding:0 4px;white-space:pre;display:flex;gap:4px"><span style="min-width:44px;color:#1e4d32;user-select:none;flex-shrink:0;text-align:right;padding-right:4px"> </span><span style="min-width:44px;color:#1e4d32;user-select:none;flex-shrink:0;text-align:right;padding-right:8px">${lineNew++}</span><span style="color:#3fb950">+ ${esc}</span></div>`;
           } else {
-            fileHtml += `<div style="background:#2d1117;color:#f85149;padding:0 8px"><span style="display:inline-block;width:60px;color:#6b2226;user-select:none">${lineOld++}   </span><span style="color:#f85149">-</span> ${esc}</div>`;
+            fileHtml += `<div style="background:#2d1117;color:#f85149;padding:0 4px;white-space:pre;display:flex;gap:4px"><span style="min-width:44px;color:#6b2226;user-select:none;flex-shrink:0;text-align:right;padding-right:4px">${lineOld++}</span><span style="min-width:44px;color:#6b2226;user-select:none;flex-shrink:0;text-align:right;padding-right:8px"> </span><span style="color:#f85149">- ${esc}</span></div>`;
           }
         });
-        html += `<div style="margin-bottom:20px">
-          <div style="background:#161b22;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:8px 12px;font-size:11px;color:#8b949e;display:flex;align-items:center;gap:8px">
+        html += `<div style="margin-bottom:16px;min-width:max-content">
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:7px 12px;font-size:11px;color:#8b949e;display:flex;align-items:center;gap:8px">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             <span style="color:#e6edf3;font-weight:600">${fname}</span>
           </div>
