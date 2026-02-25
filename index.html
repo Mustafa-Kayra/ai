@@ -2600,30 +2600,25 @@
     </div>
     <!-- Auth + Provider button -->
     <div class="mt-auto border-t border-[#1a1a1a]">
-      <!-- Google Auth: signed in state -->
-      <div id="google-user-panel" class="hidden px-4 pt-3 pb-2">
+      <!-- GitHub Auth: signed in state -->
+      <div id="github-user-panel" class="hidden px-4 pt-3 pb-2">
         <div class="flex items-center gap-3 px-3 py-2.5 bg-[#1a1a1a] rounded-xl">
-          <img id="google-avatar" src="" alt="" class="w-8 h-8 rounded-full object-cover shrink-0 bg-[#333]" onerror="this.style.display='none';document.getElementById('google-avatar-fallback').style.display='flex'"/>
-          <div id="google-avatar-fallback" class="hidden w-8 h-8 rounded-full bg-blue-600 items-center justify-center shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-white"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          <div class="w-8 h-8 rounded-full bg-[#24292e] flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
           </div>
           <div class="flex-1 min-w-0">
-            <div id="google-user-name" class="text-xs font-semibold text-neutral-200 truncate"></div>
-            <div id="google-user-email" class="text-[10px] text-neutral-500 truncate"></div>
+            <div id="github-user-name" class="text-xs font-semibold text-neutral-200 truncate"></div>
+            <div id="github-user-email" class="text-[10px] text-neutral-500 truncate"></div>
           </div>
-          <button onclick="signOutGoogle()" title="Cikis Yap" class="shrink-0 p-1.5 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+          <button onclick="signOutGithub()" title="Cikis Yap" class="shrink-0 p-1.5 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
       </div>
-      <!-- Google Auth: signed out state -->
-      <div id="google-signin-panel" class="px-4 pt-3 pb-2 flex flex-col gap-2">
-        <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-semibold transition-all shadow-sm">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Google ile Giris Yap
-        </button>
-        <button onclick="signInWithGitHub()" class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#24292e] hover:bg-[#2f363d] text-white text-xs font-semibold transition-all shadow-sm">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      <!-- GitHub Auth: signed out state -->
+      <div id="github-signin-panel" class="px-4 pt-3 pb-2">
+        <button onclick="signInWithGithub()" class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#24292e] hover:bg-[#2f363d] text-white text-xs font-semibold transition-all shadow-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
           GitHub ile Giris Yap
         </button>
       </div>
@@ -2713,25 +2708,19 @@
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg></button><span class="text-[10px] font-mono text-neutral-600 tracking-wider hidden md:inline">v18</span>
-        <button id="header-google-btn" onclick="signInWithGoogle()" title="Google ile Giris Yap" class="hidden w-8 h-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all shrink-0" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <button id="header-github-btn" onclick="signInWithGithub()" title="GitHub ile Giris Yap" class="hidden w-8 h-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all shrink-0" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
         </button>
-        <button id="header-github-btn" onclick="signInWithGitHub()" title="GitHub ile Giris Yap" class="hidden w-8 h-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all shrink-0" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        </button>
-        <div id="header-avatar-btn" class="hidden w-8 h-8 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shrink-0" onclick="toggleGoogleMenu()" style="display:none">
-          <img id="header-avatar-img" src="" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'"/>
-          <div id="header-avatar-fallback" class="w-full h-full bg-blue-600 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-white"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-          </div>
+        <div id="header-avatar-btn" class="hidden w-8 h-8 rounded-full bg-[#24292e] cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shrink-0 items-center justify-center" onclick="toggleGithubMenu()" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
         </div>
-        <!-- Header Google dropdown menu -->
-        <div id="header-google-menu" class="hidden absolute right-4 top-14 w-56 bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl p-2 z-50">
+        <!-- Header GitHub dropdown menu -->
+        <div id="header-github-menu" class="hidden absolute right-4 top-14 w-56 bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl p-2 z-50">
           <div class="px-3 py-2 border-b border-[#2a2a2a] mb-1">
             <div id="hmenu-name" class="text-xs font-semibold text-neutral-200 truncate"></div>
             <div id="hmenu-email" class="text-[10px] text-neutral-500 truncate mt-0.5"></div>
           </div>
-          <button onclick="signOutGoogle()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
+          <button onclick="signOutGithub()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Cikis Yap
           </button>
@@ -3679,125 +3668,172 @@
       </button>
     </div>
   </div>
+  <!-- Reset Modal -->
+  <div id="reset-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+    <div class="bg-[#111] border border-[#222] p-6 rounded-2xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200">
+      <h3 class="text-base font-bold text-white mb-2">Verileri Sifirla</h3>
+      <p class="text-xs text-neutral-400 mb-5">Ne kadarini silmek istiyorsun?</p>
+      <div class="space-y-2">
+        <button onclick="resetLocalOnly()" class="w-full flex flex-col items-start px-4 py-3 rounded-xl bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] hover:border-yellow-500/40 transition-all text-left group">
+          <span class="text-xs font-semibold text-neutral-200 group-hover:text-yellow-400 transition-colors">Sadece yerel depoyu temizle</span>
+          <span class="text-[10px] text-neutral-500 mt-0.5">localStorage silinir. Hesabindaki sohbetler korunur.</span>
+        </button>
+        <button onclick="resetEverything()" class="w-full flex flex-col items-start px-4 py-3 rounded-xl bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] hover:border-red-500/40 transition-all text-left group">
+          <span class="text-xs font-semibold text-neutral-200 group-hover:text-red-400 transition-colors">Her seyi sil</span>
+          <span class="text-[10px] text-neutral-500 mt-0.5">localStorage + Supabase'deki tum sohbetler kalici olarak silinir.</span>
+        </button>
+      </div>
+      <button onclick="closeResetModal()" class="w-full mt-3 py-2 rounded-xl text-xs text-neutral-500 hover:text-neutral-300 hover:bg-white/5 transition-all">Vazgec</button>
+    </div>
+  </div>
   <script>
     // ---- Supabase Config
     const SUPABASE_URL = 'https://vvdkslzqhqhatcesxwqu.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2ZGtzbHpxaHFoYXRjZXN4d3F1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NDcxMzMsImV4cCI6MjA4NzUyMzEzM30.I4-RwiYNhwUtX6EPyp8U-zQ0Z6Uvk5novSD1I5X-Ge4';
     let supabaseClient = null;
-    let googleUser = null;
+    let githubUser = null;
 
     function initSupabase() {
       if (typeof supabase !== 'undefined' && supabase.createClient) {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         supabaseClient.auth.onAuthStateChange((event, session) => {
           (() => {
-            googleUser = session?.user || null;
-            updateGoogleAuthUI(googleUser);
+            const prevUser = githubUser;
+            githubUser = session?.user || null;
+            updateGithubAuthUI(githubUser);
+            if (githubUser && !prevUser) {
+              loadChatsFromSupabase();
+            } else if (!githubUser && prevUser) {
+              clearChatsFromUI();
+            }
           })();
         });
         supabaseClient.auth.getSession().then(({ data }) => {
-          googleUser = data?.session?.user || null;
-          updateGoogleAuthUI(googleUser);
+          githubUser = data?.session?.user || null;
+          updateGithubAuthUI(githubUser);
+          if (githubUser) loadChatsFromSupabase();
         });
       }
     }
 
-    async function signInWithGoogle() {
-      if (!supabaseClient) { alert('Supabase baslatılamadı.'); return; }
-      const redirectUrl = window.location.origin;
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: { access_type: 'offline', prompt: 'consent' }
-        }
-      });
-      if (error) {
-        console.error('OAuth error:', error);
-        alert('Giris hatasi: ' + error.message);
+    async function loadChatsFromSupabase() {
+      if (!supabaseClient || !githubUser) return;
+      const { data, error } = await supabaseClient
+        .from('chats')
+        .select('*')
+        .eq('user_id', githubUser.id)
+        .order('updated_at', { ascending: false });
+      if (error) { console.error('Supabase load error:', error); return; }
+      if (data && data.length > 0) {
+        chats = data.map(r => ({
+          id: r.id,
+          title: r.title,
+          messages: r.messages || [],
+          pinned: r.pinned || false,
+          folder: r.folder || undefined,
+          canvas: r.canvas || null
+        }));
+        localStorage.setItem(KEY_CHATS, JSON.stringify(chats));
+        renderChatList();
+        if (chats.length > 0) loadChat(chats[0].id);
       }
     }
 
-    async function signInWithGitHub() {
+    async function syncChatsToSupabase() {
+      if (!supabaseClient || !githubUser) return;
+      const rows = chats.map(c => ({
+        id: c.id,
+        user_id: githubUser.id,
+        title: c.title || '',
+        messages: (c.messages || []).filter(m => !(typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__'))),
+        pinned: c.pinned || false,
+        folder: c.folder || null,
+        canvas: c.canvas || null,
+        updated_at: new Date().toISOString()
+      }));
+      if (rows.length === 0) return;
+      const { error } = await supabaseClient.from('chats').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('Supabase sync error:', error);
+    }
+
+    async function deleteChatFromSupabase(id) {
+      if (!supabaseClient || !githubUser) return;
+      await supabaseClient.from('chats').delete().eq('id', id).eq('user_id', githubUser.id);
+    }
+
+    async function deleteAllChatsFromSupabase() {
+      if (!supabaseClient || !githubUser) return;
+      await supabaseClient.from('chats').delete().eq('user_id', githubUser.id);
+    }
+
+    function clearChatsFromUI() {
+      chats = [];
+      currentChatId = null;
+      localStorage.removeItem(KEY_CHATS);
+      if (typeof renderChatList === 'function') renderChatList();
+      if (typeof renderMessages === 'function') renderMessages([]);
+      if (typeof showWelcome === 'function') showWelcome();
+    }
+
+    async function signInWithGithub() {
       if (!supabaseClient) { alert('Supabase baslatılamadı.'); return; }
-      const redirectUrl = window.location.origin;
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'github',
-        options: { redirectTo: redirectUrl }
+        options: { redirectTo: window.location.origin }
       });
-      if (error) {
-        console.error('GitHub OAuth error:', error);
-        alert('GitHub giris hatasi: ' + error.message);
-      }
+      if (error) { console.error('GitHub OAuth error:', error); alert('Giris hatasi: ' + error.message); }
     }
 
-    async function signOutGoogle() {
+    async function signOutGithub() {
       if (!supabaseClient) return;
-      closeGoogleMenu();
+      closeGithubMenu();
       await supabaseClient.auth.signOut();
-      googleUser = null;
-      updateGoogleAuthUI(null);
+      githubUser = null;
+      updateGithubAuthUI(null);
     }
 
-    function updateGoogleAuthUI(user) {
-      const userPanel = document.getElementById('google-user-panel');
-      const signinPanel = document.getElementById('google-signin-panel');
-      const headerGoogleBtn = document.getElementById('header-google-btn');
-      const headerGitHubBtn = document.getElementById('header-github-btn');
+    function updateGithubAuthUI(user) {
+      const userPanel = document.getElementById('github-user-panel');
+      const signinPanel = document.getElementById('github-signin-panel');
+      const headerGithubBtn = document.getElementById('header-github-btn');
       const headerAvatarBtn = document.getElementById('header-avatar-btn');
 
       if (user) {
-        const name = user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.user_name || user.email || '';
+        const name = user.user_metadata?.full_name || user.user_metadata?.user_name || user.user_metadata?.name || user.email || '';
         const email = user.email || '';
-        const avatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
+        const nameEl = document.getElementById('github-user-name');
+        const emailEl = document.getElementById('github-user-email');
+        const hmenuName = document.getElementById('hmenu-name');
+        const hmenuEmail = document.getElementById('hmenu-email');
+        if (nameEl) nameEl.textContent = name;
+        if (emailEl) emailEl.textContent = email;
+        if (hmenuName) hmenuName.textContent = name;
+        if (hmenuEmail) hmenuEmail.textContent = email;
 
-        document.getElementById('google-user-name').textContent = name;
-        document.getElementById('google-user-email').textContent = email;
-        document.getElementById('hmenu-name').textContent = name;
-        document.getElementById('hmenu-email').textContent = email;
-
-        const avatarImg = document.getElementById('google-avatar');
-        const headerAvatarImg = document.getElementById('header-avatar-img');
-        if (avatar) {
-          avatarImg.src = avatar;
-          avatarImg.style.display = '';
-          document.getElementById('google-avatar-fallback').style.display = 'none';
-          headerAvatarImg.src = avatar;
-          headerAvatarImg.style.display = '';
-          document.getElementById('header-avatar-fallback').style.display = 'none';
-        } else {
-          avatarImg.style.display = 'none';
-          document.getElementById('google-avatar-fallback').style.display = 'flex';
-          headerAvatarImg.style.display = 'none';
-          document.getElementById('header-avatar-fallback').style.display = 'flex';
-        }
-
-        if (userPanel) { userPanel.classList.remove('hidden'); }
-        if (signinPanel) { signinPanel.classList.add('hidden'); }
-        if (headerGoogleBtn) { headerGoogleBtn.style.display = 'none'; }
-        if (headerGitHubBtn) { headerGitHubBtn.style.display = 'none'; }
-        if (headerAvatarBtn) { headerAvatarBtn.style.display = 'flex'; }
+        if (userPanel) userPanel.classList.remove('hidden');
+        if (signinPanel) signinPanel.classList.add('hidden');
+        if (headerGithubBtn) headerGithubBtn.style.display = 'none';
+        if (headerAvatarBtn) headerAvatarBtn.style.display = 'flex';
       } else {
-        if (userPanel) { userPanel.classList.add('hidden'); }
-        if (signinPanel) { signinPanel.classList.remove('hidden'); }
-        if (headerGoogleBtn) { headerGoogleBtn.style.display = 'flex'; }
-        if (headerGitHubBtn) { headerGitHubBtn.style.display = 'flex'; }
-        if (headerAvatarBtn) { headerAvatarBtn.style.display = 'none'; }
+        if (userPanel) userPanel.classList.add('hidden');
+        if (signinPanel) signinPanel.classList.remove('hidden');
+        if (headerGithubBtn) headerGithubBtn.style.display = 'flex';
+        if (headerAvatarBtn) headerAvatarBtn.style.display = 'none';
       }
     }
 
-    function toggleGoogleMenu() {
-      const menu = document.getElementById('header-google-menu');
+    function toggleGithubMenu() {
+      const menu = document.getElementById('header-github-menu');
       if (menu) menu.classList.toggle('hidden');
     }
 
-    function closeGoogleMenu() {
-      const menu = document.getElementById('header-google-menu');
+    function closeGithubMenu() {
+      const menu = document.getElementById('header-github-menu');
       if (menu) menu.classList.add('hidden');
     }
 
     document.addEventListener('click', (e) => {
-      const menu = document.getElementById('header-google-menu');
+      const menu = document.getElementById('header-github-menu');
       const avatarBtn = document.getElementById('header-avatar-btn');
       if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !avatarBtn?.contains(e.target)) {
         menu.classList.add('hidden');
@@ -4067,6 +4103,7 @@
       localStorage.setItem(KEY_PROVIDERS, JSON.stringify(providerSettings));
       localStorage.setItem(KEY_PREFS, JSON.stringify(prefs));
       localStorage.setItem(KEY_STYLE, JSON.stringify(stylePrefs));
+      if (githubUser) syncChatsToSupabase();
     }
 
     const debouncedSaveAll = debounce(() => _realSaveAll(), 500);
@@ -4668,9 +4705,9 @@
     function deleteChat(id) {
       chats = chats.filter(c => c.id !== id);
       if (currentChatId === id) currentChatId = null;
+      deleteChatFromSupabase(id);
       saveAll(); renderChatList();
       if (chats.length > 0) loadChat(chats[chats.length - 1].id);
-
       else {
         renderMessages([]); showWelcome();
       }
@@ -6649,8 +6686,43 @@
       setStatus('Ayarlar kaydedildi.');
     }
 
-    function clearAllData() {
-      if (!confirm('Tum veriler silinecek, emin misiniz?')) return; localStorage.clear(); location.reload();
+    function clearAllData() { openResetModal(); }
+
+    function openResetModal() {
+      const m = document.getElementById('reset-modal');
+      if (!m) return;
+      m.classList.remove('hidden');
+      requestAnimationFrame(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); });
+    }
+
+    function closeResetModal() {
+      const m = document.getElementById('reset-modal');
+      if (!m) return;
+      m.classList.add('opacity-0');
+      m.querySelector('div').classList.add('scale-95');
+      setTimeout(() => m.classList.add('hidden'), 200);
+    }
+
+    function resetLocalOnly() {
+      closeResetModal();
+      const keysToKeep = [KEY_PROVIDERS, KEY_PREFS, KEY_STYLE];
+      const saved = {};
+      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      localStorage.clear();
+      keysToKeep.forEach(k => { if (saved[k]) localStorage.setItem(k, saved[k]); });
+      chats = [];
+      currentChatId = null;
+      renderChatList();
+      renderMessages([]);
+      showWelcome();
+    }
+
+    async function resetEverything() {
+      if (!confirm('Tum sohbetler kalici olarak silinecek. Emin misin?')) return;
+      closeResetModal();
+      await deleteAllChatsFromSupabase();
+      localStorage.clear();
+      location.reload();
     }
 
     let savedSystemPrompts = [];
