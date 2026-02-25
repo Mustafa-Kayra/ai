@@ -3730,6 +3730,7 @@
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
               if (githubUser) loadChatsFromSupabase();
             } else if (event === 'SIGNED_OUT') {
+              _loadingChats = false;
               clearChatsFromUI();
               lastSyncedAt = null;
               updateSyncBadge();
@@ -3744,26 +3745,35 @@
       }
     }
 
+    let _loadingChats = false;
     async function loadChatsFromSupabase() {
       if (!supabaseClient || !githubUser) return;
-      const { data, error } = await supabaseClient
-        .from('chats')
-        .select('*')
-        .eq('user_id', githubUser.id)
-        .order('updated_at', { ascending: false });
-      if (error) { console.error('Supabase load error:', error); return; }
-      if (data && data.length > 0) {
-        chats = data.map(r => ({
-          id: r.id,
-          title: r.title,
-          messages: r.messages || [],
-          pinned: r.pinned || false,
-          folder: r.folder || undefined,
-          canvas: r.canvas || null
-        }));
-        localStorage.setItem(KEY_CHATS, JSON.stringify(chats));
-        renderChatList();
-        if (chats.length > 0) loadChat(chats[0].id);
+      if (_loadingChats) return;
+      _loadingChats = true;
+      const userId = githubUser.id;
+      try {
+        const { data, error } = await supabaseClient
+          .from('chats')
+          .select('*')
+          .eq('user_id', userId)
+          .order('updated_at', { ascending: false });
+        if (error) { console.error('Supabase load error:', error); return; }
+        if (!githubUser || githubUser.id !== userId) return;
+        if (data && data.length > 0) {
+          chats = data.map(r => ({
+            id: r.id,
+            title: r.title,
+            messages: r.messages || [],
+            pinned: r.pinned || false,
+            folder: r.folder || undefined,
+            canvas: r.canvas || null
+          }));
+          localStorage.setItem(KEY_CHATS, JSON.stringify(chats));
+          renderChatList();
+          if (chats.length > 0) loadChat(chats[0].id);
+        }
+      } finally {
+        _loadingChats = false;
       }
     }
 
@@ -3826,6 +3836,7 @@
     async function signOutGithub() {
       if (!supabaseClient) return;
       closeGithubMenu();
+      await syncChatsToSupabase();
       await supabaseClient.auth.signOut();
       githubUser = null;
       updateGithubAuthUI(null);
