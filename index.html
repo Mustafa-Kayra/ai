@@ -3925,7 +3925,6 @@
     function clearChatsFromUI() {
       chats = [];
       currentChatId = null;
-      localStorage.removeItem(KEY_CHATS);
       if (typeof renderChatList === 'function') renderChatList();
       if (typeof renderMessages === 'function') renderMessages([]);
       if (typeof showWelcome === 'function') showWelcome();
@@ -3973,28 +3972,26 @@
       if (password.length < 6) { setAuthFeedback('Sifre en az 6 karakter olmalidir.', 'error'); return; }
 
       setAuthFeedback('Kayit olusturuluyor...', 'info');
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: getAuthRedirectUrl(),
-          data: {
-            full_name: name || undefined,
-            name: name || undefined
-          }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/auth-signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({ email, password, name: name || undefined })
+        });
+        const result = await res.json();
+        if (!res.ok || result.error) {
+          setAuthFeedback('Kayit hatasi: ' + (result.error || 'Bilinmeyen hata'), 'error');
+          return;
         }
-      });
-
-      if (error) {
-        console.error('Email sign-up error:', error);
-        setAuthFeedback('Kayit hatasi: ' + error.message, 'error');
-        return;
-      }
-
-      if (data?.session) {
-        setAuthFeedback('Kayit tamamlandi ve giris yapildi.', 'success');
-      } else {
-        setAuthFeedback('Kayit tamamlandi. Lutfen e-postandaki dogrulama linkine tikla.', 'success');
+        setAuthFeedback('Kayit basarili, giris yapiliyor...', 'info');
+        const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (signInError) {
+          setAuthFeedback('Kayit tamamlandi. E-posta ile giris yap.', 'success');
+        } else {
+          setAuthFeedback('Kayit ve giris basarili.', 'success');
+        }
+      } catch (err) {
+        setAuthFeedback('Kayit hatasi: ' + err.message, 'error');
       }
     }
 
