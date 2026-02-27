@@ -646,6 +646,24 @@
         flex-wrap: wrap;
         gap: 6px;
       }
+
+      /* Canvas header: wrap tabs + actions into rows */
+      .canvas-header {
+        height: auto;
+        min-height: 48px;
+        flex-wrap: wrap;
+        padding: 6px 12px;
+        row-gap: 4px;
+      }
+
+      .canvas-header .canvas-tabs {
+        order: -1;
+        flex: 1 1 100%;
+      }
+
+      .canvas-header > .flex.items-center.gap-2 {
+        margin-left: auto;
+      }
     }
 
     /* Small phones: <= 640px */
@@ -702,6 +720,19 @@
       #canvas-diff-view {
         font-size: 10px !important;
         padding: 8px !important;
+      }
+
+      /* Canvas header action buttons: icon-only, hide text labels */
+      #deploy-canvas-btn,
+      .canvas-header button[title="Projeyi Indir"] {
+        font-size: 0 !important;
+        padding: 4px 5px !important;
+        gap: 0 !important;
+      }
+
+      /* Model selector: compact pill */
+      #mobile-selector-wrap {
+        padding: 3px 8px !important;
       }
     }
 
@@ -788,6 +819,16 @@
         width: 13px !important;
         height: 13px !important;
         flex-shrink: 0;
+      }
+
+      /* Ultra-compact canvas header */
+      .canvas-header {
+        padding: 4px 8px !important;
+        row-gap: 3px !important;
+      }
+
+      .canvas-header > .flex.items-center.gap-2 {
+        gap: 2px !important;
       }
     }
 
