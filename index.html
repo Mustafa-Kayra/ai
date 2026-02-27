@@ -3719,8 +3719,8 @@
   </div>
   <script>
     // ---- Supabase Config
-    const SUPABASE_URL = 'https://vvdkslzqhqhatcesxwqu.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2ZGtzbHpxaHFoYXRjZXN4d3F1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NDcxMzMsImV4cCI6MjA4NzUyMzEzM30.I4-RwiYNhwUtX6EPyp8U-zQ0Z6Uvk5novSD1I5X-Ge4';
+    const SUPABASE_URL = 'https://wpxqmrfowvzsxuwjyvmx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndweHFtcmZvd3Z6c3h1d2p5dm14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDM4NDksImV4cCI6MjA4NzQ3OTg0OX0.9X9rugmiGHIb-w8CdGPzzpI_tEO93NDSj_mNAQ6xarI';
     let supabaseClient = null;
     let githubUser = null;
     let lastSyncedAt = null;
@@ -3873,16 +3873,22 @@
           localStorage.setItem(KEY_CHATS, JSON.stringify(chats));
           renderChatList();
           loadChat(currentChatId);
-        } else if (Array.isArray(chats) && chats.length > 0) {
-          // First cloud login with existing local chats: seed cloud once.
-          await syncChatsToSupabase();
         } else {
-          chats = [];
-          currentChatId = null;
-          localStorage.setItem(KEY_CHATS, '[]');
-          renderChatList();
-          renderMessages([]);
-          showWelcome();
+          const localBackup = normalizeChatsArray(JSON.parse(localStorage.getItem(KEY_CHATS) || '[]'));
+          if (localBackup.length > 0) {
+            chats = localBackup;
+            currentChatId = localBackup[0].id;
+            renderChatList();
+            loadChat(currentChatId);
+            await syncChatsToSupabase();
+          } else {
+            chats = [];
+            currentChatId = null;
+            localStorage.setItem(KEY_CHATS, '[]');
+            renderChatList();
+            renderMessages([]);
+            showWelcome();
+          }
         }
       } finally {
         _loadingChats = false;
@@ -3973,14 +3979,17 @@
 
       setAuthFeedback('Kayit olusturuluyor...', 'info');
       try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/auth-signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-          body: JSON.stringify({ email, password, name: name || undefined })
+        const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: name ? { full_name: name, name } : {} }
         });
-        const result = await res.json();
-        if (!res.ok || result.error) {
-          setAuthFeedback('Kayit hatasi: ' + (result.error || 'Bilinmeyen hata'), 'error');
+        if (signUpError) {
+          setAuthFeedback('Kayit hatasi: ' + signUpError.message, 'error');
+          return;
+        }
+        if (signUpData?.user && !signUpData.session) {
+          setAuthFeedback('Dogrulama e-postasi gonderildi. Lutfen e-postanizi kontrol edin.', 'info');
           return;
         }
         setAuthFeedback('Kayit basarili, giris yapiliyor...', 'info');
