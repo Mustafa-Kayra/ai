@@ -2646,6 +2646,43 @@
         </div>
         <div id="auth-feedback" class="hidden text-[10px] text-neutral-500 px-1"></div>
       </div>
+      <!-- OTP Verification Panel -->
+      <div id="otp-verify-panel" class="hidden px-4 pt-3 pb-2 flex flex-col gap-3">
+        <div class="text-center">
+          <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <p class="text-xs font-semibold text-neutral-200">E-postanı doğrula</p>
+          <p class="text-[10px] text-neutral-500 mt-0.5">E-postana gönderilen 6 haneli kodu gir</p>
+          <p id="otp-email-display" class="text-[10px] text-blue-400 mt-1 font-medium truncate"></p>
+        </div>
+        <div class="flex gap-1.5 justify-center" id="otp-inputs">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+            class="w-9 h-10 text-center text-sm font-bold bg-[#0f0f0f] border border-[#333] rounded-lg outline-none focus:border-emerald-500 text-neutral-100 transition-colors otp-digit"
+            onkeydown="otpKeydown(event,this)" oninput="otpInput(event,this)">
+        </div>
+        <button onclick="verifyEmailOtp()" class="w-full px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition-all">Kodu Dogrula</button>
+        <div class="flex items-center justify-between">
+          <button onclick="resendOtp()" class="text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors">Tekrar Gönder</button>
+          <button onclick="backToSignin()" class="text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors">Geri Dön</button>
+        </div>
+        <div id="otp-feedback" class="hidden text-[10px] text-neutral-500 px-1 text-center"></div>
+      </div>
       <div class="px-4 pb-3">
         <button id="login-btn" class="w-full items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all" style="display: none;">Puter ile Giris Yap</button>
         <div id="sync-badge" class="hidden flex items-center justify-center gap-1 text-[9px] text-neutral-600 font-medium text-center mt-1">
@@ -3971,6 +4008,96 @@
       setAuthFeedback('Giris basarili.', 'success');
     }
 
+    let _otpEmail = '';
+    let _otpPassword = '';
+
+    function showOtpPanel(email) {
+      _otpEmail = email;
+      document.getElementById('github-signin-panel').classList.add('hidden');
+      const otpPanel = document.getElementById('otp-verify-panel');
+      otpPanel.classList.remove('hidden');
+      const display = document.getElementById('otp-email-display');
+      if (display) display.textContent = email;
+      const digits = document.querySelectorAll('.otp-digit');
+      digits.forEach(d => d.value = '');
+      if (digits[0]) digits[0].focus();
+      const otpContainer = document.getElementById('otp-inputs');
+      if (otpContainer && !otpContainer._pasteAttached) {
+        otpContainer._pasteAttached = true;
+        otpContainer.addEventListener('paste', function(e) {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+          const allDigits = document.querySelectorAll('.otp-digit');
+          allDigits.forEach((d, i) => { d.value = pasted[i] || ''; });
+          if (pasted.length > 0) allDigits[Math.min(pasted.length, 5)].focus();
+          if (pasted.length === 6) verifyEmailOtp();
+        });
+      }
+      setOtpFeedback('');
+    }
+
+    function backToSignin() {
+      document.getElementById('otp-verify-panel').classList.add('hidden');
+      document.getElementById('github-signin-panel').classList.remove('hidden');
+      _otpEmail = '';
+      _otpPassword = '';
+    }
+
+    function setOtpFeedback(msg, type) {
+      const el = document.getElementById('otp-feedback');
+      if (!el) return;
+      if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
+      el.classList.remove('hidden');
+      el.className = 'text-[10px] px-1 text-center ' + (type === 'error' ? 'text-red-400' : type === 'success' ? 'text-emerald-400' : 'text-neutral-400');
+      el.textContent = msg;
+    }
+
+    function otpInput(event, input) {
+      const val = input.value.replace(/[^0-9]/g, '');
+      input.value = val;
+      if (val && input.nextElementSibling && input.nextElementSibling.classList.contains('otp-digit')) {
+        input.nextElementSibling.focus();
+      }
+      const digits = document.querySelectorAll('.otp-digit');
+      const code = Array.from(digits).map(d => d.value).join('');
+      if (code.length === 6) verifyEmailOtp();
+    }
+
+    function otpKeydown(event, input) {
+      if (event.key === 'Backspace' && !input.value && input.previousElementSibling && input.previousElementSibling.classList.contains('otp-digit')) {
+        input.previousElementSibling.focus();
+      }
+      if (event.key === 'Enter') verifyEmailOtp();
+    }
+
+    async function verifyEmailOtp() {
+      if (!supabaseClient || !_otpEmail) return;
+      const digits = document.querySelectorAll('.otp-digit');
+      const code = Array.from(digits).map(d => d.value).join('');
+      if (code.length < 6) { setOtpFeedback('6 haneli kodu eksiksiz gir.', 'error'); return; }
+      setOtpFeedback('Dogrulaniyor...', 'info');
+      const { data, error } = await supabaseClient.auth.verifyOtp({ email: _otpEmail, token: code, type: 'signup' });
+      if (error) {
+        setOtpFeedback('Kod hatali veya suresi dolmus: ' + error.message, 'error');
+        digits.forEach(d => d.value = '');
+        if (digits[0]) digits[0].focus();
+        return;
+      }
+      setOtpFeedback('Dogrulama basarili! Giris yapiliyor...', 'success');
+      document.getElementById('otp-verify-panel').classList.add('hidden');
+    }
+
+    async function resendOtp() {
+      if (!supabaseClient || !_otpEmail || !_otpPassword) { setOtpFeedback('Tekrar göndermek için geri dön ve tekrar kayit ol.', 'error'); return; }
+      setOtpFeedback('Yeni kod gonderiliyor...', 'info');
+      const { error } = await supabaseClient.auth.signUp({ email: _otpEmail, password: _otpPassword });
+      if (error) { setOtpFeedback('Gönderilemedi: ' + error.message, 'error'); return; }
+      setOtpFeedback('Yeni kod gonderildi. E-postani kontrol et.', 'success');
+      const digits = document.querySelectorAll('.otp-digit');
+      digits.forEach(d => d.value = '');
+      if (digits[0]) digits[0].focus();
+    }
+
     async function signUpWithEmail() {
       if (!supabaseClient) { alert('Supabase baslatılamadı.'); return; }
       const { name, email, password } = getEmailAuthFormValues();
@@ -3988,17 +4115,13 @@
           setAuthFeedback('Kayit hatasi: ' + signUpError.message, 'error');
           return;
         }
+        _otpPassword = password;
         if (signUpData?.user && !signUpData.session) {
-          setAuthFeedback('Dogrulama e-postasi gonderildi. Lutfen e-postanizi kontrol edin.', 'info');
+          setAuthFeedback('');
+          showOtpPanel(email);
           return;
         }
-        setAuthFeedback('Kayit basarili, giris yapiliyor...', 'info');
-        const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          setAuthFeedback('Kayit tamamlandi. E-posta ile giris yap.', 'success');
-        } else {
-          setAuthFeedback('Kayit ve giris basarili.', 'success');
-        }
+        setAuthFeedback('Kayit ve giris basarili.', 'success');
       } catch (err) {
         setAuthFeedback('Kayit hatasi: ' + err.message, 'error');
       }
