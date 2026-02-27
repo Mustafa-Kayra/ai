@@ -3844,6 +3844,16 @@
             </div>
           </div>
         </div>
+        <!-- Account Section -->
+        <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-2.5">Hesap</label>
+          <div id="settings-account-panel"></div>
+        </div>
+        <!-- Statistics Section -->
+        <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222]">
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-2.5">Kullanim Istatistikleri</label>
+          <div id="settings-stats-panel" class="space-y-2"></div>
+        </div>
       </div><button onclick="saveSettings()"
         class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl text-sm font-bold transition-all mt-5">Kaydet
       </button>
@@ -7114,6 +7124,51 @@
       $('anthropic-model-id').value = providerSettings.anthropic?.modelId || 'claude-3-5-sonnet-20241022';
       updateProviderFields();
       renderPromptLibrary();
+      _populateSettingsAccount();
+      _populateSettingsStats();
+    }
+
+    function _populateSettingsAccount() {
+      const panel = $('settings-account-panel');
+      if (!panel) return;
+      const userPanel = document.getElementById('github-user-panel');
+      const isLoggedIn = userPanel && !userPanel.classList.contains('hidden');
+      if (isLoggedIn) {
+        const name = (document.getElementById('github-user-name')?.textContent || '').trim();
+        const email = (document.getElementById('github-user-email')?.textContent || '').trim();
+        const avatarImg = document.getElementById('auth-avatar-img');
+        const avatarSrc = avatarImg && !avatarImg.classList.contains('hidden') ? avatarImg.src : '';
+        panel.innerHTML = `<div class="flex items-center gap-3 mb-2.5">
+          ${avatarSrc ? `<img src="${avatarSrc}" class="w-10 h-10 rounded-full object-cover" alt="avatar">` : `<div class="w-10 h-10 rounded-full bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-neutral-400 text-base font-bold">${(name[0]||'?').toUpperCase()}</div>`}
+          <div class="flex-1 min-w-0"><div class="text-sm font-semibold text-white truncate">${name||'Kullanici'}</div><div class="text-[10px] text-neutral-500 truncate">${email}</div></div>
+        </div>
+        <button onclick="signOutGithub();closeSettings();" class="w-full text-xs font-semibold py-2 px-3 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] hover:border-red-500/40 hover:text-red-400 text-neutral-400 transition-all text-left">Cikis Yap</button>`;
+      } else {
+        panel.innerHTML = `<div class="text-xs text-neutral-500 mb-2.5">Henuz giris yapilmadi.</div>
+        <button onclick="closeSettings();document.getElementById('header-github-btn')?.click();" class="w-full text-xs font-bold py-2 px-3 rounded-lg text-white transition-all" style="background:#0d9488">Giris Yap / Kayit Ol</button>`;
+      }
+    }
+
+    function _populateSettingsStats() {
+      const panel = $('settings-stats-panel');
+      if (!panel) return;
+      let totalMsgs = 0, totalWords = 0, totalTokens = 0;
+      chats.forEach(ch => {
+        (ch.messages || []).forEach(msg => {
+          totalMsgs++;
+          const text = typeof msg.content === 'string' ? msg.content : '';
+          totalWords += text.split(/\s+/).filter(Boolean).length;
+          totalTokens += Math.ceil(text.length / 4);
+        });
+      });
+      const stat = (label, val) => `<div class="flex justify-between items-center"><span class="text-xs text-neutral-500">${label}</span><span class="text-xs font-bold text-white">${val}</span></div>`;
+      panel.innerHTML = [
+        stat('Toplam Sohbet', chats.length),
+        stat('Toplam Mesaj', totalMsgs.toLocaleString()),
+        stat('Toplam Kelime', totalWords.toLocaleString()),
+        stat('Tahmini Token', totalTokens.toLocaleString()),
+        stat('Yer Imleri', (typeof bookmarks !== 'undefined' ? bookmarks.length : 0))
+      ].join('');
     }
 
     function closeSettings() {
@@ -10127,12 +10182,12 @@
       const bulletCount = densityMap[density] || '5';
       const langInstrMap = { tr: 'Tum icerik Turkce olsun.', en: 'Write all content in English.', de: 'Alle Inhalte auf Deutsch.', fr: 'Tout le contenu en francais.', es: 'Todo el contenido en espanol.' };
       const langInstr = langInstrMap[lang] || langInstrMap.tr;
-      const researchPrefix = researchMode === 'deep' ? 'Derin arastirma modu: ' : '';
+      const deepExtra = researchMode === 'deep' ? '\n- Kapsamli, arastirma kalitesinde icerik uret\n- Her slayt icin veri, istatistik ve somut ornekler kullan\n- Maddeler derinlemesine ve bilgi yogun olsun' : '';
       const styleMap = { modern:'sade ve profesyonel', corporate:'kurumsal ve resmi', creative:'yaratici ve dinamik', academic:'akademik ve sade', minimal:'minimalist ve temiz', bold:'cesur, buyuk tipografi, guclu gorsel etki' };
 
       _currentPresentationOptions = { transition, style, lang, density, color, notes };
 
-      const jsonPrompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla. SADECE JSON ver, hicbir aciklama ekleme:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'sade ve profesyonel'}\nAksent rengi (hex, # olmadan): ${color}\n${langInstr}\n\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"${color}","slides":[{"title":"Slayt Basligi","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3"],"notes":"Konusmaci notu","keyword":"Pexels anahtar kelime (Ingilizce)"},...]}\n\nKurallar:\n- Her slayt icin tam ${bulletCount} madde noktasi\n- Her slayt icin konuya uygun emoji icon sec\n- keyword alani konuyla alakali Pexels gorsel arama terimi (Ingilizce, orn: "technology future", "climate change")\n- color alani: "${color}" kullan\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun${notes ? '\n- notes alanini dolu tut, konusmaci icin detayli not yaz' : '\n- notes alani bos birakilabilir'}`;
+      const jsonPrompt = `Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla. SADECE JSON ver, hicbir aciklama ekleme:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'sade ve profesyonel'}\nAksent rengi (hex, # olmadan): ${color}\n${langInstr}\n\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"${color}","slides":[{"title":"Slayt Basligi","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3"],"notes":"Konusmaci notu","keyword":"Pexels anahtar kelime (Ingilizce)"},...]}\n\nKurallar:\n- Her slayt icin tam ${bulletCount} madde noktasi\n- Her slayt icin konuya uygun emoji icon sec\n- keyword alani konuyla alakali Pexels gorsel arama terimi (Ingilizce, orn: "technology future", "climate change")\n- color alani: "${color}" kullan\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun${notes ? '\n- notes alanini dolu tut, konusmaci icin detayli not yaz' : ''}${deepExtra}`;
 
       if (format === 'pptx') {
         _noCanvas = true;
