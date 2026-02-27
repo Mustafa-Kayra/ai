@@ -8009,24 +8009,34 @@
     function initCanvasTerminal() {
       if (canvasTerminal) return;
 
-      if (typeof Terminal === 'undefined') {
-        console.warn('xterm.js not loaded'); return;
-      }
-
       const container = $('terminal-container');
       if (!container) return;
 
+      if (typeof Terminal === 'undefined') {
+        container.innerHTML = '<div style="padding:16px;color:#ff7b72;font-family:monospace;font-size:13px;">xterm.js yuklenemedi. Sayfayi yenileyip tekrar deneyin.</div>';
+        return;
+      }
+
       canvasTerminal = new Terminal({
-
-        cursorBlink: true, fontSize: 13, fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        cursorBlink: true,
+        fontSize: 13,
+        fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
         theme: {
-          background: '#0d0d0d', foreground: '#c9d1d9', cursor: '#58a6ff', selectionBackground: '#264f78',
-          black: '#0d1117', red: '#ff7b72', green: '#7ee787', yellow: '#d29922',
-          blue: '#58a6ff', magenta: '#bc8cff', cyan: '#39c5cf', white: '#c9d1d9'
-        }
-
-        ,
-        scrollback: 5000
+          background: '#0d0d0d',
+          foreground: '#c9d1d9',
+          cursor: '#58a6ff',
+          selectionBackground: '#264f78',
+          black: '#0d1117',
+          red: '#ff7b72',
+          green: '#7ee787',
+          yellow: '#d29922',
+          blue: '#58a6ff',
+          magenta: '#bc8cff',
+          cyan: '#39c5cf',
+          white: '#c9d1d9'
+        },
+        scrollback: 5000,
+        convertEol: true
       });
 
       if (typeof FitAddon !== 'undefined') {
@@ -8044,35 +8054,24 @@
       canvasTerminal.writeln('\x1b[90mKomutlar: node <dosya|kod>, run <file>, js <code>, python <code>, ls, cat, npm, clear, help\x1b[0m');
       termPrompt();
 
-      canvasTerminal.onKey(({
-        key, domEvent
-
-      }) => {
-        const code = domEvent.keyCode;
-
-        if (code === 13) {
-          // Enter
+      canvasTerminal.onKey(({ key, domEvent }) => {
+        const keyCode = domEvent.keyCode;
+        if (keyCode === 13) {
           canvasTerminal.writeln('');
           processTerminalCommand(cmdBuffer.trim());
           cmdBuffer = '';
           termPrompt();
-        }
-
-        else if (code === 8) {
-
-          // Backspace
+        } else if (keyCode === 8) {
           if (cmdBuffer.length > 0) {
-            cmdBuffer = cmdBuffer.slice(0, -1); canvasTerminal.write('\b \b');
+            cmdBuffer = cmdBuffer.slice(0, -1);
+            canvasTerminal.write('\b \b');
           }
-        }
-
-        else if (code === 12) {
-          // Ctrl+L
-          canvasTerminal.clear(); termPrompt();
-        }
-
-        else if (!domEvent.ctrlKey && !domEvent.altKey && key.length === 1) {
-          cmdBuffer += key; canvasTerminal.write(key);
+        } else if (domEvent.ctrlKey && keyCode === 76) {
+          canvasTerminal.clear();
+          termPrompt();
+        } else if (!domEvent.ctrlKey && !domEvent.altKey && !domEvent.metaKey && key.length === 1) {
+          cmdBuffer += key;
+          canvasTerminal.write(key);
         }
       });
 
@@ -9086,14 +9085,8 @@
     function buildCanvasPreviewHtml(htmlContent) {
       const cssFiles = Object.keys(canvasFiles).filter(f => f.endsWith('.css'));
       const jsFiles = Object.keys(canvasFiles).filter(f => f.endsWith('.js'));
-      const cssContent = cssFiles.map(f => `\n
-
-        /* ${f} */
-        \n${canvasFiles[f] || ''
-        }
-
-        `).join('\n');
-      const jsContent = jsFiles.map(f => `\n // ${f}\n${canvasFiles[f] || ''}`).join('\n');
+      const cssContent = cssFiles.map(f => `/* ${f} */\n${canvasFiles[f] || ''}`).join('\n\n');
+      const jsContent = jsFiles.map(f => `/* ${f} */\n${canvasFiles[f] || ''}`).join('\n\n');
 
       let html = htmlContent || '';
 
@@ -9118,11 +9111,8 @@
       const hasHead = /<head[\s>]/i.test(html);
       const hasBody = /<body[\s>]/i.test(html);
 
-      const styleTag = cssContent ? `<style>${cssContent
-        }
-  </style>` : '';
-      const scriptTag = jsContent ? `
-  <script>${jsContent}<\/script>` : '';
+      const styleTag = cssContent ? `<style>\n${cssContent}\n</style>` : '';
+      const scriptTag = jsContent ? `<script>\n${jsContent}\n<\/script>` : '';
 
       if (!hasHtml) {
         html = `<!DOCTYPE html><html><head><meta charset="UTF-8">${styleTag}</head><body>${html}${scriptTag}</body></html>`;
@@ -9414,10 +9404,26 @@
 
       try {
         const siteName = "app-" + Math.random().toString(36).substr(2, 6);
-        const dir = await puter.fs.mkdir(siteName);
-        for (const f of files) {
-          await puter.fs.write(`${siteName}/${f}`, canvasFiles[f]);
+        await puter.fs.mkdir(siteName);
+
+        const hasHtmlFile = files.some(f => f.endsWith('.html'));
+        const hasSeparateCssOrJs = files.some(f => f.endsWith('.css') || f.endsWith('.js'));
+
+        if (hasHtmlFile && hasSeparateCssOrJs) {
+          const htmlKey = files.find(f => f === 'index.html') || files.find(f => f.endsWith('.html'));
+          const inlinedHtml = buildCanvasPreviewHtml(canvasFiles[htmlKey]);
+          await puter.fs.write(`${siteName}/index.html`, inlinedHtml);
+        } else {
+          for (const f of files) {
+            const parts = f.split('/');
+            if (parts.length > 1) {
+              const dir = parts.slice(0, -1).join('/');
+              try { await puter.fs.mkdir(`${siteName}/${dir}`, { createMissingParents: true }); } catch (_) {}
+            }
+            await puter.fs.write(`${siteName}/${f}`, canvasFiles[f]);
+          }
         }
+
         const site = await puter.hosting.create(siteName, siteName);
 
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Yayinlandi`;
