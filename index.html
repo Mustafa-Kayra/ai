@@ -2707,7 +2707,7 @@
         <!-- Model selector -->
         <div id="mobile-selector-wrap" class="flex items-center gap-2 bg-[#1a1a1a] rounded-xl px-3 py-1.5 border border-[#222] shrink-0">
           <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></div><select id="model-a"
-            class="bg-transparent text-[12px] outline-none font-semibold text-neutral-200 cursor-pointer min-w-[140px] appearance-none"></select><svg
+            class="bg-transparent text-[12px] outline-none font-semibold text-neutral-200 cursor-pointer min-w-[80px] max-w-[120px] appearance-none"></select><svg
             width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
             class="text-neutral-500 pointer-events-none">
             <path d="M6 9l6 6 6-6" />
@@ -2743,23 +2743,6 @@
             title="Sunum Olustur"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-0.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Slayt</button><button onclick="openReportModal()"
             class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-orange-400 hover:bg-orange-500/5 transition-all"
             title="Detayli Rapor Olustur"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-0.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Rapor</button></div>
-        <div id="header-canvas-tabs" class="header-canvas-tabs hidden sm:flex ml-2"><button class="canvas-tab active"
-            onclick="switchCanvasTab('preview')" id="header-canvas-preview"><svg width="12" height="12"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>Preview </button><button class="canvas-tab" onclick="switchCanvasTab('code')"
-            id="header-canvas-code"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg>Code </button><button class="canvas-tab" onclick="switchCanvasTab('terminal')"
-            id="header-canvas-terminal"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polyline points="4 17 10 11 4 5" />
-              <line x1="12" y1="19" x2="20" y2="19" />
-            </svg>Terminal </button><button class="canvas-tab" onclick="switchCanvasTab('diff')" id="header-canvas-diff"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Diff </button></div>
       </div>
       <div class="flex items-center gap-2">
         <!-- Mobile: more options button -->
@@ -2973,7 +2956,7 @@
   <!-- Canvas Panel -->
   <aside id="canvas-panel" class="canvas-panel hidden">
     <div class="canvas-header">
-      <div class="canvas-tabs sm:hidden"><button class="canvas-tab active" onclick="switchCanvasTab('preview')"
+      <div class="canvas-tabs"><button class="canvas-tab active" onclick="switchCanvasTab('preview')"
           id="canvas-tab-preview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
             <circle cx="12" cy="12" r="10" />
@@ -8960,13 +8943,8 @@
 
     function openCanvas() {
       const panel = $('canvas-panel');
-      const headerTabs = $('header-canvas-tabs');
       const headerActionBtns = $('header-action-btns');
       panel.classList.remove('hidden');
-
-      if (headerTabs) {
-        headerTabs.classList.remove('hidden'); headerTabs.style.display = 'flex';
-      }
 
       if (headerActionBtns) {
         headerActionBtns.style.display = 'none';
@@ -8979,13 +8957,8 @@
 
     function closeCanvas() {
       const panel = $('canvas-panel');
-      const headerTabs = $('header-canvas-tabs');
       const headerActionBtns = $('header-action-btns');
       panel.classList.add('hidden');
-
-      if (headerTabs) {
-        headerTabs.classList.add('hidden'); headerTabs.style.display = '';
-      }
 
       if (headerActionBtns) {
         headerActionBtns.style.display = '';
@@ -9010,32 +8983,24 @@
       const codeView = $('canvas-code-view');
       const terminalView = $('canvas-terminal-view');
       const diffView = $('canvas-diff-view');
-      const headerPreview = $('header-canvas-preview');
-      const headerCode = $('header-canvas-code');
-      const headerTerminal = $('header-canvas-terminal');
-      const headerDiff = $('header-canvas-diff');
 
-      [previewTab, codeTab, terminalTab, diffTab, headerPreview, headerCode, headerTerminal, headerDiff].forEach(el => el?.classList.remove('active'));
+      [previewTab, codeTab, terminalTab, diffTab].forEach(el => el?.classList.remove('active'));
       [previewView, codeView, terminalView, diffView].forEach(el => el?.classList.add('hidden'));
 
       if (tab === 'preview') {
         previewTab?.classList.add('active');
-        headerPreview?.classList.add('active');
         previewView?.classList.remove('hidden');
       } else if (tab === 'terminal') {
         terminalTab?.classList.add('active');
-        headerTerminal?.classList.add('active');
         terminalView?.classList.remove('hidden');
         initCanvasTerminal();
         if (canvasTerminalFit) setTimeout(() => canvasTerminalFit.fit(), 50);
       } else if (tab === 'diff') {
         diffTab?.classList.add('active');
-        headerDiff?.classList.add('active');
         diffView?.classList.remove('hidden');
         renderCanvasDiff();
       } else {
         codeTab?.classList.add('active');
-        headerCode?.classList.add('active');
         codeView?.classList.remove('hidden');
       }
     }
