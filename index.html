@@ -2556,6 +2556,9 @@
     .feature-modal-input { width: 100%; background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 10px 14px; font-size: 13px; outline: none; color: #ddd; transition: border-color 0.2s; }
     .feature-modal-input:focus { border-color: #3b82f6; }
     body.light-mode .feature-modal-select, body.light-mode .feature-modal-input { background: #fff; border-color: #ddd; color: #333; }
+    .slide-color-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all .15s; flex-shrink: 0; }
+    .slide-color-swatch:hover { transform: scale(1.15); }
+    .slide-color-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.3); transform: scale(1.1); }
 
     /* Edit message inline */
     .edit-msg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -3400,6 +3403,7 @@
               <option value="10">10 Slayt</option>
               <option value="12">12 Slayt</option>
               <option value="15">15 Slayt</option>
+              <option value="20">20 Slayt</option>
             </select>
           </div>
           <div>
@@ -3409,6 +3413,8 @@
               <option value="corporate">Kurumsal</option>
               <option value="creative">Yaratici</option>
               <option value="academic">Akademik</option>
+              <option value="minimal">Minimalist</option>
+              <option value="bold">Bold & Impact</option>
             </select>
           </div>
         </div>
@@ -3425,7 +3431,42 @@
             <select id="slide-lang" class="feature-modal-select">
               <option value="tr" selected>Turkce</option>
               <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Francais</option>
+              <option value="es">Espanol</option>
             </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Gecis Animasyonu</label>
+            <select id="slide-transition" class="feature-modal-select">
+              <option value="slide" selected>Kayma</option>
+              <option value="fade">Solma</option>
+              <option value="zoom">Zoom</option>
+              <option value="flip">3D Flip</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Icerik Yogunlugu</label>
+            <select id="slide-density" class="feature-modal-select">
+              <option value="brief">Ozet (3 madde)</option>
+              <option value="medium" selected>Orta (5 madde)</option>
+              <option value="detailed">Detayli (7 madde)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1.5">Renk Temasi</label>
+          <div class="flex items-center gap-2" id="slide-color-swatches">
+            <button type="button" onclick="setSlideColor('2563eb')" class="slide-color-swatch active" style="background:#2563eb" title="Mavi" data-color="2563eb"></button>
+            <button type="button" onclick="setSlideColor('0d9488')" class="slide-color-swatch" style="background:#0d9488" title="Teal" data-color="0d9488"></button>
+            <button type="button" onclick="setSlideColor('059669')" class="slide-color-swatch" style="background:#059669" title="Yesil" data-color="059669"></button>
+            <button type="button" onclick="setSlideColor('d97706')" class="slide-color-swatch" style="background:#d97706" title="Amber" data-color="d97706"></button>
+            <button type="button" onclick="setSlideColor('dc2626')" class="slide-color-swatch" style="background:#dc2626" title="Kirmizi" data-color="dc2626"></button>
+            <button type="button" onclick="setSlideColor('db2777')" class="slide-color-swatch" style="background:#db2777" title="Pembe" data-color="db2777"></button>
+            <button type="button" onclick="setSlideColor('ea580c')" class="slide-color-swatch" style="background:#ea580c" title="Turuncu" data-color="ea580c"></button>
+            <input type="color" id="slide-color-custom" value="#2563eb" oninput="setSlideColor(this.value.replace('#',''))" title="Ozel Renk" class="w-7 h-7 rounded-lg border border-[#333] bg-transparent cursor-pointer overflow-hidden p-0.5" style="min-width:28px" />
           </div>
         </div>
         <div>
@@ -3441,6 +3482,12 @@
             </label>
           </div>
         </div>
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="slide-notes" class="accent-teal-500" />
+            <span class="text-xs text-neutral-400">Konusmaci notlari ekle (speaker notes)</span>
+          </label>
+        </div>
         <div id="slide-format-hint" class="text-[10px] text-teal-600 px-1"></div>
       </div>
       <button onclick="generateSlides()" class="w-full mt-5 py-3 rounded-xl text-sm font-bold text-white transition-all" style="background:#0d9488">Sunumu Olustur</button>
@@ -3455,11 +3502,53 @@
         <span id="slide-preview-count" class="text-[10px] text-neutral-500 bg-[#1a1a1a] px-2 py-0.5 rounded-full shrink-0 hidden sm:inline"></span>
       </div>
       <div class="flex items-center gap-2 shrink-0">
+        <button onclick="openSlideEditor()" id="slide-preview-edit-btn" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-neutral-300 hover:text-white border border-[#333] hover:border-[#555] transition-all whitespace-nowrap" style="min-height:36px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="hidden sm:inline">Duzelt</span></button>
         <button onclick="downloadPptxFromPreview()" id="slide-preview-dl-btn" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all whitespace-nowrap" style="background:#0d9488;min-height:36px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="hidden xs:inline">PPTX </span>Indir</button>
         <button onclick="closeSlidePreview()" class="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-500 hover:text-white hover:bg-white/10 text-lg leading-none transition-all">&times;</button>
       </div>
     </div>
     <div id="slide-preview-grid" class="flex-1 overflow-y-auto p-5 grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));align-content:start;"></div>
+  </div>
+  <!-- Slide Editor Modal -->
+  <div id="slide-editor-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div class="bg-[#111] border border-[#222] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-[#1e1e1e] shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-teal-600/20 flex items-center justify-center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <h3 class="text-sm font-bold text-white">Slaytlari Duzenle</h3>
+          <span id="slide-editor-count" class="text-[10px] text-neutral-500 bg-[#1a1a1a] px-2 py-0.5 rounded-full"></span>
+        </div>
+        <button onclick="closeSlideEditor()" class="text-neutral-500 hover:text-white text-lg">&times;</button>
+      </div>
+      <div class="px-5 py-3 border-b border-[#1a1a1a] shrink-0 flex items-center gap-4 flex-wrap">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Renk</span>
+          <div class="flex items-center gap-1.5" id="slide-editor-swatches">
+            <button type="button" onclick="setEditorColor('2563eb')" class="slide-color-swatch active" style="background:#2563eb" data-color="2563eb"></button>
+            <button type="button" onclick="setEditorColor('0d9488')" class="slide-color-swatch" style="background:#0d9488" data-color="0d9488"></button>
+            <button type="button" onclick="setEditorColor('059669')" class="slide-color-swatch" style="background:#059669" data-color="059669"></button>
+            <button type="button" onclick="setEditorColor('d97706')" class="slide-color-swatch" style="background:#d97706" data-color="d97706"></button>
+            <button type="button" onclick="setEditorColor('dc2626')" class="slide-color-swatch" style="background:#dc2626" data-color="dc2626"></button>
+            <button type="button" onclick="setEditorColor('ea580c')" class="slide-color-swatch" style="background:#ea580c" data-color="ea580c"></button>
+            <input type="color" id="slide-editor-color-custom" value="#2563eb" oninput="setEditorColor(this.value.replace('#',''))" class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent overflow-hidden" style="min-width:24px" />
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Gecis</span>
+          <select id="slide-editor-transition" class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-2 py-1 text-[11px] text-neutral-300 outline-none cursor-pointer">
+            <option value="slide">Kayma</option>
+            <option value="fade">Solma</option>
+            <option value="zoom">Zoom</option>
+            <option value="flip">3D Flip</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5 space-y-3" id="slide-editor-list"></div>
+      <div class="flex items-center gap-3 px-5 py-4 border-t border-[#1a1a1a] shrink-0 flex-wrap">
+        <button onclick="addSlideToEditor()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-neutral-400 hover:text-white border border-[#2a2a2a] hover:border-[#444] transition-all"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Slayt Ekle</button>
+        <button onclick="applySlideEdits()" class="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all" style="background:#0d9488"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Guncelle</button>
+      </div>
+    </div>
   </div>
   <!-- Report Maker Modal -->
   <div id="report-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
@@ -4400,35 +4489,21 @@
       ,
     ];
 
-    const PERSONAS = [{
-      icon: '👨‍💻', title: 'Senior Developer', prompt: 'Sen cok tecrubeli bir Senior Software Engineer\'sin. Yazdigin kodlar her zaman best-practice\'lere uygun, optimize edilmis ve temizdir. Kod verirken her zaman tam ve calisan hallerini ver.'
-    }
-
-      ,
-    {
-      icon: '🇬🇧', title: 'Ingilizce Ogretmeni', prompt: 'Sen native seviyesinde bir Ingilizce ogretmenisin. Kullaniciya sadece istedigi ceviri veya gramer kuralini vermekle kalma, ayni zamanda kelimenin etimolojisini ve ornek cumlelerini de ver.'
-    }
-
-      ,
-    {
-      icon: '✍️', title: 'Metin Yazari (Copywriter)', prompt: 'Sen dahi bir reklam ve metin yazarisin. Urettigin metinler ikna edici, akici ve dikkat cekicidir. Kullanilan dil modern ve hedef kitleye yoneliktir.'
-    }
-
-      ,
-    {
-      icon: '🕵️', title: 'Siber Guvenlik Uzmani', prompt: 'Sen siber guvenlik ve penetrasyon testi uzmanisin. Inceledigin her kod parcasinda guvenlik acikliklari (SQLi, XSS, CSRF vb.) arar ve en guvenli yazilim mimarisini onerirsin.'
-    }
-
-      ,
-    {
-      icon: '🧑‍🏫', title: 'Universite Profesoru', prompt: 'Sen akademik duzeyde bilgili bir profesorsun. Aciklamalarin yuzeyel degil, derinlemesine, bilimsel temellere dayanan ve referansli olmalidir.'
-    }
-
-      ,
-    {
-      icon: '💡', title: 'Urun Yoneticisi (PM)', prompt: 'Sen tecrubeli bir Product Manager\'sin. Fikirleri is modeline, kullanici deneyimine ve pazara sunma stratejisine (GTM) donusturmekte uzmansin.'
-    }
-
+    const PERSONAS = [
+      { icon: '👨‍💻', title: 'Senior Developer', prompt: 'Sen cok tecrubeli bir Senior Software Engineer\'sin. Yazdigin kodlar her zaman best-practice\'lere uygun, optimize edilmis ve temizdir. Kod verirken her zaman tam ve calisan hallerini ver. Daima TypeScript, SOLID prensipler ve Clean Code kullan.' },
+      { icon: '🎨', title: 'UI/UX Tasarimcisi', prompt: 'Sen dunyaca taninmis bir UI/UX tasarimcisin. Her tasarimda kullanici deneyimini, erisilebilirligi ve gorsel hiyerarsiyi on plana cikarsin. Figma, design systems ve modern web standartlarinda uzmansin. Onerilerini her zaman kullanici perspektifinden ver.' },
+      { icon: '🇬🇧', title: 'Ingilizce Ogretmeni', prompt: 'Sen native seviyesinde bir Ingilizce ogretmenisin. Kullaniciya sadece istedigi ceviri veya gramer kuralini vermekle kalma, ayni zamanda kelimenin etimolojisini, kolokasyonlarini ve dogal ornek cumlelerini de ver. Aciklamalarini B2/C1 seviyesinde yap.' },
+      { icon: '✍️', title: 'Metin Yazari (Copywriter)', prompt: 'Sen dahi bir reklam ve metin yazarisin. Urettigin metinler ikna edici, akici ve dikkat cekicidir. AIDA ve PAS formulleri kullanarak hedef kitleyi harekete geciren icerikler olusturursun. Slogan, e-posta, sosyal medya ve landing page metinlerinde uzmansin.' },
+      { icon: '🕵️', title: 'Siber Guvenlik Uzmani', prompt: 'Sen siber guvenlik ve penetrasyon testi uzmanisin. Inceledigin her sistemde guvenlik aciklari (OWASP Top 10: SQLi, XSS, CSRF, IDOR vb.) arar ve en guvenli mimarileri onerirsin. CVE\'leri takip eder, tehdit modellemesi yapabilirsin.' },
+      { icon: '🧑‍🏫', title: 'Universite Profesoru', prompt: 'Sen akademik duzeyde bilgili, multidisipliner bir profesorsun. Aciklamalarin yuzeyel degil, derinlemesine, bilimsel temellere dayanan ve gerektiginde kaynak gosteren nitelikte olmali. Karmasik kavramlari basit analojilerle de anlatirsın.' },
+      { icon: '💡', title: 'Urun Yoneticisi (PM)', prompt: 'Sen tecrubeli bir Product Manager ve startup mentoru\'sun. Fikirleri is modeline, kullanici deneyimine ve pazara sunma stratejisine (GTM) donusturmekte uzmansin. OKR, user story, roadmap ve A/B test konularinda rehberlik edersin.' },
+      { icon: '📊', title: 'Veri Bilimcisi', prompt: 'Sen ileri seviye bir veri bilimcisi ve makine ogrenmesi uzmanisın. Pandas, sklearn, PyTorch, SQL ve istatistiksel analiz konularinda uzmansin. Verileri analiz ederken net icgoru ve gorsellestirilmis aciklamalar sunarsin.' },
+      { icon: '💰', title: 'Finansal Analist', prompt: 'Sen Wall Street deneyimli bir finansal analist ve yatirim danismanisın. Borsalar, degerleme yontemleri (DCF, P/E, EV/EBITDA), makroekonomik gostergeler ve portfoy yonetimi konularinda uzmansin. Tavsiyelerin her zaman risk/odul dengesi gozeterek verilmeli.' },
+      { icon: '⚖️', title: 'Hukuk Danismani', prompt: 'Sen deneyimli bir hukuk danismanisin. Sozlesmeler, ticaret hukuku, fikri mulkiyet ve KVKK/GDPR gibi konularda rehberlik edersin. Cevaplarini anlasilir bir dille ver; teknik hukuki jargonu gerektiginde acikla. Her zaman profesyonel bir avukana danismalarini da hatırlat.' },
+      { icon: '🚀', title: 'Girisimci Mentor', prompt: 'Sen basarili seriyel girisimci ve hizlandirici mentoru\'sun. Pitch deck hazirlamak, yatirimci bulmak, MVP gelistirmek, burn rate hesaplamak ve urun-pazar uyumu saglamak konularinda somut tavsiyeler verirsin. Gercekci ve aksiyon odaklisin.' },
+      { icon: '🧠', title: 'Psikoloji Uzmani', prompt: 'Sen klinik psikolog ve bilissel davranisci terapi (BDT) uzmanisın. Kullanicinin duygusal durumunu empatik ve yargi koymadan dinlersin. Pratik bas etme stratejileri, mindfulness teknikleri ve oz farkindalik egzersizleri onerirsin. Her zaman gerektiginde profesyonel destek almalarini tavsiye et.' },
+      { icon: '🏋️', title: 'Fitness & Yasam Kocu', prompt: 'Sen sertifikali kisisel antrenor ve yasam kocusun. Kisi ozelinde antrenman programlari, beslenme planlari ve uyku optimizasyonu konularinda veri odakli oneriler verirsin. Motivasyon, hedef belirleme ve aliskanlik olusturma konularinda da rehberlik edersin.' },
+      { icon: '🎮', title: 'Oyun Gelistirici', prompt: 'Sen deneyimli bir oyun gelistiricisin. Unity, Unreal Engine, Godot ve web tabanli oyun gelistirme (Phaser, Three.js) konularinda uzmansin. Oyun tasarim kaliplari, performans optimizasyonu, level design ve monetizasyon stratejileri konularinda somut oneriler verirsin.' }
     ];
 
     // ---- Utils
@@ -6912,6 +6987,7 @@
 
         // Finalize canvas if code was detected
         if (_pptxMode && assistantMsg.content) { generatePptxFromContent(assistantMsg.content); _pptxMode = false; }
+        else if (_htmlSlideMode && assistantMsg.content) { generateHTMLFromContent(assistantMsg.content); _htmlSlideMode = false; }
         else if (isCodeRequest && assistantMsg.content) finalizeCanvas(assistantMsg.content);
         else if (canvasOpen && !isCodeRequest) closeCanvas();
       }
@@ -10015,8 +10091,8 @@
     function updateSlideFormatHint(val) {
       const hint = $('slide-format-hint');
       if (!hint) return;
-      if (val === 'pptx') hint.textContent = 'PPTX: AI icerik olusturacak, otomatik olarak .pptx dosyasi indirilecek.';
-      else hint.textContent = 'HTML: Canvas panelinde canli onizleme ile acilir.';
+      if (val === 'pptx') hint.textContent = 'PPTX: Onizleme goster, istersen duzenle, sonra indir.';
+      else hint.textContent = 'HTML: Canvas\'ta canli ac, "Duzelt" ile slaytlari ozgurce degistir.';
     }
 
     function generateSlides() {
@@ -10026,28 +10102,32 @@
       const lang = $('slide-lang').value || 'tr';
       const format = ($('slide-format') ? $('slide-format').value : 'html');
       const researchMode = document.querySelector('input[name="slide-research"]:checked')?.value || 'quick';
+      const transition = ($('slide-transition') ? $('slide-transition').value : 'slide');
+      const density = ($('slide-density') ? $('slide-density').value : 'medium');
+      const notes = ($('slide-notes') ? $('slide-notes').checked : false);
+      const color = _slideSelectedColor || '2563eb';
       if (!topic) { setStatus('Lutfen konu girin.'); $('slide-topic').focus(); return; }
       closeSlideModal();
 
-      const langInstr = lang === 'en' ? 'Write all content in English.' : 'Tum icerik Turkce olsun.';
+      const densityMap = { brief: '3', medium: '5', detailed: '7' };
+      const bulletCount = densityMap[density] || '5';
+      const langInstrMap = { tr: 'Tum icerik Turkce olsun.', en: 'Write all content in English.', de: 'Alle Inhalte auf Deutsch.', fr: 'Tout le contenu en francais.', es: 'Todo el contenido en espanol.' };
+      const langInstr = langInstrMap[lang] || langInstrMap.tr;
       const researchPrefix = researchMode === 'deep' ? 'Derin arastirma modu: ' : '';
+      const styleMap = { modern:'sade ve profesyonel', corporate:'kurumsal ve resmi', creative:'yaratici ve dinamik', academic:'akademik ve sade', minimal:'minimalist ve temiz', bold:'cesur, buyuk tipografi, guclu gorsel etki' };
+
+      _currentPresentationOptions = { transition, style, lang, density, color, notes };
+
+      const jsonPrompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla. SADECE JSON ver, hicbir aciklama ekleme:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'sade ve profesyonel'}\nAksent rengi (hex, # olmadan): ${color}\n${langInstr}\n\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"${color}","slides":[{"title":"Slayt Basligi","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3"],"notes":"Konusmaci notu","keyword":"Pexels anahtar kelime (Ingilizce)"},...]}\n\nKurallar:\n- Her slayt icin tam ${bulletCount} madde noktasi\n- Her slayt icin konuya uygun emoji icon sec\n- keyword alani konuyla alakali Pexels gorsel arama terimi (Ingilizce, orn: "technology future", "climate change")\n- color alani: "${color}" kullan\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun${notes ? '\n- notes alanini dolu tut, konusmaci icin detayli not yaz' : '\n- notes alani bos birakilabilir'}`;
 
       if (format === 'pptx') {
         _noCanvas = true;
         _pptxMode = true;
-        const styleMap = { modern:'sade ve profesyonel', corporate:'kurumsal ve resmi', creative:'yaratici ve dinamik', academic:'akademik ve sade' };
-        const pptxPrompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla. SADECE JSON ver, hicbir aciklama ekleme:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'modern'}\n${langInstr}\n\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"2563eb","slides":[{"title":"Slayt Basligi","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3","Madde 4"],"notes":"Konusmaci notu","keyword":"Gorselde kullanilacak Pexels anahtar kelime (Ingilizce)"},...]}\n\nKurallар:\n- Her slayt icin 3-5 madde noktasi\n- Her slayt icin uygun bir emoji icon sec\n- keyword alani konuyla alakali Pexels gorsel arama terimi olsun (ornek: "technology future", "climate change", "business team")\n- color alani konuya uygun hex renk kodu (# olmadan)\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun`;
-        $('user-input').value = pptxPrompt;
+        $('user-input').value = jsonPrompt;
       } else {
-        const styleMap = {
-          modern: 'sleek dark theme, deep navy/slate background (#0a0f1e), bright accent colors (#38bdf8, #818cf8), bold sans-serif typography, glassmorphism cards',
-          corporate: 'clean white/light gray background (#f8fafc), navy/slate text, blue accent (#1e40af), professional grid layout, subtle shadows',
-          creative: 'vibrant gradient backgrounds (purple to pink to orange), bold typography, large abstract shapes, energetic and dynamic',
-          academic: 'clean white background, serif headings, academic blue (#1e3a5f), structured layout with clear hierarchy'
-        };
-        const pexelsHint = lang === 'en' ? 'Use Pexels stock photo URLs as background images for slides. Example: https://images.pexels.com/photos/[ID]/pexels-photo-[ID].jpeg?auto=compress&cs=tinysrgb&w=1920' : 'Her slayt icin Pexels stok fotograf URLlerini arka plan olarak kullan. Ornek: https://images.pexels.com/photos/[ID]/pexels-photo-[ID].jpeg?auto=compress&cs=tinysrgb&w=1920';
-        const prompt = `${researchPrefix}Asagidaki konu icin ${count} slaytlik, GORSELLI, ANIMASYONLU, son derece sik ve profesyonel bir HTML sunumu olustur:\n\nKonu: ${topic}\nStil: ${styleMap[style] || styleMap.modern}\n${langInstr}\n\nKESINLIKLE UYULMASI GEREKEN TASARIM KURALLARI:\n1. Her slayt tam ekran (100vw x 100vh), overflow:hidden\n2. Her slayta farkli, konuyla alakali Pexels gorsel URL kullan (background-image olarak) + koyu gradient overlay (rgba(0,0,0,0.55) to rgba(10,15,40,0.85))\n3. ${pexelsHint}\n4. Slayt degisim animasyonlari: CSS transitions ile slide/fade efekti\n5. Her slayt icin: buyuk baslik (4-5rem), alt cizgi aksan (gradient), 3-5 madde her biri soldan kayarak gelen animasyonla\n6. Madde noktalari guzel ikonlarla (CSS veya unicode emoji)\n7. Sag alt kose slayt numarasi ve ilerleme cubugu\n8. Klavye oklari + tiklama + swipe ile gecis\n9. Ilk slayt: tam sayfa hero, buyuk baslik, alt baslik, buton\n10. Son slayt: tesekkur/sorular sayfasi\n11. Smooth scroll progress bar en ustte\n12. TUM CSS ve JS inline, sadece tek HTML dosyasi\n13. Mobil responsive\nSadece HTML dosyasini ver, aciklama ekleme.`;
-        $('user-input').value = prompt;
+        _noCanvas = true;
+        _htmlSlideMode = true;
+        $('user-input').value = jsonPrompt;
       }
       handleSend();
     }
@@ -10102,6 +10182,11 @@
 
     // ===== SLIDE PREVIEW =====
     let _pendingPptxData = null;
+    let _htmlSlideMode = false;
+    let _currentPresentationData = null;
+    let _currentPresentationOptions = {};
+    let _slideSelectedColor = '2563eb';
+    let _presentationFormat = 'pptx';
 
     function showSlidePreview(data) {
       _pendingPptxData = data;
@@ -10188,8 +10273,225 @@
         setStatus('PPTX: JSON ayristirilamadi.');
         return;
       }
+      _presentationFormat = 'pptx';
       showSlidePreview(data);
+      const dlBtn2 = $('slide-preview-dl-btn');
+      if (dlBtn2) { dlBtn2.style.display = ''; }
       setStatus('Onizleme hazir. PPTX indirmek icin "PPTX Indir" butonuna basin.');
+    }
+
+    // ===== HTML SLIDE GENERATION =====
+    function generateHTMLFromContent(content) {
+      let data = null;
+      const jsonMatch = content.match(/\{[\s\S]*?"slides"\s*:\s*\[[\s\S]*?\]\s*\}/);
+      if (jsonMatch) {
+        try { data = JSON.parse(jsonMatch[0]); } catch(e) {
+          try { data = JSON.parse(jsonMatch[0].replace(/[\u0000-\u001F\u007F]/g, ' ')); } catch(e2) { data = null; }
+        }
+      }
+      if (!data || !Array.isArray(data.slides) || data.slides.length === 0) {
+        setStatus('HTML Sunum: JSON ayristirilamadi.');
+        return;
+      }
+      if (_currentPresentationOptions.color) data.color = _currentPresentationOptions.color;
+      _currentPresentationData = data;
+      _presentationFormat = 'html';
+      const html = renderHTMLPresentation(data, _currentPresentationOptions);
+      finalizeCanvas(html);
+      showSlidePreview(data);
+      const dlBtn = $('slide-preview-dl-btn');
+      if (dlBtn) { dlBtn.style.display = 'none'; }
+      const editBtn = $('slide-preview-edit-btn');
+      if (editBtn) { editBtn.style.display = ''; }
+      setStatus('HTML sunum hazir! Duzenlemek icin "Duzelt" butonuna basin.');
+    }
+
+    function _escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function renderHTMLPresentation(data, opts) {
+      opts = opts || {};
+      const accentRaw = (data.color || '2563eb').replace('#','');
+      const accent = '#' + accentRaw;
+      const transition = opts.transition || 'slide';
+      const lang = opts.lang || 'tr';
+      const slides = data.slides || [];
+      const totalSlides = slides.length + 2;
+
+      function hexToRgb(h) {
+        h = h.replace('#','').padEnd(6,'0');
+        return parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16);
+      }
+      const accentRgb = hexToRgb(accentRaw);
+
+      const bgs = [
+        `linear-gradient(135deg,#080d1a 0%,#0c1628 100%)`,
+        `linear-gradient(150deg,#070c18 0%,#0a1422 100%)`,
+        `linear-gradient(135deg,#060b15 0%,#0b1830 100%)`,
+        `linear-gradient(160deg,#090e1c 0%,#0d1a2e 100%)`,
+        `linear-gradient(140deg,#07111f 0%,#0c1625 100%)`
+      ];
+
+      const transCss = {
+        slide: `.sl{transform:translateX(100%)}.sl.active{transform:translateX(0)}.sl.prev{transform:translateX(-100%)}`,
+        fade: `.sl{opacity:0}.sl.active{opacity:1}.sl.prev{opacity:0}`,
+        zoom: `.sl{transform:scale(.88);opacity:0}.sl.active{transform:scale(1);opacity:1}.sl.prev{transform:scale(1.06);opacity:0}`,
+        flip: `.sl{transform:perspective(1200px) rotateY(90deg);opacity:0}.sl.active{transform:perspective(1200px) rotateY(0deg);opacity:1}.sl.prev{transform:perspective(1200px) rotateY(-90deg);opacity:0}`
+      };
+
+      const styleBase = `*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#080d1a;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}.sl{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:all .6s cubic-bezier(.4,0,.2,1)}.sl.active{pointer-events:auto}${transCss[transition]||transCss.slide}.bg{position:absolute;inset:0;z-index:0}.bar{position:absolute;left:0;top:0;width:5px;height:100%;background:${accent};z-index:2}.ct{position:relative;z-index:3;width:100%;max-width:920px;padding:52px 68px;display:flex;flex-direction:column;justify-content:center;min-height:100vh}.cover{justify-content:center;padding-top:80px}.ey{font-size:10px;font-weight:700;letter-spacing:.3em;color:${accent};text-transform:uppercase;margin-bottom:18px}.cv{font-size:clamp(2rem,5vw,4.5rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:22px}.cl{width:72px;height:4px;background:${accent};border-radius:2px;margin-bottom:18px}.cs{font-size:clamp(.9rem,2vw,1.35rem);color:#94a3b8;margin-bottom:32px;line-height:1.65}.cb{background:${accent};color:#fff;border:none;padding:13px 30px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;width:fit-content}.cb:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(${accentRgb},.35)}.sh{display:flex;align-items:center;gap:12px;margin-bottom:8px}.si{font-size:2rem;line-height:1}.st{font-size:clamp(1.4rem,3vw,2.5rem);font-weight:700;color:#fff;line-height:1.2}.sl2{width:56px;height:3px;background:${accent};border-radius:2px;margin:12px 0 22px}.ul{list-style:none;display:flex;flex-direction:column;gap:13px}.li{display:flex;align-items:flex-start;gap:11px;font-size:clamp(14px,1.8vw,17px);color:#e2e8f0;line-height:1.6}.bd{color:${accent};font-size:1.3em;font-weight:700;flex-shrink:0;margin-top:-1px}.pw{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.07);z-index:4}.pf{height:100%;background:${accent};border-radius:0 2px 2px 0}.num{position:absolute;bottom:14px;right:18px;font-size:10px;color:rgba(255,255,255,.25);font-weight:600;z-index:4}.oc{align-items:center;text-align:center}.ot{font-size:clamp(2.5rem,6vw,5rem);font-weight:800;color:#fff}.ol{width:90px;height:4px;background:${accent};border-radius:2px;margin:18px auto}.os{font-size:clamp(1rem,2.5vw,1.7rem);color:#94a3b8;margin-bottom:10px}.on{font-size:12px;color:${accent};font-weight:600;letter-spacing:.06em;text-transform:uppercase}@keyframes fi{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}.ai{opacity:0;animation:fi .6s forwards}.d1{animation-delay:.12s}.d2{animation-delay:.25s}.d3{animation-delay:.38s}.d4{animation-delay:.51s}.d5{animation-delay:.64s}.d6{animation-delay:.77s}.d7{animation-delay:.9s}.d8{animation-delay:1.03s}@media(max-width:640px){.ct{padding:32px 28px 32px 36px}.cv{font-size:clamp(1.6rem,7vw,3rem)}.st{font-size:clamp(1.1rem,5vw,2rem)}.li{font-size:13px}}`;
+
+      function makeSlide(idx, inner, prog) {
+        const bgIdx = idx % bgs.length;
+        return `<section class="sl" data-i="${idx}"><div class="bg" style="background:${bgs[bgIdx]}"></div><div class="bar"></div>${inner}<div class="pw"><div class="pf" style="width:${prog}%"></div></div><div class="num">${idx+1}/${totalSlides}</div></section>`;
+      }
+
+      let allSlides = '';
+      const coverInner = `<div class="ct cover"><div class="ey ai">${lang==='en'?'PRESENTATION':'SUNUM'}</div><h1 class="cv ai d1">${_escH(data.title||'')}</h1><div class="cl ai d2"></div>${data.subtitle?`<p class="cs ai d3">${_escH(data.subtitle)}</p>`:''}<button class="cb ai d4" onclick="gt(1)">${lang==='en'?'Begin':'Baslat'} <span style="font-size:18px">→</span></button></div>`;
+      allSlides += makeSlide(0, coverInner, Math.round(1/totalSlides*100)).replace('class="sl"','class="sl active"');
+
+      slides.forEach((s, i) => {
+        const bullets = Array.isArray(s.bullets) ? s.bullets : [];
+        const prog = Math.round((i+2)/totalSlides*100);
+        const bHtml = bullets.map((b,bi)=>`<li class="li ai d${bi+2}"><span class="bd">›</span><span>${_escH(b)}</span></li>`).join('');
+        const inner = `<div class="ct"><div class="sh ai"><span class="si">${s.icon||''}</span><h2 class="st">${_escH(s.title||'')}</h2></div><div class="sl2 ai d1"></div><ul class="ul">${bHtml}</ul></div>`;
+        allSlides += makeSlide(i+1, inner, prog);
+      });
+
+      const outroInner = `<div class="ct oc"><h1 class="ot ai">${lang==='en'?'Thank You':'Tesekkurler'}</h1><div class="ol ai d1"></div><p class="os ai d2">${lang==='en'?'Any questions?':'Sorulariniz?'}</p><p class="on ai d3">${_escH(data.title||'')}</p></div>`;
+      allSlides += makeSlide(totalSlides-1, outroInner, 100);
+
+      const js = `var c=0,sls=document.querySelectorAll('.sl'),n=sls.length;function gt(i){if(i<0||i>=n)return;sls[c].classList.remove('active');sls[c].classList.add('prev');var old=c;c=i;sls[c].classList.add('active');setTimeout(function(){sls[old].classList.remove('prev');},650);sls[c].querySelectorAll('.ai').forEach(function(el){el.style.animation='none';void el.offsetHeight;el.style.animation='';});}function nx(){if(c<n-1)gt(c+1);}function pv(){if(c>0)gt(c-1);}document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')nx();else if(e.key==='ArrowLeft'||e.key==='ArrowUp')pv();});document.addEventListener('click',function(e){if(e.target.closest('button')||e.target.closest('a'))return;e.clientX/innerWidth>.5?nx():pv();});var ts=0,tx=0;document.addEventListener('touchstart',function(e){ts=e.touches[0].clientX;tx=e.touches[0].clientY;},{passive:true});document.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-ts,dy=e.changedTouches[0].clientY-tx;if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){dx<0?nx():pv();}},{passive:true});`;
+
+      return `<!DOCTYPE html>\n<html lang="${lang}">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${_escH(data.title||'Sunum')}</title><style>${styleBase}</style></head>\n<body>${allSlides}<scr`+`ipt>${js}</scr`+`ipt></body></html>`;
+    }
+
+    // ===== SLIDE COLOR SWATCH =====
+    function setSlideColor(color) {
+      color = color.replace('#','');
+      _slideSelectedColor = color;
+      document.querySelectorAll('#slide-color-swatches .slide-color-swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.color === color);
+      });
+      const cust = $('slide-color-custom');
+      if (cust) cust.value = '#' + color;
+    }
+
+    // ===== SLIDE EDITOR =====
+    function openSlideEditor() {
+      if (!_pendingPptxData && !_currentPresentationData) return;
+      const data = _pendingPptxData || _currentPresentationData;
+      const modal = $('slide-editor-modal');
+      if (!modal) return;
+      renderSlideEditorCards(data);
+      const accentRaw = (data.color || '2563eb').replace('#','');
+      setEditorColor(accentRaw);
+      const tr = $('slide-editor-transition');
+      if (tr) tr.value = (_currentPresentationOptions.transition || 'slide');
+      const cnt = $('slide-editor-count');
+      if (cnt) cnt.textContent = (data.slides||[]).length + ' slayt';
+      modal.classList.remove('hidden');
+    }
+
+    function closeSlideEditor() {
+      const modal = $('slide-editor-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderSlideEditorCards(data) {
+      const list = $('slide-editor-list');
+      if (!list) return;
+      const slides = data.slides || [];
+      list.innerHTML = slides.map((s,i) => `
+        <div class="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4 space-y-2.5" id="sec-${i}">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-bold text-neutral-600 uppercase tracking-wider">Slayt ${i+1}</span>
+            <div class="ml-auto flex items-center gap-1">
+              <button onclick="moveSlide(${i},-1)" class="p-1 rounded text-neutral-600 hover:text-neutral-300 text-xs transition-colors" title="Yukari">↑</button>
+              <button onclick="moveSlide(${i},1)" class="p-1 rounded text-neutral-600 hover:text-neutral-300 text-xs transition-colors" title="Asagi">↓</button>
+              <button onclick="removeSlideFromEditor(${i})" class="p-1 rounded text-red-900 hover:text-red-400 text-xs transition-colors" title="Sil">✕</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="sec-icon-${i}" value="${_escH(s.icon||'')}" placeholder="emoji" class="w-12 text-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-2 py-1.5 text-sm outline-none focus:border-teal-600 text-white" />
+            <input type="text" id="sec-title-${i}" value="${_escH(s.title||'')}" placeholder="Slayt basligi..." class="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-teal-600 text-white" />
+          </div>
+          <textarea id="sec-bullets-${i}" rows="3" placeholder="Her satir bir madde..." class="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-xs text-neutral-300 outline-none focus:border-teal-600 resize-none">${(s.bullets||[]).join('\n')}</textarea>
+          <input type="text" id="sec-keyword-${i}" value="${_escH(s.keyword||'')}" placeholder="Pexels gorsel anahtar kelimesi (Ingilizce)..." class="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-xs text-neutral-500 outline-none focus:border-teal-600" />
+        </div>
+      `).join('');
+    }
+
+    function addSlideToEditor() {
+      const data = _pendingPptxData || _currentPresentationData;
+      if (!data) return;
+      data.slides = data.slides || [];
+      data.slides.push({ title: 'Yeni Slayt', icon: '📌', bullets: ['Madde 1', 'Madde 2', 'Madde 3'], notes: '', keyword: '' });
+      renderSlideEditorCards(data);
+      const cnt = $('slide-editor-count');
+      if (cnt) cnt.textContent = data.slides.length + ' slayt';
+      const list = $('slide-editor-list');
+      if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+    }
+
+    function removeSlideFromEditor(i) {
+      const data = _pendingPptxData || _currentPresentationData;
+      if (!data || !data.slides || data.slides.length <= 1) return;
+      data.slides.splice(i, 1);
+      renderSlideEditorCards(data);
+      const cnt = $('slide-editor-count');
+      if (cnt) cnt.textContent = data.slides.length + ' slayt';
+    }
+
+    function moveSlide(i, dir) {
+      const data = _pendingPptxData || _currentPresentationData;
+      if (!data || !data.slides) return;
+      const j = i + dir;
+      if (j < 0 || j >= data.slides.length) return;
+      [data.slides[i], data.slides[j]] = [data.slides[j], data.slides[i]];
+      renderSlideEditorCards(data);
+    }
+
+    function setEditorColor(color) {
+      color = color.replace('#','');
+      document.querySelectorAll('#slide-editor-swatches .slide-color-swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.color === color);
+      });
+      const cust = $('slide-editor-color-custom');
+      if (cust) cust.value = '#' + color;
+    }
+
+    function applySlideEdits() {
+      const data = _pendingPptxData || _currentPresentationData;
+      if (!data) return;
+      const slides = data.slides || [];
+      slides.forEach((s, i) => {
+        const iconEl = document.getElementById(`sec-icon-${i}`);
+        const titleEl = document.getElementById(`sec-title-${i}`);
+        const bulletsEl = document.getElementById(`sec-bullets-${i}`);
+        const keywordEl = document.getElementById(`sec-keyword-${i}`);
+        if (iconEl) s.icon = iconEl.value.trim();
+        if (titleEl) s.title = titleEl.value.trim();
+        if (bulletsEl) s.bullets = bulletsEl.value.split('\n').map(b=>b.trim()).filter(Boolean);
+        if (keywordEl) s.keyword = keywordEl.value.trim();
+      });
+      const colorEl = $('slide-editor-color-custom');
+      if (colorEl) data.color = colorEl.value.replace('#','');
+      const trEl = $('slide-editor-transition');
+      if (trEl) _currentPresentationOptions.transition = trEl.value;
+      if (_presentationFormat === 'html') {
+        const html = renderHTMLPresentation(data, _currentPresentationOptions);
+        finalizeCanvas(html);
+        showSlidePreview(data);
+        const dlBtn = $('slide-preview-dl-btn');
+        if (dlBtn) dlBtn.style.display = 'none';
+        closeSlideEditor();
+        setStatus('Sunum guncellendi.');
+      } else {
+        _pendingPptxData = data;
+        showSlidePreview(data);
+        closeSlideEditor();
+        setStatus('Slaytlar guncellendi. PPTX indirmek icin "PPTX Indir" butonuna basin.');
+      }
     }
 
     async function buildAndDownloadPptx(data) {
