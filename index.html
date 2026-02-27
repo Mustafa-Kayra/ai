@@ -4208,6 +4208,7 @@
     const KEY_PROVIDERS = 'p_providers_v11';
     const KEY_PREFS = 'prefs_v11';
     const KEY_STYLE = 'style_v11';
+    const KEY_CANVAS_STATE = 'canvas_state_v1';
 
     const PRECONFIGURED_PROVIDERS = {
       "google": "https://generativelanguage.googleapis.com/v1beta/openai",
@@ -4800,6 +4801,34 @@
       renderChatList();
       if (chats.length > 0) loadChat(chats[chats.length - 1].id);
       else showWelcome();
+
+      // Restore canvas panel state after page refresh
+      try {
+        const savedCanvasState = JSON.parse(localStorage.getItem(KEY_CANVAS_STATE) || 'null');
+        if (savedCanvasState && savedCanvasState.open && Object.keys(canvasFiles).length > 0) {
+          openCanvas();
+          renderCanvasFileTree();
+          const htmlFile = Object.keys(canvasFiles).find(f => f.endsWith('.html'));
+          if (htmlFile) { selectCanvasFile(htmlFile); updateCanvasPreview(canvasFiles[htmlFile]); switchCanvasTab('preview'); }
+          else if (canvasActiveFile) selectCanvasFile(canvasActiveFile);
+        }
+      } catch (_) {}
+
+      // Save canvas data before page unloads
+      window.addEventListener('beforeunload', () => {
+        const curChat = chats.find(x => x.id === currentChatId);
+        if (curChat && Object.keys(canvasFiles).length > 0) {
+          curChat.canvas = JSON.parse(JSON.stringify(canvasFiles));
+          const chatsToSave = chats.map(c => ({
+            ...c,
+            messages: (c.messages || []).filter(m => !(typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__')))
+          }));
+          localStorage.setItem(KEY_CHATS, JSON.stringify(chatsToSave));
+          if (canvasOpen) {
+            localStorage.setItem(KEY_CANVAS_STATE, JSON.stringify({ open: true, chatId: currentChatId }));
+          }
+        }
+      });
 
       $('menu-btn')?.addEventListener('click', toggleMobileSidebar);
       $('close-sidebar-btn')?.addEventListener('click', toggleMobileSidebar);
@@ -8945,6 +8974,7 @@
 
       canvasOpen = true;
       updateCanvasToggleBtn();
+      localStorage.setItem(KEY_CANVAS_STATE, JSON.stringify({ open: true, chatId: currentChatId }));
     }
 
     function closeCanvas() {
@@ -8967,6 +8997,7 @@
         curChat.canvas = JSON.parse(JSON.stringify(canvasFiles));
         saveAll();
       }
+      localStorage.setItem(KEY_CANVAS_STATE, JSON.stringify({ open: false, chatId: currentChatId }));
       updateCanvasToggleBtn();
     }
 
