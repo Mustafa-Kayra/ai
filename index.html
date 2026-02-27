@@ -8101,196 +8101,78 @@
         canvasTerminal.writeln('  \x1b[36mpython <kod>\x1b[0m    - Python kodu calistir (AI ile)');
         canvasTerminal.writeln('  \x1b[36mnpm <komut>\x1b[0m     - npm komutu calistir (AI ile)');
         canvasTerminal.writeln('  \x1b[36mclear\x1b[0m           - Terminali temizle');
-      }
-
-      else if (command === 'clear') {
+      } else if (command === 'clear') {
         canvasTerminal.clear();
-      }
-
-      else if (command === 'ls') {
+      } else if (command === 'ls') {
         const files = Object.keys(canvasFiles);
         if (files.length === 0) canvasTerminal.writeln('\x1b[90m(bos)\x1b[0m');
-
-        else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f
-          }
-
-            \x1b[0m`));
-      }
-
-      else if (command === 'cat') {
-        if (!args) {
-          canvasTerminal.writeln('\x1b[31mKullanim: cat <dosya>\x1b[0m'); return;
-        }
-
+        else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
+      } else if (command === 'cat') {
+        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: cat <dosya>\x1b[0m'); return; }
         const content = canvasFiles[args];
         if (content) canvasTerminal.writeln(content);
-
-        else canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args
-          }
-
-          \x1b[0m`);
-      }
-
-      else if (command === 'run') {
-        if (!args) {
-          canvasTerminal.writeln('\x1b[31mKullanim: run <dosya>\x1b[0m'); return;
-        }
-
+        else canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
+      } else if (command === 'run') {
+        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: run <dosya>\x1b[0m'); return; }
         const content = canvasFiles[args];
-
         if (!content) {
-          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args
-            }
-
-            \x1b[0m`);
+          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
           const files = Object.keys(canvasFiles);
-
           if (files.length > 0) {
-            canvasTerminal.writeln('\x1b[90mMevcut dosyalar:\x1b[0m'); files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f
-              }
-
-                \x1b[0m`));
-          }
-
-          else canvasTerminal.writeln('\x1b[90m(henuz dosya yok - once AI ile kod olusturun)\x1b[0m');
+            canvasTerminal.writeln('\x1b[90mMevcut dosyalar:\x1b[0m');
+            files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
+          } else canvasTerminal.writeln('\x1b[90m(henuz dosya yok - once AI ile kod olusturun)\x1b[0m');
           return;
         }
-
         if (args.endsWith('.js') || args.endsWith('.mjs')) executeJsInTerminal(content);
         else if (args.endsWith('.py')) executePythonInTerminal(content);
         else canvasTerminal.writeln('\x1b[31mSadece .js ve .py dosyalari calistirilabilir.\x1b[0m');
-      }
-
-      else if (command === 'js' || command === 'javascript') {
+      } else if (command === 'js' || command === 'javascript') {
         executeJsInTerminal(args);
-      }
-
-      else if (command === 'python' || command === 'py') {
+      } else if (command === 'python' || command === 'py') {
         executePythonViaAI(args);
-      }
-
-      else if (command === 'node') {
-        if (!args) {
-          canvasTerminal.writeln('\x1b[31mKullanim: node <dosya.js> veya node <kod>\x1b[0m'); return;
-        }
-
-        // Check if it's a file reference
+      } else if (command === 'node') {
+        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: node <dosya.js> veya node <kod>\x1b[0m'); return; }
         const fileContent = canvasFiles[args] || canvasFiles[args.trim()];
-
         if (fileContent) {
-          canvasTerminal.writeln(`\x1b[33mnode ${args
-            }
-
-            calistiriliyor...\x1b[0m`);
-
-          // Try local execution first for simple JS
+          canvasTerminal.writeln(`\x1b[33mnode ${args} calistiriliyor...\x1b[0m`);
           try {
             const origLog = console.log;
             const origError = console.error;
             const logs = [];
-
-            console.log = (...a) => {
-              logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' '));
-            }
-
-              ;
-
-            console.error = (...a) => {
-              logs.push('\x1b[31m' + a.map(x => String(x)).join(' ') + '\x1b[0m');
-            }
-
-              ;
-            // Check if code uses Node-only features
+            console.log = (...a) => { logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ')); };
+            console.error = (...a) => { logs.push('\x1b[31m' + a.map(x => String(x)).join(' ') + '\x1b[0m'); };
             const hasNodeFeatures = /\b(require|process\.|fs\.|path\.|http\.|https\.|child_process|__dirname|__filename|Buffer\.|module\.exports|import\s+.*from)\b/.test(fileContent);
-
             if (hasNodeFeatures) {
-              console.log = origLog;
-              console.error = origError;
-
-              executeNodeViaAI(`Dosya: ${args
-                }
-
-                \n${fileContent
-                }
-
-                `);
-            }
-
-            else {
+              console.log = origLog; console.error = origError;
+              executeNodeViaAI(`Dosya: ${args}\n${fileContent}`);
+            } else {
               const result = eval(fileContent);
-              console.log = origLog;
-              console.error = origError;
+              console.log = origLog; console.error = origError;
               logs.forEach(l => canvasTerminal.writeln(l));
               if (result !== undefined && logs.length === 0) canvasTerminal.writeln(String(result));
             }
-          }
-
-          catch (e) {
-            canvasTerminal.writeln(`\x1b[31mError: ${e.message
-              }
-
-              \x1b[0m`);
+          } catch (e) {
+            canvasTerminal.writeln(`\x1b[31mError: ${e.message}\x1b[0m`);
             canvasTerminal.writeln('\x1b[33mAI ile yeniden deneniyor...\x1b[0m');
-
-            executeNodeViaAI(`Dosya: ${args
-              }
-
-              \n${fileContent
-              }
-
-              `);
+            executeNodeViaAI(`Dosya: ${args}\n${fileContent}`);
           }
-        }
-
-        else if (args.endsWith('.js') || args.endsWith('.mjs') || args.endsWith('.cjs')) {
-
-          // User typed a filename but it doesn't exist
-          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args
-            }
-
-            \x1b[0m`);
+        } else if (args.endsWith('.js') || args.endsWith('.mjs') || args.endsWith('.cjs')) {
+          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
           canvasTerminal.writeln('\x1b[90mMevcut dosyalar:\x1b[0m');
           const files = Object.keys(canvasFiles);
           if (files.length === 0) canvasTerminal.writeln('  \x1b[90m(bos - once kod olusturun)\x1b[0m');
-
-          else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f
-            }
-
-              \x1b[0m`));
-        }
-
-        else {
-          // Treat as inline code
+          else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
+        } else {
           executeNodeViaAI(args);
         }
-      }
-
-      else if (command === 'npm') {
+      } else if (command === 'npm') {
         executeNpmViaAI(args);
-      }
-
-      else {
-
-        // Check similar commands
-        const suggestions = {
-          'nd': 'node', 'nod': 'node', 'nodejs': 'node', 'py': 'python', 'pip': 'npm', 'exec': 'run', 'execute': 'run', 'start': 'run'
-        }
-
-          ;
+      } else {
+        const suggestions = { 'nd': 'node', 'nod': 'node', 'nodejs': 'node', 'py': 'python', 'pip': 'npm', 'exec': 'run', 'execute': 'run', 'start': 'run' };
         const suggestion = suggestions[command];
-
-        if (suggestion) canvasTerminal.writeln(`\x1b[33mBelki su komutu denemek istersiniz: \x1b[36m${suggestion
-          }
-
-          ${args
-          }
-
-          \x1b[0m`);
-
-        else canvasTerminal.writeln(`\x1b[31mBilinmeyen komut: ${command
-          }
-
-          \x1b[0m \x1b[90m(help yazin)\x1b[0m`);
+        if (suggestion) canvasTerminal.writeln(`\x1b[33mBelki su komutu denemek istersiniz: \x1b[36m${suggestion} ${args}\x1b[0m`);
+        else canvasTerminal.writeln(`\x1b[31mBilinmeyen komut: ${command}\x1b[0m \x1b[90m(help yazin)\x1b[0m`);
       }
     }
 
@@ -8298,23 +8180,13 @@
       try {
         const origLog = console.log;
         const logs = [];
-
-        console.log = (...a) => {
-          logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' '));
-        }
-
-          ;
+        console.log = (...a) => { logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ')); };
         const result = eval(code);
         console.log = origLog;
         logs.forEach(l => canvasTerminal.writeln(l));
         if (result !== undefined && logs.length === 0) canvasTerminal.writeln(String(result));
-      }
-
-      catch (e) {
-        canvasTerminal.writeln(`\x1b[31mError: ${e.message
-          }
-
-          \x1b[0m`);
+      } catch (e) {
+        canvasTerminal.writeln(`\x1b[31mError: ${e.message}\x1b[0m`);
       }
     }
 
@@ -8324,97 +8196,43 @@
 
     async function executePythonViaAI(code) {
       canvasTerminal.writeln('\x1b[33mPython AI ile calistiriliyor...\x1b[0m');
-
       try {
-        const r = await puter.ai.chat([{
-          role: 'system', content: 'Sen bir Python yorumlayicisisin. Verilen kodu calistir ve sadece ciktiyi ver. Aciklama yapma.'
-        }
-
-          ,
-        {
-          role: 'user', content: `Bu Python kodunu calistir ve ciktiyi ver:\n\`\`\`python\n${code
-            }
-
-          \n\`\`\``
-        }
-
-        ], {
-          model: 'gpt-4o-mini'
-        });
+        const r = await puter.ai.chat([
+          { role: 'system', content: 'Sen bir Python yorumlayicisisin. Verilen kodu calistir ve sadece ciktiyi ver. Aciklama yapma.' },
+          { role: 'user', content: `Bu Python kodunu calistir ve ciktiyi ver:\n\`\`\`python\n${code}\n\`\`\`` }
+        ], { model: 'gpt-4o-mini' });
         const out = r?.message?.content || r?.content || '';
         canvasTerminal.writeln(out.replace(/```[\s\S]*?```/g, '').trim());
-      }
-
-      catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message
-          }
-
-        \x1b[0m`);
+      } catch (e) {
+        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
       }
     }
 
     async function executeNodeViaAI(code) {
       canvasTerminal.writeln('\x1b[33mNode.js AI ile calistiriliyor...\x1b[0m');
-
       try {
-        const r = await puter.ai.chat([{
-          role: 'system', content: 'Sen bir Node.js yorumlayicisisin. Verilen kodu calistir ve sadece ciktisini (output) ver. Aciklama yapma, sadece kodun uretecegi ciktiyi goster. Eger kod bir sunucu olusturuyorsa, baslatma mesajini goster. Eger hata varsa hata mesajini goster.'
-        }
-
-          ,
-        {
-          role: 'user', content: `Bu Node.js kodunu calistir ve ciktisini ver:\n\`\`\`javascript\n${code
-            }
-
-          \n\`\`\``
-        }
-
-        ], {
-          model: 'gpt-4o-mini'
-        });
+        const r = await puter.ai.chat([
+          { role: 'system', content: 'Sen bir Node.js yorumlayicisisin. Verilen kodu calistir ve sadece ciktisini (output) ver. Aciklama yapma, sadece kodun uretecegi ciktiyi goster. Eger kod bir sunucu olusturuyorsa, baslatma mesajini goster. Eger hata varsa hata mesajini goster.' },
+          { role: 'user', content: `Bu Node.js kodunu calistir ve ciktisini ver:\n\`\`\`javascript\n${code}\n\`\`\`` }
+        ], { model: 'gpt-4o-mini' });
         const out = (r?.message?.content || r?.content || '').replace(/```[\s\S]*?```/g, '').trim();
         if (out) canvasTerminal.writeln(out);
         else canvasTerminal.writeln('\x1b[90m(cikti yok)\x1b[0m');
-      }
-
-      catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message
-          }
-
-        \x1b[0m`);
+      } catch (e) {
+        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
       }
     }
 
     async function executeNpmViaAI(cmd) {
-      canvasTerminal.writeln(`\x1b[33mnpm ${cmd
-        }
-
-        - AI ile simule ediliyor...\x1b[0m`);
-
+      canvasTerminal.writeln(`\x1b[33mnpm ${cmd} - AI ile simule ediliyor...\x1b[0m`);
       try {
-        const r = await puter.ai.chat([{
-          role: 'system', content: 'npm komutlarinin ciktisini simule et. Gercekci terminal ciktisi ver.'
-        }
-
-          ,
-        {
-          role: 'user', content: `npm ${cmd
-            }
-
-          `
-        }
-
-        ], {
-          model: 'gpt-4o-mini'
-        });
+        const r = await puter.ai.chat([
+          { role: 'system', content: 'npm komutlarinin ciktisini simule et. Gercekci terminal ciktisi ver.' },
+          { role: 'user', content: `npm ${cmd}` }
+        ], { model: 'gpt-4o-mini' });
         canvasTerminal.writeln((r?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim());
-      }
-
-      catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message
-          }
-
-        \x1b[0m`);
+      } catch (e) {
+        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
       }
     }
 
@@ -9283,7 +9101,7 @@
       if (cssFiles.length > 0) {
         cssFiles.forEach(f => {
           const fname = f.split('/').pop();
-          const linkRegex = new RegExp(`<link[^>]*href=["'](?:\\.?\\/?)${fname.replace('.', '\\.')}[" '][^>]*>`, ' gi');
+          const linkRegex = new RegExp(`<link[^>]*href=["'](?:\\.?\\/?)${fname.replace('.', '\\.')}[" '][^>]*>`, 'gi');
           html = html.replace(linkRegex, '');
         });
       }
@@ -9291,7 +9109,7 @@
       if (jsFiles.length > 0) {
         jsFiles.forEach(f => {
           const fname = f.split('/').pop();
-          const scriptRegex = new RegExp(`<script[^>]*src=["'](?:\\.?\\/?)${fname.replace('.', '\\.')}[" '][^>]*>\\s*<\\/script>`, ' gi');
+          const scriptRegex = new RegExp(`<script[^>]*src=["'](?:\\.?\\/?)${fname.replace('.', '\\.')}[" '][^>]*>\\s*<\\/script>`, 'gi');
           html = html.replace(scriptRegex, '');
         });
       }
@@ -9456,7 +9274,8 @@
 
       if (codeBlocks.length === 0) return false;
 
-      canvasFiles = {};
+      const prevCanvasFiles = { ...canvasFiles };
+      const newFiles = {};
       let hasHtml = false;
 
       codeBlocks.forEach((block, idx) => {
@@ -9482,9 +9301,12 @@
         else filename = `file${idx > 0 ? idx : ''}.${ext}`;
 
         // Avoid duplicate names
-        if (canvasFiles[filename]) filename = `${filename.split('.')[0]}_${idx}.${ext}`;
-        canvasFiles[filename] = block.code;
+        if (newFiles[filename]) filename = `${filename.split('.')[0]}_${idx}.${ext}`;
+        newFiles[filename] = block.code;
       });
+
+      // Merge new files into existing canvas (preserves files not mentioned in this response)
+      canvasFiles = { ...prevCanvasFiles, ...newFiles };
 
       // If there's a standalone HTML with full content, try to detect project structure
       if (hasHtml && codeBlocks.length >= 3) {
@@ -9492,15 +9314,15 @@
         const hasReactLike = codeBlocks.some(b => b.code.includes('import React') || b.code.includes('createRoot') || b.code.includes('tsx'));
         if (hasReactLike) {
           // Reorganize
-          const newFiles = {};
+          const reactFiles = {};
           Object.keys(canvasFiles).forEach(f => {
             if (!f.startsWith('src/') && !f.endsWith('.html') && !f.endsWith('.json')) {
-              newFiles['src/' + f] = canvasFiles[f];
+              reactFiles['src/' + f] = canvasFiles[f];
             } else {
-              newFiles[f] = canvasFiles[f];
+              reactFiles[f] = canvasFiles[f];
             }
           });
-          canvasFiles = newFiles;
+          canvasFiles = reactFiles;
         }
       }
 
@@ -9666,9 +9488,11 @@
       if (iframe) iframe.classList.add('hidden');
     }
 
-    function finalizeCanvas(content) {
-      const hasBlocks = extractCanvasFromResponse(content);
-      if (!hasBlocks) return;
+    function finalizeCanvas(content, skipExtract) {
+      if (!skipExtract) {
+        const hasBlocks = extractCanvasFromResponse(content);
+        if (!hasBlocks) return;
+      }
 
       openCanvas();
       renderCanvasFileTree();
