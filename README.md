@@ -11,6 +11,16 @@ npm run dev
 
 Then open `http://localhost:3000/index.html`.
 
+## Real terminal bridge
+
+Canvas icindeki Terminal sekmesi artik yerel bir shell process'ine baglanir. Bunun icin ayri bir terminalde sunu calistirin:
+
+```bash
+npm run proxy
+```
+
+Bu komut hem LLM proxy'yi hem de `xterm.js` icin gereken yerel terminal bridge'ini `http://localhost:8787` uzerinde açar.
+
 ## Build
 
 ```bash

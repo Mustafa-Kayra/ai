@@ -1358,6 +1358,7 @@
       currentChatId = c.id;
       saveAll(); renderChatList(); renderMessages([]); showWelcome();
       updateCanvasToggleBtn();
+      syncTerminalWorkspace();
       $('user-input')?.focus();
     }
 
@@ -1383,6 +1384,7 @@
       updateCanvasToggleBtn();
       renderMessages(c.messages); renderChatList();
       if (c.messages.length === 0) showWelcome(); else hideWelcome();
+      syncTerminalWorkspace();
       $('user-input')?.focus();
     }
 
@@ -4236,6 +4238,7 @@
       if (!name || !content) return;
       canvasFiles[name] = content;
       finalizeCanvas('', true);
+      syncTerminalWorkspace();
     }
 
     function applyAgentActions(query, result) {
@@ -5035,9 +5038,41 @@
       });
     }
 
-    // ---- xterm.js Terminal
+    let terminalSocket = null;
+    let terminalReady = false;
+    let terminalSyncTimer = null;
+
+    function getTerminalBridgeBaseUrl() {
+      const configured = providerSettings?.custom?.proxyUrl || 'http://localhost:8787/v1';
+      try {
+        const url = new URL(configured);
+        return `${url.protocol}//${url.host}`;
+      } catch (e) {
+        return 'http://localhost:8787';
+      }
+    }
+
+    function getTerminalSocketUrl() {
+      const base = getTerminalBridgeBaseUrl();
+      const url = new URL('/terminal/socket', base);
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      return url.toString();
+    }
+
+    function writeTerminalBanner() {
+      if (!canvasTerminal) return;
+      canvasTerminal.writeln('\x1b[1;34m=== AI Project Terminal ===\x1b[0m');
+      canvasTerminal.writeln('\x1b[33mGercek shell baglantisi kuruluyor...\x1b[0m');
+      canvasTerminal.writeln('\x1b[90mYerel terminal bridge icin `npm run proxy` calismali.\x1b[0m');
+      canvasTerminal.writeln('');
+    }
+
     function initCanvasTerminal() {
-      if (canvasTerminal) return;
+      if (canvasTerminal) {
+        if (canvasTerminalFit) setTimeout(() => canvasTerminalFit.fit(), 50);
+        connectCanvasTerminal();
+        return;
+      }
 
       const container = $('terminal-container');
       if (!container) return;
@@ -5076,193 +5111,100 @@
 
       canvasTerminal.open(container);
       if (canvasTerminalFit) setTimeout(() => canvasTerminalFit.fit(), 100);
-      // Shell emulation
-      let cmdBuffer = '';
-      const cwd = '/project';
-      canvasTerminal.writeln('\x1b[1;34m=== AI Project Terminal ===\x1b[0m');
-      canvasTerminal.writeln('\x1b[33mJavaScript, Node.js ve Python kodlarini calistirabilirsiniz.\x1b[0m');
-      canvasTerminal.writeln('\x1b[90mKomutlar: node <dosya|kod>, run <file>, js <code>, python <code>, ls, cat, npm, clear, help\x1b[0m');
-      termPrompt();
+      writeTerminalBanner();
 
-      canvasTerminal.onKey(({ key, domEvent }) => {
-        const keyCode = domEvent.keyCode;
-        if (keyCode === 13) {
-          canvasTerminal.writeln('');
-          processTerminalCommand(cmdBuffer.trim());
-          cmdBuffer = '';
-          termPrompt();
-        } else if (keyCode === 8) {
-          if (cmdBuffer.length > 0) {
-            cmdBuffer = cmdBuffer.slice(0, -1);
-            canvasTerminal.write('\b \b');
-          }
-        } else if (domEvent.ctrlKey && keyCode === 76) {
-          canvasTerminal.clear();
-          termPrompt();
-        } else if (!domEvent.ctrlKey && !domEvent.altKey && !domEvent.metaKey && key.length === 1) {
-          cmdBuffer += key;
-          canvasTerminal.write(key);
+      canvasTerminal.onData(data => {
+        if (terminalSocket && terminalSocket.readyState === WebSocket.OPEN && terminalReady) {
+          terminalSocket.send(JSON.stringify({ type: 'input', data }));
         }
       });
 
       window.addEventListener('resize', () => {
         if (canvasTerminalFit) canvasTerminalFit.fit();
       });
+
+      window.addEventListener('beforeunload', () => {
+        try {
+          if (terminalSocket && terminalSocket.readyState === WebSocket.OPEN) {
+            terminalSocket.send(JSON.stringify({ type: 'terminate' }));
+            terminalSocket.close();
+          }
+        } catch (e) { }
+      });
+
+      connectCanvasTerminal();
     }
 
-    function termPrompt() {
-      canvasTerminal.write('\x1b[32m$ \x1b[0m');
+    function connectCanvasTerminal(forceReconnect = false) {
+      if (!canvasTerminal) return;
+      if (terminalSocket && terminalSocket.readyState === WebSocket.OPEN && !forceReconnect) {
+        syncTerminalWorkspace(true);
+        return;
+      }
+
+      if (terminalSocket && (terminalSocket.readyState === WebSocket.OPEN || terminalSocket.readyState === WebSocket.CONNECTING)) {
+        if (!forceReconnect) return;
+        try { terminalSocket.close(); } catch (e) { }
+      }
+
+      terminalReady = false;
+      const socketUrl = getTerminalSocketUrl();
+      terminalSocket = new WebSocket(socketUrl);
+
+      terminalSocket.addEventListener('open', () => {
+        canvasTerminal?.writeln('\x1b[32m[terminal] bridge baglandi\x1b[0m');
+        syncTerminalWorkspace(true);
+      });
+
+      terminalSocket.addEventListener('message', (event) => {
+        try {
+          const payload = JSON.parse(String(event.data || '{}'));
+          if (payload.type === 'ready') {
+            terminalReady = true;
+            canvasTerminal?.writeln(`\x1b[90m[terminal] shell hazir: ${payload.shell || 'shell'}\x1b[0m`);
+            canvasTerminal?.writeln(`\x1b[90m[terminal] calisma klasoru: ${payload.cwd || ''}\x1b[0m`);
+          } else if (payload.type === 'output') {
+            canvasTerminal?.write(payload.data || '');
+          } else if (payload.type === 'synced') {
+            canvasTerminal?.writeln(`\r\n\x1b[90m[terminal] workspace senkronize edildi (${payload.fileCount || 0} dosya)\x1b[0m`);
+          } else if (payload.type === 'error') {
+            canvasTerminal?.writeln(`\r\n\x1b[31m[terminal] ${payload.message || 'bilinmeyen hata'}\x1b[0m`);
+          } else if (payload.type === 'exit') {
+            terminalReady = false;
+            canvasTerminal?.writeln(`\r\n\x1b[33m[terminal] shell kapandi (kod ${payload.code ?? 0})\x1b[0m`);
+          }
+        } catch (e) {
+          canvasTerminal?.writeln(`\r\n\x1b[31m[terminal] gecersiz mesaj: ${e.message}\x1b[0m`);
+        }
+      });
+
+      terminalSocket.addEventListener('close', () => {
+        terminalReady = false;
+        canvasTerminal?.writeln('\r\n\x1b[31m[terminal] baglanti kapandi. Yerel bridge icin `npm run proxy` calistigindan emin olun.\x1b[0m');
+      });
+
+      terminalSocket.addEventListener('error', () => {
+        terminalReady = false;
+        canvasTerminal?.writeln('\r\n\x1b[31m[terminal] baglanti kurulamadi. `npm run proxy` komutunu ayri bir terminalde calistirin.\x1b[0m');
+      });
     }
 
-    function processTerminalCommand(cmd) {
-      if (!cmd) return;
-      const parts = cmd.split(/\s+/);
-      const command = parts[0].toLowerCase();
-      const args = parts.slice(1).join(' ');
-
-      if (command === 'help') {
-        canvasTerminal.writeln('\x1b[1mKullanilabilir Komutlar:\x1b[0m');
-        canvasTerminal.writeln('  \x1b[36mls\x1b[0m              - Dosyalari listele');
-        canvasTerminal.writeln('  \x1b[36mcat <dosya>\x1b[0m     - Dosya icerigini goster');
-        canvasTerminal.writeln('  \x1b[36mrun <dosya>\x1b[0m     - JS/PY dosyasini calistir');
-        canvasTerminal.writeln('  \x1b[36mnode <dosya|kod>\x1b[0m - Node.js dosyasi veya kodu calistir');
-        canvasTerminal.writeln('  \x1b[36mjs <kod>\x1b[0m        - JavaScript kodu calistir');
-        canvasTerminal.writeln('  \x1b[36mpython <kod>\x1b[0m    - Python kodu calistir (AI ile)');
-        canvasTerminal.writeln('  \x1b[36mnpm <komut>\x1b[0m     - npm komutu calistir (AI ile)');
-        canvasTerminal.writeln('  \x1b[36mclear\x1b[0m           - Terminali temizle');
-      } else if (command === 'clear') {
-        canvasTerminal.clear();
-      } else if (command === 'ls') {
-        const files = Object.keys(canvasFiles);
-        if (files.length === 0) canvasTerminal.writeln('\x1b[90m(bos)\x1b[0m');
-        else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
-      } else if (command === 'cat') {
-        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: cat <dosya>\x1b[0m'); return; }
-        const content = canvasFiles[args];
-        if (content) canvasTerminal.writeln(content);
-        else canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
-      } else if (command === 'run') {
-        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: run <dosya>\x1b[0m'); return; }
-        const content = canvasFiles[args];
-        if (!content) {
-          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
-          const files = Object.keys(canvasFiles);
-          if (files.length > 0) {
-            canvasTerminal.writeln('\x1b[90mMevcut dosyalar:\x1b[0m');
-            files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
-          } else canvasTerminal.writeln('\x1b[90m(henuz dosya yok - once AI ile kod olusturun)\x1b[0m');
+    function syncTerminalWorkspace(immediate = false) {
+      if (!canvasTerminal) return;
+      const send = () => {
+        if (!terminalSocket || terminalSocket.readyState !== WebSocket.OPEN) {
+          connectCanvasTerminal();
           return;
         }
-        if (args.endsWith('.js') || args.endsWith('.mjs')) executeJsInTerminal(content);
-        else if (args.endsWith('.py')) executePythonInTerminal(content);
-        else canvasTerminal.writeln('\x1b[31mSadece .js ve .py dosyalari calistirilabilir.\x1b[0m');
-      } else if (command === 'js' || command === 'javascript') {
-        executeJsInTerminal(args);
-      } else if (command === 'python' || command === 'py') {
-        executePythonViaAI(args);
-      } else if (command === 'node') {
-        if (!args) { canvasTerminal.writeln('\x1b[31mKullanim: node <dosya.js> veya node <kod>\x1b[0m'); return; }
-        const fileContent = canvasFiles[args] || canvasFiles[args.trim()];
-        if (fileContent) {
-          canvasTerminal.writeln(`\x1b[33mnode ${args} calistiriliyor...\x1b[0m`);
-          try {
-            const origLog = console.log;
-            const origError = console.error;
-            const logs = [];
-            console.log = (...a) => { logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ')); };
-            console.error = (...a) => { logs.push('\x1b[31m' + a.map(x => String(x)).join(' ') + '\x1b[0m'); };
-            const hasNodeFeatures = /\b(require|process\.|fs\.|path\.|http\.|https\.|child_process|__dirname|__filename|Buffer\.|module\.exports|import\s+.*from)\b/.test(fileContent);
-            if (hasNodeFeatures) {
-              console.log = origLog; console.error = origError;
-              executeNodeViaAI(`Dosya: ${args}\n${fileContent}`);
-            } else {
-              const result = eval(fileContent);
-              console.log = origLog; console.error = origError;
-              logs.forEach(l => canvasTerminal.writeln(l));
-              if (result !== undefined && logs.length === 0) canvasTerminal.writeln(String(result));
-            }
-          } catch (e) {
-            canvasTerminal.writeln(`\x1b[31mError: ${e.message}\x1b[0m`);
-            canvasTerminal.writeln('\x1b[33mAI ile yeniden deneniyor...\x1b[0m');
-            executeNodeViaAI(`Dosya: ${args}\n${fileContent}`);
-          }
-        } else if (args.endsWith('.js') || args.endsWith('.mjs') || args.endsWith('.cjs')) {
-          canvasTerminal.writeln(`\x1b[31mDosya bulunamadi: ${args}\x1b[0m`);
-          canvasTerminal.writeln('\x1b[90mMevcut dosyalar:\x1b[0m');
-          const files = Object.keys(canvasFiles);
-          if (files.length === 0) canvasTerminal.writeln('  \x1b[90m(bos - once kod olusturun)\x1b[0m');
-          else files.forEach(f => canvasTerminal.writeln(` \x1b[36m${f}\x1b[0m`));
-        } else {
-          executeNodeViaAI(args);
-        }
-      } else if (command === 'npm') {
-        executeNpmViaAI(args);
-      } else {
-        const suggestions = { 'nd': 'node', 'nod': 'node', 'nodejs': 'node', 'py': 'python', 'pip': 'npm', 'exec': 'run', 'execute': 'run', 'start': 'run' };
-        const suggestion = suggestions[command];
-        if (suggestion) canvasTerminal.writeln(`\x1b[33mBelki su komutu denemek istersiniz: \x1b[36m${suggestion} ${args}\x1b[0m`);
-        else canvasTerminal.writeln(`\x1b[31mBilinmeyen komut: ${command}\x1b[0m \x1b[90m(help yazin)\x1b[0m`);
-      }
-    }
+        terminalSocket.send(JSON.stringify({
+          type: terminalReady ? 'sync-files' : 'init',
+          files: canvasFiles || {}
+        }));
+      };
 
-    function executeJsInTerminal(code) {
-      try {
-        const origLog = console.log;
-        const logs = [];
-        console.log = (...a) => { logs.push(a.map(x => typeof x === 'object' ? JSON.stringify(x, null, 2) : String(x)).join(' ')); };
-        const result = eval(code);
-        console.log = origLog;
-        logs.forEach(l => canvasTerminal.writeln(l));
-        if (result !== undefined && logs.length === 0) canvasTerminal.writeln(String(result));
-      } catch (e) {
-        canvasTerminal.writeln(`\x1b[31mError: ${e.message}\x1b[0m`);
-      }
-    }
-
-    function executePythonInTerminal(code) {
-      executePythonViaAI(code);
-    }
-
-    async function executePythonViaAI(code) {
-      canvasTerminal.writeln('\x1b[33mPython AI ile calistiriliyor...\x1b[0m');
-      try {
-        const r = await puter.ai.chat([
-          { role: 'system', content: 'Sen bir Python yorumlayicisisin. Verilen kodu calistir ve sadece ciktiyi ver. Aciklama yapma.' },
-          { role: 'user', content: `Bu Python kodunu calistir ve ciktiyi ver:\n\`\`\`python\n${code}\n\`\`\`` }
-        ], { model: 'gpt-4o-mini' });
-        const out = r?.message?.content || r?.content || '';
-        canvasTerminal.writeln(out.replace(/```[\s\S]*?```/g, '').trim());
-      } catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
-      }
-    }
-
-    async function executeNodeViaAI(code) {
-      canvasTerminal.writeln('\x1b[33mNode.js AI ile calistiriliyor...\x1b[0m');
-      try {
-        const r = await puter.ai.chat([
-          { role: 'system', content: 'Sen bir Node.js yorumlayicisisin. Verilen kodu calistir ve sadece ciktisini (output) ver. Aciklama yapma, sadece kodun uretecegi ciktiyi goster. Eger kod bir sunucu olusturuyorsa, baslatma mesajini goster. Eger hata varsa hata mesajini goster.' },
-          { role: 'user', content: `Bu Node.js kodunu calistir ve ciktisini ver:\n\`\`\`javascript\n${code}\n\`\`\`` }
-        ], { model: 'gpt-4o-mini' });
-        const out = (r?.message?.content || r?.content || '').replace(/```[\s\S]*?```/g, '').trim();
-        if (out) canvasTerminal.writeln(out);
-        else canvasTerminal.writeln('\x1b[90m(cikti yok)\x1b[0m');
-      } catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
-      }
-    }
-
-    async function executeNpmViaAI(cmd) {
-      canvasTerminal.writeln(`\x1b[33mnpm ${cmd} - AI ile simule ediliyor...\x1b[0m`);
-      try {
-        const r = await puter.ai.chat([
-          { role: 'system', content: 'npm komutlarinin ciktisini simule et. Gercekci terminal ciktisi ver.' },
-          { role: 'user', content: `npm ${cmd}` }
-        ], { model: 'gpt-4o-mini' });
-        canvasTerminal.writeln((r?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim());
-      } catch (e) {
-        canvasTerminal.writeln(`\x1b[31mHata: ${e.message}\x1b[0m`);
-      }
+      clearTimeout(terminalSyncTimer);
+      if (immediate) send();
+      else terminalSyncTimer = setTimeout(send, 350);
     }
 
     // ---- Multi-Model Comparison
@@ -6579,6 +6521,7 @@
 
       const curChat = chats.find(x => x.id === currentChatId);
       if (curChat) { curChat.canvas = JSON.parse(JSON.stringify(canvasFiles)); saveAll(); }
+      syncTerminalWorkspace();
     }
 
     // ---- Deep Research System
@@ -7668,6 +7611,7 @@
     window.escapeHtml = escapeHtml;
     window.enrichAssistantMessage = enrichAssistantMessage;
     window.applyAgentActions = applyAgentActions;
+    window.syncTerminalWorkspace = syncTerminalWorkspace;
     window.renderFilePreviews = renderFilePreviews;
     window.recognition = typeof recognition !== 'undefined' ? recognition : null;
     window.currentUtterance = typeof currentUtterance !== 'undefined' ? currentUtterance : null;

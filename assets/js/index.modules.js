@@ -70,6 +70,7 @@
             if (!this.currentFile || !window.canvasFiles) return;
             const newContent = this.editor.getValue();
             window.canvasFiles[this.currentFile] = newContent;
+            if (typeof window.syncTerminalWorkspace === 'function') window.syncTerminalWorkspace();
 
             clearTimeout(this._previewTimer);
             this._previewTimer = setTimeout(() => {
