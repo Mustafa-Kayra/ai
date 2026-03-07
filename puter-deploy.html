@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puter Deploy Console</title>
+  <script src="https://js.puter.com/v2/"></script>
+  <link rel="stylesheet" href="assets/css/puter-deploy.css">
+</head>
+
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Puter Hosting</div>
+      <h1>Deploy veya Update</h1>
+      <p>`dist-puter` build çıktısını Puter'a yükler, site varsa günceller, yoksa oluşturur.</p>
+    </section>
+
+    <section class="card form-card">
+      <div class="grid">
+        <label class="field">
+          <span>Subdomain</span>
+          <input id="subdomain-input" type="text" placeholder="ornek-site">
+        </label>
+        <label class="field">
+          <span>Kaynak Klasor</span>
+          <input id="source-root-input" type="text" value="dist-puter" placeholder="dist-puter">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="signin-btn" class="btn secondary" type="button">Puter Giris</button>
+        <button id="inspect-btn" class="btn ghost" type="button">Manifest Oku</button>
+        <button id="list-sites-btn" class="btn ghost" type="button">Siteleri Listele</button>
+        <button id="deploy-btn" class="btn primary" type="button">Deploy / Update</button>
+      </div>
+
+      <div class="meta">
+        <div id="auth-status">Durum: kontrol edilmedi</div>
+        <div id="manifest-status">Manifest: bekleniyor</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>Erisilebilen Siteler</h2>
+        <span id="site-count">0 site</span>
+      </div>
+      <div id="sites-preview" class="manifest-preview">Henüz yüklenmedi.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>Son Manifest</h2>
+        <span id="manifest-count">0 dosya</span>
+      </div>
+      <div id="manifest-preview" class="manifest-preview">Henüz okunmadı.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>Log</h2>
+        <button id="clear-log-btn" class="btn ghost small" type="button">Temizle</button>
+      </div>
+      <pre id="log-output" class="log-output"></pre>
+    </section>
+  </main>
+
+  <script src="assets/js/puter-deploy.js"></script>
+</body>
+
+</html>

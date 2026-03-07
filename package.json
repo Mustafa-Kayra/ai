@@ -1,14 +1,20 @@
 {
-  "name": "ai-chat-app",
+  "name": "ai-project",
+  "private": true,
   "version": "1.0.0",
+  "description": "Static AI chat app build and test tooling",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "node scripts/dev.mjs",
+    "dev:dist": "node scripts/dev.mjs --root dist --port 4173",
+    "build": "node scripts/build.mjs",
+    "build:puter": "node scripts/build.mjs --target puter",
+    "proxy": "node scripts/proxy.mjs",
+    "split:html": "node scripts/split-html.mjs",
+    "test": "node tests/smoke.test.mjs",
+    "check": "npm run test && npm run build"
   },
-  "devDependencies": {
-    "vite": "^5.4.2",
-    "vite-plugin-singlefile": "^2.3.0"
+  "engines": {
+    "node": ">=24"
   }
 }

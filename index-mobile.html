@@ -18,9 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (typeof pdfjsLib !== 'undefined') {
@@ -2804,58 +2801,6 @@
       max-width: 600px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
     }
-
-    /* ===== MODULE STYLES ===== */
-    /* Monaco editor container */
-    #monaco-container {
-      width: 100%;
-      height: 100%;
-      min-height: 300px;
-    }
-
-    .canvas-file-content:has(#monaco-container) {
-      overflow: hidden;
-    }
-
-    /* RAG Panel */
-    #rag-panel {
-      scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
-    }
-
-    #rag-drop-zone.dragover {
-      border-color: #a855f7;
-      background: rgba(168, 85, 247, 0.05);
-    }
-
-    /* Vision analysis button */
-    #vision-btn.active {
-      color: #22d3ee;
-      background: rgba(34, 211, 238, 0.1);
-    }
-
-    /* Export buttons on messages */
-    .msg-wrap:hover .export-msg-btn {
-      opacity: 1 !important;
-    }
-
-    /* Mindmap responsive */
-    @media (max-width: 768px) {
-      .mindmap-container {
-        min-height: 220px;
-      }
-
-      .mindmap-node {
-        font-size: 10px;
-        max-width: 140px;
-        padding: 6px 10px;
-      }
-
-      #rag-panel {
-        width: 100% !important;
-        max-width: 100%;
-      }
-    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
@@ -3143,35 +3088,6 @@
               <line x1="16" y1="17" x2="8" y2="17" />
               <line x1="10" y1="9" x2="8" y2="9" />
             </svg>Rapor</button>
-          <div class="w-px h-4 bg-[#222] mx-1"></div><button onclick="if(window.RAGModule)RAGModule.togglePanel()"
-            class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-purple-400 hover:bg-purple-500/5 transition-all"
-            title="Bilgi Bankasi (RAG)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" class="inline mr-0.5">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-            </svg>RAG</button><button onclick="if(window.MindMapModule)window.MindMapModule.toggle()"
-            class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all"
-            title="Dusunce Haritasi"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" class="inline mr-0.5">
-              <path d="M12 2v4" />
-              <path d="m16 8-4 4-4-4" />
-              <circle cx="12" cy="18" r="3" />
-              <path d="M3 13h2" />
-              <path d="M19 13h2" />
-            </svg>Düşünce</button><button onclick="if(window.ExportModule)ExportModule.exportFullChatPDF()"
-            class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-blue-400 hover:bg-blue-500/5 transition-all"
-            title="Sohbeti PDF Olarak Indir"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" class="inline mr-0.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>PDF</button><button onclick="if(window.VisionModule)VisionModule.openVisionMode()"
-            class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/5 transition-all"
-            title="Gorsel Analiz"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" class="inline mr-0.5">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>Gorsel</button>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -3336,30 +3252,6 @@
             class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Ozet</button>
           <button type="button" data-fmt="detailed" onclick="toggleFormat('detailed')"
             class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Detayli</button>
-        </div>
-        <div id="builder-preset-bar" class="flex items-center gap-1.5 mb-2 flex-wrap">
-          <span class="fmt-bar-label text-[10px] text-neutral-600 mr-0.5 uppercase tracking-wider font-semibold">Builder:</span>
-          <button type="button" onclick="injectPrompt('builder-landing')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Landing</button>
-          <button type="button" onclick="injectPrompt('builder-portfolio')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Portfolio</button>
-          <button type="button" onclick="injectPrompt('builder-dashboard')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Dashboard</button>
-          <button type="button" onclick="injectPrompt('builder-blog')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Blog</button>
-          <button type="button" onclick="injectPrompt('builder-todo')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Todo App</button>
-        </div>
-        <div id="multimodal-quick-actions" class="flex items-center gap-1.5 mb-2 flex-wrap">
-          <span class="fmt-bar-label text-[10px] text-neutral-600 mr-0.5 uppercase tracking-wider font-semibold">Vision:</span>
-          <button type="button" onclick="injectPrompt('quick-ui')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">UI'ye cevir</button>
-          <button type="button" onclick="injectPrompt('quick-table')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Tabloya cevir</button>
-          <button type="button" onclick="injectPrompt('quick-code')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Koda cevir</button>
-          <button type="button" onclick="injectPrompt('quick-component')"
-            class="fmt-btn px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-[#2a2a2a] text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">Component uret</button>
         </div>
         <div class="input-box flex items-end gap-2 p-2.5"><button id="upload-btn"
             class="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-white hover:bg-white/5 transition-all shrink-0"
@@ -4934,8 +4826,6 @@
     const KEY_PREFS = 'prefs_v11';
     const KEY_STYLE = 'style_v11';
     const KEY_CANVAS_STATE = 'canvas_state_v1';
-    const KEY_PROJECTS = 'workspace_projects_v1';
-    const KEY_ANALYTICS = 'app_analytics_v1';
 
     const PRECONFIGURED_PROVIDERS = {
       "google": "https://generativelanguage.googleapis.com/v1beta/openai",
@@ -5035,7 +4925,7 @@
       providerSettings.active = 'puter';
     }
 
-    let prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{"modelA":"gpt-4o-mini","stream":true,"maxTokens":4096,"fontSize":"md","accent":"blue","notifySound":false,"showThinking":true,"uiFont":"system","uiDensity":"comfortable","codeTheme":"dark"}');
+    let prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{"modelA":"gpt-4o-mini","stream":true,"maxTokens":4096,"fontSize":"md","accent":"blue","notifySound":false,"showThinking":true}');
     // Migrate: ensure showThinking exists in saved prefs
     if (prefs.showThinking === undefined) prefs.showThinking = true;
     let _noCanvas = false;
@@ -5055,8 +4945,6 @@
     let canvasTerminal = null;
     let canvasTerminalFit = null;
     let lastCanvasPreviewSrcdoc = '';
-    let workspaceProjects = JSON.parse(localStorage.getItem(KEY_PROJECTS) || '[]');
-    let appAnalytics = JSON.parse(localStorage.getItem(KEY_ANALYTICS) || '{"featureUsage":{},"modelUsage":{},"exports":{},"history":[],"lastUpdated":0}');
 
     const PROMPT_TEMPLATES = [{
       icon: '🌐', title: 'Ceviri', color: 'text-cyan-400', prompt: 'Su metni Ingilizceye cevir: '
@@ -5449,13 +5337,62 @@
 
       $('voice-conv-btn').onclick = toggleVoiceConv;
     }
+    // ---- Puter Auth - Mobil WebView Redirect Yaklaşımı ----
+    // Popup ve iframe WebView'de çalışmıyor, bu yüzden tüm sayfayı puter.com'a yönlendiriyoruz.
+    // Kullanıcı puter.com'da giriş yapıp geri tuşuyla app'e döndüğünde SDK auth durumunu otomatik algılar.
+
+    function openPuterAuthModal() {
+      // Dönüş için flag kaydet
+      localStorage.setItem('_puter_auth_pending', '1');
+      // Tüm sayfayı puter.com'a yönlendir
+      window.location.href = 'https://puter.com';
+    }
+
+    // Kullanıcı puter.com'dan geri döndüğünde auth kontrolü
+    function checkPuterAuthReturn() {
+      const pending = localStorage.getItem('_puter_auth_pending');
+      if (pending) {
+        localStorage.removeItem('_puter_auth_pending');
+        // Kısa bir gecikme ile auth kontrolü yap
+        setTimeout(() => {
+          try {
+            if (typeof puter !== 'undefined' && puter.auth && puter.auth.isSignedIn()) {
+              setStatus('Puter giriş başarılı!');
+              let loginBtn = document.getElementById('login-btn');
+              if (loginBtn) loginBtn.style.display = 'none';
+            } else {
+              setStatus('Puter girişi tamamlanmadı. Tekrar deneyin.');
+            }
+          } catch (e) {
+            console.error('Puter auth return check error:', e);
+          }
+        }, 2000);
+      }
+    }
+
+    // Sayfa tekrar görünür olduğunda auth kontrolü (uygulamaya geri dönüldüğünde)
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        setTimeout(() => {
+          try {
+            if (typeof puter !== 'undefined' && puter.auth && puter.auth.isSignedIn()) {
+              let loginBtn = document.getElementById('login-btn');
+              if (loginBtn && loginBtn.style.display !== 'none') {
+                loginBtn.style.display = 'none';
+                setStatus('Puter giriş başarılı!');
+              }
+            }
+          } catch (e) { }
+        }, 1500);
+      }
+    });
 
     // ---- Boot
     async function boot() {
       initSupabase();
+      checkPuterAuthReturn(); // Puter.com'dan geri dönüş kontrolü
       setStatus('Baslatiliyor...');
       loadSavedPrompts();
-      initProductEnhancements();
       initSpeech();
       initDragDrop();
       initKeyboardShortcuts();
@@ -5464,7 +5401,6 @@
       if (prefs.fontSize) setFontSize(prefs.fontSize);
       if (prefs.accent && prefs.accent !== 'blue') setAccent(prefs.accent);
       else updateAccentButtons('blue');
-      applyAppearancePrefs();
       if (!prefs.showThinking) document.body.classList.add('hide-thinking');
 
       if (typeof marked !== 'undefined') {
@@ -5494,24 +5430,15 @@
 
       if (providerSettings.authMode === 'puter') {
         if (!puter.auth.isSignedIn()) {
-          setStatus('Giris yapmaniz gerekiyor.');
-          $('login-btn').style.display = 'flex';
-
-          $('login-btn').onclick = async () => {
-            try {
-              await puter.auth.signIn(); location.reload();
-            }
-
-            catch (e) {
-              alert('Giris basarisiz.');
-            }
+          setStatus('Puter ile giriş yapmanız gerekiyor.');
+          let loginBtn = document.getElementById('login-btn');
+          if (loginBtn) {
+            loginBtn.style.display = 'flex';
+            loginBtn.onclick = () => openPuterAuthModal();
           }
-
-            ;
-        }
-
-        else {
-          $('login-btn').style.display = 'none';
+        } else {
+          let loginBtn = document.getElementById('login-btn');
+          if (loginBtn) loginBtn.style.display = 'none';
         }
       }
 
@@ -6011,10 +5938,9 @@
           }
         }
 
-	        else if (m.role === 'assistant') {
-	          let contentHtml = m.content || '';
-	          let thinkingHtml = '';
-          const assistantMetaHtml = buildAssistantMetaHtml(m);
+        else if (m.role === 'assistant') {
+          let contentHtml = m.content || '';
+          let thinkingHtml = '';
 
           // Extract thinking/reasoning seamlessly (handles unclosed tags during streaming too)
           if (typeof contentHtml === 'string' && contentHtml.length > 0) {
@@ -6158,16 +6084,13 @@
           div.innerHTML = ` <div class="flex items-center gap-2.5 px-1" > <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-[9px] font-bold text-white" >AI</div> <span class="text-[11px] text-neutral-500 font-semibold" >${escapeHtml(m.model || 'Assistant')
             }
 
-	          </span> </div> <div class="msg-ai-block text-sm leading-relaxed prose max-w-none pl-[34px]" > ${prefs.showThinking ? thinkingHtml : ''
-	            }
+          </span> </div> <div class="msg-ai-block text-sm leading-relaxed prose max-w-none pl-[34px]" > ${prefs.showThinking ? thinkingHtml : ''
+            }
 
-	          ${contentHtml
-	            }
+          ${contentHtml
+            }
 
-            ${assistantMetaHtml
-              }
-
-	          </div> <div class="msg-actions pl-[34px]" > ${m.branches && m.branches.length > 0 ? ` < div class="flex items-center gap-1 mr-2" > <button class="msg-action-btn px-1" onclick="switchBranch(${idx},-1)" title="Onceki varyant" ><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" ><path d="M15 18l-6-6 6-6" /></svg></button> <span class="text-[9px] text-neutral-500 font-mono" >${m.activeBranch || (m.branches.length + 1)
+          </div> <div class="msg-actions pl-[34px]" > ${m.branches && m.branches.length > 0 ? ` < div class="flex items-center gap-1 mr-2" > <button class="msg-action-btn px-1" onclick="switchBranch(${idx},-1)" title="Onceki varyant" ><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" ><path d="M15 18l-6-6 6-6" /></svg></button> <span class="text-[9px] text-neutral-500 font-mono" >${m.activeBranch || (m.branches.length + 1)
               }
 
             /${m.branches.length + 1
@@ -6234,29 +6157,28 @@
         alert("Max 20 dosya."); return;
       }
 
+      // Collect document files to auto-add to RAG
       const ragCandidates = [];
-      const duplicateFingerprints = new Set(selectedFiles.map(f => createRequestFingerprint(f.file || f)));
-      const addedNames = [];
 
       for (const file of files) {
-        const fingerprint = createRequestFingerprint(file);
-        if (duplicateFingerprints.has(fingerprint)) continue;
-        duplicateFingerprints.add(fingerprint);
-
         const fd = {
-          id: Date.now() + Math.random(), name: file.name, type: file.type, file, size: (file.size / 1024 / 1024).toFixed(2) + ' MB', fingerprint
-        };
+          id: Date.now() + Math.random(), name: file.name, type: file.type, file, size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+        }
+
+          ;
         if (file.type.startsWith('image/')) fd.preview = await readFileAsDataURL(file);
         else if (file.type.startsWith('video/')) fd.preview = URL.createObjectURL(file);
         else fd.preview = null;
         selectedFiles.push(fd);
-        addedNames.push(file.name);
-
         if (ocrMode && file.type.startsWith('image/')) {
           performOCR(file);
         }
 
-        if (window.RAGModule && window.RAGModule.isSupportedFile(file)) {
+        // Auto-add PDF, TXT, MD, CSV, JSON files to RAG module for persistent access
+        const ragTypes = ['application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'application/json'];
+        const ragExts = ['.pdf', '.txt', '.md', '.csv', '.json'];
+        const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+        if (ragTypes.includes(file.type) || ragExts.includes(fileExt)) {
           ragCandidates.push(file);
         }
       }
@@ -6264,16 +6186,14 @@
       renderFilePreviews();
       e.target.value = '';
 
-      if (addedNames.length > 0) {
-        setStatus(`${addedNames.length} dosya secildi.`);
-      }
-
+      // Auto-add document files to RAG in background (non-blocking)
       if (ragCandidates.length > 0 && window.RAGModule) {
-        const newFiles = ragCandidates.filter(f => !window.RAGModule.hasDocumentFingerprint(createRequestFingerprint(f)));
+        const alreadyInRAG = (window.RAGModule.documents || []).map(d => d.name);
+        const newFiles = ragCandidates.filter(f => !alreadyInRAG.includes(f.name));
         if (newFiles.length > 0) {
-          setStatus(`${newFiles.length} dokuman Bilgi Bankasina ekleniyor...`);
-          window.RAGModule._handleFiles(newFiles, { silentBatch: newFiles.length > 1 }).then(() => {
-            setStatus(`${newFiles.length} dokuman Bilgi Bankasina eklendi.`);
+          setStatus(`${newFiles.length} dosya Bilgi Bankasina (RAG) ekleniyor...`);
+          window.RAGModule._handleFiles(newFiles).then(() => {
+            setStatus(`${newFiles.length} dosya RAG'e eklendi. Sonraki mesajlarda da erisebilirsiniz.`);
           }).catch(() => { });
         }
       }
@@ -6312,12 +6232,6 @@
         });
         const text = result.data.text.trim();
         if (!text) { setStatus('OCR: Metin bulunamadi.'); return; }
-        lastStructuredOcr = {
-          fileName: file.name,
-          text,
-          confidence: result.data.confidence || 0,
-          lines: (result.data.lines || []).map(line => ({ text: line.text, confidence: line.confidence || 0 })).filter(line => line.text && line.text.trim())
-        };
         const inp = $('user-input');
         const prefix = inp.value ? inp.value + '\n\n' : '';
         inp.value = prefix + '[Resimden cikarilan metin]:\n' + text;
@@ -6497,80 +6411,18 @@
     }
 
     // ---- Prompt Injection
-    const BUILDER_PRESETS = {
-      'builder-landing': { type: 'landing page', style: 'modern', responsive: true, sections: ['hero', 'features', 'pricing', 'cta'] },
-      'builder-portfolio': { type: 'portfolio', style: 'clean', responsive: true, sections: ['hero', 'projects', 'about', 'contact'] },
-      'builder-dashboard': { type: 'dashboard', style: 'professional', responsive: true, sections: ['sidebar', 'stats', 'charts', 'activity'] },
-      'builder-blog': { type: 'blog', style: 'editorial', responsive: true, sections: ['hero', 'post-grid', 'categories', 'newsletter'] },
-      'builder-todo': { type: 'todo app', style: 'minimal', responsive: true, sections: ['app-shell', 'filters', 'task-list'] }
-    };
-
-    const QUICK_ACTION_PRESETS = {
-      'quick-ui': { label: 'UI\'ye cevir', task: 'UI\'ye cevir', canvas: true },
-      'quick-table': { label: 'Tabloya cevir', task: 'Tabloya cevir', canvas: false },
-      'quick-code': { label: 'Koda cevir', task: 'Koda cevir', canvas: true },
-      'quick-component': { label: 'Component uret', task: 'Component uret', canvas: true }
-    };
-
-    const BUILDER_PREFIX = 'Builder modu: ';
-    const QUICK_ACTION_PREFIX = 'Multimodal hizli aksiyon: ';
-    const BUILDER_FRESH_MODES = new Set(['builder']);
-    const CANVAS_PREVIEW_THROTTLE_MS = 120;
-
-    function createRequestFingerprint(file) {
-      return [file?.name || '', file?.size || 0, file?.type || ''].join('::');
-    }
-
-    function buildBuilderCommand(spec, extraText = '') {
-      const sections = Array.isArray(spec.sections) && spec.sections.length ? spec.sections.join(', ') : 'hero, content';
-      const parts = [spec.type || 'web app', spec.style || 'modern', spec.responsive === false ? 'non-responsive' : 'responsive'];
-      if (sections) parts.push('sections=' + sections);
-      if (spec.singleFilePreferred !== false) parts.push('single-file');
-      let command = BUILDER_PREFIX + parts.join(' | ');
-      if (extraText && extraText.trim()) command += '\nIstek: ' + extraText.trim();
-      return command;
-    }
-
-    function buildQuickActionCommand(config, extraText = '') {
-      let command = QUICK_ACTION_PREFIX + config.task;
-      if (extraText && extraText.trim()) command += ' | ' + extraText.trim();
-      return command;
-    }
-
-    function applyPromptValue(value) {
-      const input = $('user-input');
-      if (!input) return;
-      input.value = value;
-      input.focus();
-      input.style.height = 'auto';
-      input.style.height = input.scrollHeight + 'px';
-      input.dispatchEvent(new Event('input'));
-    }
-
     function injectPrompt(type) {
       const input = $('user-input');
       const modA = $('model-a')?.value;
       const prov = providerSettings.active || 'puter';
-      let prefix = '';
-
-      if (BUILDER_PRESETS[type]) {
-        applyPromptValue(buildBuilderCommand(BUILDER_PRESETS[type], input?.value || ''));
-        setStatus('Builder komutu hazirlandi.');
-        return;
-      }
-
-      if (QUICK_ACTION_PRESETS[type]) {
-        applyPromptValue(buildQuickActionCommand(QUICK_ACTION_PRESETS[type], input?.value || ''));
-        setStatus('Multimodal aksiyon hazirlandi.');
-        return;
-      }
+      let prefix = "";
 
       if (type === 'web-search') {
-        prefix = 'Bu web sitesini oku ve analiz et: '; setStatus('URL girin.');
+        prefix = "Bu web sitesini oku ve analiz et: "; setStatus('URL girin.');
       }
 
       else if (type === 'deep-research') {
-        prefix = 'Derin arastirma modu: '; setStatus('Arastirma konusu girin.');
+        prefix = "Derin arastirma modu: "; setStatus('Arastirma konusu girin.');
       }
 
       else if (type === 'image-gen') {
@@ -6578,7 +6430,7 @@
           alert('Lutfen bir gorsel modeli secin.'); return;
         }
 
-        prefix = 'Resim uret: ';
+        prefix = "Resim uret: ";
       }
 
       else if (type === 'video-gen') {
@@ -6586,122 +6438,14 @@
           alert('Lutfen bir video modeli secin.'); return;
         }
 
-        prefix = 'Video uret: ';
+        prefix = "Video uret: ";
       }
 
-      applyPromptValue(input.value ? prefix + input.value : prefix);
+      input.value = input.value ? prefix + input.value : prefix;
+      input.focus();
+      input.style.height = 'auto';
+      input.style.height = input.scrollHeight + 'px';
     }
-
-    function parseTaggedSegments(raw) {
-      const lines = String(raw || '').split('\n');
-      const main = [];
-      const tags = {};
-      lines.forEach(line => {
-        const match = line.match(/^([A-Za-z0-9 _-]+):\s*(.+)$/);
-        if (match && match[1].length < 32) {
-          tags[match[1].trim().toLowerCase()] = match[2].trim();
-        } else {
-          main.push(line);
-        }
-      });
-      return { mainText: main.join('\n').trim(), tags };
-    }
-
-    function parseBuilderRequest(text) {
-      if (!text.startsWith(BUILDER_PREFIX)) return null;
-      const raw = text.slice(BUILDER_PREFIX.length).trim();
-      const parts = raw.split('|').map(p => p.trim()).filter(Boolean);
-      const spec = {
-        mode: 'builder',
-        type: 'web app',
-        style: 'modern',
-        responsive: true,
-        sections: [],
-        singleFilePreferred: true,
-        extraPrompt: ''
-      };
-      parts.forEach((part, idx) => {
-        const lower = part.toLowerCase();
-        if (idx === 0 && !part.includes('=')) spec.type = part;
-        else if (idx === 1 && !part.includes('=')) spec.style = part;
-        else if (lower === 'responsive') spec.responsive = true;
-        else if (lower === 'non-responsive') spec.responsive = false;
-        else if (lower === 'single-file') spec.singleFilePreferred = true;
-        else if (lower === 'multi-file') spec.singleFilePreferred = false;
-        else if (lower.startsWith('sections=')) spec.sections = part.slice(part.indexOf('=') + 1).split(',').map(s => s.trim()).filter(Boolean);
-        else if (lower.startsWith('istek:')) spec.extraPrompt = part.slice(part.indexOf(':') + 1).trim();
-      });
-      const tagged = parseTaggedSegments(raw);
-      if (tagged.tags['istek']) spec.extraPrompt = tagged.tags['istek'];
-      if (tagged.tags['sections']) spec.sections = tagged.tags['sections'].split(',').map(s => s.trim()).filter(Boolean);
-      if (!spec.sections.length) spec.sections = ['hero', 'content', 'cta'];
-      return spec;
-    }
-
-    function parseQuickActionRequest(text) {
-      if (!text.startsWith(QUICK_ACTION_PREFIX)) return null;
-      const raw = text.slice(QUICK_ACTION_PREFIX.length).trim();
-      const parts = raw.split('|').map(p => p.trim()).filter(Boolean);
-      const task = parts[0] || 'Analiz et';
-      return {
-        mode: 'quick-action',
-        task,
-        extraPrompt: parts.slice(1).join(' | '),
-        shouldUseCanvas: /ui|kod|component|bile[şs]en/i.test(task)
-      };
-    }
-
-    function classifyAttachedFiles(files) {
-      const summary = { images: [], videos: [], documents: [], others: [] };
-      (files || []).forEach(file => {
-        if (file.type?.startsWith('image/')) summary.images.push(file);
-        else if (file.type?.startsWith('video/')) summary.videos.push(file);
-        else if (file.file || file.type === 'application/pdf' || /\.(pdf|txt|md|csv|json|docx|xlsx|xls|xml|js|py|html|css)$/i.test(file.name || '')) summary.documents.push(file);
-        else summary.others.push(file);
-      });
-      return summary;
-    }
-
-    function classifyRequest(text, files) {
-      const builderSpec = parseBuilderRequest(text);
-      const quickAction = parseQuickActionRequest(text);
-      const fileSummary = classifyAttachedFiles(files);
-      const deepResearch = text.startsWith('Derin arastirma modu: ');
-      const agentMode = text.startsWith('Ajan modu: ');
-      const imageGen = text.startsWith('Resim uret: ');
-      const videoGen = text.startsWith('Video uret: ');
-      const isCodeLike = /\b(kod|code|uygulama|app|html|css|javascript|react|game|oyun|hesap|calculator|website|site|sayfa|program|yaz|olustur|create|build|make|python|py|c\+\+|cpp|java|rust|golang|script|fonksiyon|function|class|algoritma|algorithm|component|dashboard|landing page|portfolio|blog)\b/i.test(text);
-      const mode = builderSpec ? 'builder'
-        : quickAction ? 'quick-action'
-          : deepResearch ? 'deep-research'
-            : agentMode ? 'agent'
-              : imageGen ? 'image-gen'
-                : videoGen ? 'video-gen'
-                  : 'chat';
-      const shouldUseCanvas = mode === 'builder'
-        || (mode === 'quick-action' && quickAction?.shouldUseCanvas)
-        || (mode === 'chat' && isCodeLike);
-      return { mode, builderSpec, quickAction, deepResearch, agentMode, imageGen, videoGen, fileSummary, shouldUseCanvas, isCodeLike };
-    }
-
-    function buildBuilderPrompt(spec) {
-      const sections = (spec.sections || []).join(', ');
-      return `Tek dosyali bir ${spec.type} olustur.\nStil: ${spec.style}.\nResponsive: ${spec.responsive ? 'evet' : 'hayir'}.\nBolumler: ${sections}.\nOncelik tek bir index.html icinde calisan, canvas preview'de direkt acilabilir tam bir proje olsun. Gerekirse CSS ve JS ayri code block olarak ver ama cikti mevcut canvas extractor ile uyumlu olsun.\nAciklayici sohbet yerine once calisan projeyi uret.${spec.extraPrompt ? '\nEk istek: ' + spec.extraPrompt : ''}`;
-    }
-
-    function buildQuickActionPrompt(config, attachmentContext) {
-      const attachmentLabel = attachmentContext.images.length || attachmentContext.videos.length ? 'Gorsel/medya girdisini analiz et.' : 'Yuklu belge ve OCR bilgisini analiz et.';
-      const canvasHint = config.shouldUseCanvas ? 'Sonucu mumkunse calisan HTML/CSS/JS veya component kodu olarak ver.' : 'Sonucu markdown tablo/rapor olarak ver.';
-      return `${config.task}. ${attachmentLabel} ${canvasHint}${config.extraPrompt ? ' Ek istek: ' + config.extraPrompt : ''}`;
-    }
-
-    function getCanvasExtractionMode(classification) {
-      return classification.mode === 'builder' ? 'builder' : 'merge';
-    }
-
-    let canvasExtractionMode = 'merge';
-    let lastStructuredOcr = null;
-    const throttledCanvasPreviewRefresh = throttle((htmlContent) => updateCanvasPreview(htmlContent), CANVAS_PREVIEW_THROTTLE_MS);
 
     // ---- Web Content Fetching
     function withTimeout(promise, ms, label) {
@@ -7447,40 +7191,45 @@
       lastSendTime = now;
 
       const input = $('user-input'), sendBtn = $('send-btn'), stopBtn = $('stop-btn');
-      const originalText = input ? input.value.trim() : '';
-      if (!originalText) return;
-      const requestFiles = [...selectedFiles];
-      const classification = classifyRequest(originalText, requestFiles);
+      const text = input ? input.value.trim() : '';
+      if (!text) return;
 
       if (!puterReady && providerSettings.active === 'puter') {
         setStatus('Puter yukleniyor, lutfen bekleyin...');
+
+        // Try waiting up to 5 seconds
         for (let i = 0; i < 10; i++) {
           await new Promise(r => setTimeout(r, 500));
           if (puterReady) break;
         }
+
         if (!puterReady) {
           puterReady = true; setStatus('Fallback ile devam ediliyor...');
         }
       }
 
+      // Compare mode: send to both panels
       if (compareActive) {
         input.value = '';
         input.style.height = 'auto';
-        await handleCompareSend(originalText);
+        await handleCompareSend(text);
         return;
       }
 
       if (!currentChatId) createNewChat();
       const chat = chats.find(c => c.id === currentChatId);
       if (!chat) return;
-      if (chat.messages.length === 0) chat.title = originalText.slice(0, 30);
+      if (chat.messages.length === 0) chat.title = text.slice(0, 30);
 
-      chat.messages.push({ role: 'user', content: originalText, timestamp: Date.now() });
+      chat.messages.push({
+        role: 'user', content: text, timestamp: Date.now()
+      });
       saveAll();
       input.value = '';
       hideWelcome();
       renderMessages(chat.messages);
 
+      // Show stop button, hide send
       isGenerating = true;
       currentAbortController = new AbortController();
       sendBtn.style.display = 'none';
@@ -7488,8 +7237,8 @@
 
       const win = $('chat-window');
       const loader = document.createElement('div');
-      loader.className = 'flex flex-col gap-2 w-full animate-in';
-      loader.id = 'thinking-loader';
+      loader.className = "flex flex-col gap-2 w-full animate-in";
+      loader.id = "thinking-loader";
       let thinkingStartTime = Date.now();
       loader.innerHTML = ` <div class="flex items-center gap-2.5 px-1" > <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-[9px] font-bold text-white" >AI</div> <span class="text-[11px] text-neutral-500 font-semibold" >Yanit olusturuluyor...</span> </div> <div id="thinking-dots" class="pl-[34px] flex gap-1.5 py-2" > <div class="w-1.5 h-1.5 bg-blue-500 rounded-full dot-pulse" ></div> <div class="w-1.5 h-1.5 bg-blue-500 rounded-full dot-pulse" ></div> <div class="w-1.5 h-1.5 bg-blue-500 rounded-full dot-pulse" ></div> </div>`;
       win.appendChild(loader);
@@ -7503,90 +7252,122 @@
       try {
         let history = buildHistoryForModel(chat);
         const activeProv = providerSettings.active || 'puter';
-        let effectiveText = originalText;
 
-        if (classification.mode === 'builder' && classification.builderSpec) {
-          effectiveText = buildBuilderPrompt(classification.builderSpec);
-        } else if (classification.mode === 'quick-action' && classification.quickAction) {
-          effectiveText = buildQuickActionPrompt(classification.quickAction, classification.fileSummary);
-        }
+        // Web content
+        const urls = extractUrlsFromText(text);
+        let enhancedText = text;
 
-        const urls = extractUrlsFromText(effectiveText);
-        let enhancedText = effectiveText;
         if (urls.length > 0) {
           setStatus('Web icerigi aliniyor...');
-          const urlResult = await processUrlsInMessage(effectiveText);
+          const urlResult = await processUrlsInMessage(text);
+
           if (urlResult.hasUrls && urlResult.webContents.length > 0) {
             let webCtx = '\n\n--- WEB ICERIGI ---\n';
+
             urlResult.webContents.forEach(wc => {
-              if (wc.success) webCtx += `\nKaynak: ${wc.url}\n${wc.content}\n---\n`;
-              else webCtx += `\n${wc.url} - Erisilemedi: ${wc.error}\n`;
+              if (wc.success) webCtx += `\nKaynak: ${wc.url
+                }
+
+              \n${wc.content
+                }
+
+              \n---\n`;
+
+              else webCtx += `\n${wc.url
+                }
+
+              - Erisilemedi: ${wc.error
+                }
+
+              \n`;
             });
-            enhancedText = effectiveText + webCtx;
+            enhancedText = text + webCtx;
+
+            for (let i = history.length - 1; i >= 0; i--) {
+              if (history[i].role === 'user') {
+                if (typeof history[i].content === 'string') history[i].content = enhancedText;
+
+                else if (Array.isArray(history[i].content)) {
+                  const tp = history[i].content.find(c => c.type === 'text'); if (tp) tp.text = enhancedText;
+                }
+
+                break;
+              }
+            }
           }
         }
 
+        // Live screen auto-capture
         if (liveScreenStream) {
           const frameUrl = await captureLiveScreenFrame();
           if (frameUrl) {
-            requestFiles.unshift({ id: Date.now() + Math.random(), name: 'ekran-canli.jpg', type: 'image/jpeg', preview: frameUrl, _liveCapture: true });
+            selectedFiles.unshift({ id: Date.now() + Math.random(), name: 'ekran-canli.jpg', type: 'image/jpeg', preview: frameUrl, _liveCapture: true });
           }
         }
 
-        const requestFileSummary = classifyAttachedFiles(requestFiles);
-        let userContent = [{ type: 'text', text: enhancedText }];
-
-        if (requestFiles.length > 0) {
+        // Files
+        if (selectedFiles.length > 0) {
           setStatus('Dosyalar isleniyor...');
-          requestFileSummary.images.forEach(f => {
-            if (f.preview) userContent.push({ type: 'image_url', image_url: { url: f.preview } });
-          });
-          if (requestFileSummary.videos.length > 0) {
-            userContent[0].text += '\n\n[Video girdileri]:\n' + requestFileSummary.videos.map(f => '- ' + f.name).join('\n');
+
+          let userContent = [{
+            type: 'text', text: enhancedText
           }
-          if (lastStructuredOcr?.text) {
-            userContent[0].text += `\n\n[OCR baglami: ${lastStructuredOcr.fileName}]\n${lastStructuredOcr.text}`;
-          }
-          if (window.RAGModule && requestFileSummary.documents.length > 0) {
-            const directDocContext = window.RAGModule.buildContext(originalText, { preferFingerprints: requestFileSummary.documents.map(f => f.fingerprint || createRequestFingerprint(f.file || f)) });
-            if (directDocContext) userContent[0].text += directDocContext;
-          }
-          for (let i = history.length - 1; i >= 0; i--) {
-            if (history[i].role === 'user') {
-              history[i].content = userContent;
-              break;
-            }
-          }
-          chat.messages[chat.messages.length - 1].content = originalText + ` (${requestFiles.length} dosya)`;
-        } else {
-          for (let i = history.length - 1; i >= 0; i--) {
-            if (history[i].role === 'user') {
-              if (typeof history[i].content === 'string') history[i].content = enhancedText;
-              else if (Array.isArray(history[i].content)) {
-                const tp = history[i].content.find(c => c.type === 'text');
-                if (tp) tp.text = enhancedText;
+
+          ];
+
+          for (const f of selectedFiles) {
+            if (f.type.startsWith('image/')) userContent.push({
+              type: 'image_url', image_url: {
+                url: f.preview
               }
-              break;
+            });
+
+            else if (f.type === 'application/pdf') {
+              const pt = await extractPdfText(f.file); const ragText = miniRAG(pt, text, 8000); userContent[0].text += `\n\n[PDF: ${f.name
+                }
+
+          ]\n${ragText
+                }
+
+          `;
+            }
+
+            else if (f.type.startsWith('video/')) userContent[0].text += `\n\n[Video: ${f.name
+              }
+
+        ]`;
+          }
+
+          for (let i = history.length - 1; i >= 0; i--) {
+            if (history[i].role === 'user') {
+              history[i].content = userContent; break;
             }
           }
+
+          chat.messages[chat.messages.length - 1].content = text + ` (${selectedFiles.length
+            }
+
+        dosya)`;
         }
 
-        requestFiles.forEach(f => {
-          if (f.type?.startsWith('video/') && f.preview) URL.revokeObjectURL(f.preview);
+        selectedFiles.forEach(f => {
+          if (f.type.startsWith('video/') && f.preview) URL.revokeObjectURL(f.preview);
         });
         selectedFiles = [];
         renderFilePreviews();
 
-        if (classification.mode === 'deep-research') {
-          const query = originalText.replace('Derin arastirma modu: ', '').trim();
+        // Deep Research mode
+        if (text.startsWith("Derin arastirma modu: ")) {
+          const query = text.replace("Derin arastirma modu: ", "").trim();
           if (loader?.parentNode) loader.parentNode.removeChild(loader);
           sendBtn.disabled = false;
           await deepResearch(query);
           return;
         }
 
-        if (classification.mode === 'agent') {
-          const query = originalText.replace('Ajan modu: ', '').trim();
+        // Agent mode
+        if (text.startsWith("Ajan modu: ")) {
+          const query = text.replace("Ajan modu: ", "").trim();
           if (!query) return;
           if (loader?.parentNode) loader.parentNode.removeChild(loader);
           sendBtn.disabled = false;
@@ -7598,117 +7379,191 @@
         }
 
         setStatus('Yanit olusturuluyor...');
-        const assistantMsg = { role: 'assistant', model: modA, content: '', timestamp: Date.now() };
+
+        const assistantMsg = {
+          role: 'assistant', model: modA, content: '', timestamp: Date.now()
+        }
+
+          ;
         chat.messages.push(assistantMsg);
 
+        // Detect if user is asking for code -> show canvas building
         const _skipCanvasThisTime = _noCanvas; _noCanvas = false;
-        const shouldUseCanvas = !_skipCanvasThisTime && classification.shouldUseCanvas;
-        canvasExtractionMode = getCanvasExtractionMode(classification);
-        if (shouldUseCanvas) showCanvasBuilding();
+        const isCodeRequest = !_skipCanvasThisTime && /\b(kod|code|uygulama|app|html|css|javascript|react|game|oyun|hesap|calculator|website|site|sayfa|program|yaz|olustur|create|build|make|python|py|c\+\+|cpp|java|rust|golang|script|fonksiyon|function|class|algoritma|algorithm)\b/i.test(text);
+        if (isCodeRequest) showCanvasBuilding();
 
-        if (classification.mode === 'image-gen') {
-          const imgPrompt = originalText.replace('Resim uret: ', '').trim();
+        // Image gen
+        if (text.startsWith("Resim uret: ")) {
+          const imgPrompt = text.replace("Resim uret: ", "").trim();
+
           if (activeProv === 'puter') {
             if (!IMAGE_MODELS.includes(modA)) throw new Error('Gorsel modeli secin.');
             setStatus('Gorsel uretiliyor...');
+
             try {
-              const img = await puter.ai.txt2img(imgPrompt, { model: modA });
+              const img = await puter.ai.txt2img(imgPrompt, {
+                model: modA
+              });
               const imgSrc = img?.src || img?.url || (typeof img === 'string' ? img : null);
               if (!imgSrc) throw new Error('Gorsel verisi alinamadi.');
-              assistantMsg.content = ` ![Gorsel](${imgSrc})`;
-            } catch (imgErr) {
+
+              assistantMsg.content = ` ![Gorsel](${imgSrc
+                })`;
+            }
+
+            catch (imgErr) {
+
+              // Fallback: try via puter.ai.chat for image-capable models
               try {
-                const r = await withTimeout(puter.ai.chat([{ role: 'user', content: imgPrompt }], { model: modA }), 60000, 'puter-image-chat');
+                const r = await withTimeout(puter.ai.chat([{
+                  role: 'user', content: imgPrompt
+                }
+
+                ], {
+                  model: modA
+                }), 60000, 'puter-image-chat');
                 const rMsg = r?.message || r;
+
                 if (rMsg?.images && rMsg.images.length > 0) {
                   const parts = [];
                   if (rMsg.content) parts.push(rMsg.content);
+
                   rMsg.images.forEach(im => {
                     const u = im?.image_url?.url || im?.url || '';
-                    if (u) parts.push(` ![Gorsel](${u})`);
+
+                    if (u) parts.push(` ![Gorsel](${u
+                      })`);
                   });
                   assistantMsg.content = parts.join('\n\n');
-                } else if (typeof rMsg?.content === 'string' && rMsg.content) {
+                }
+
+                else if (typeof rMsg?.content === 'string' && rMsg.content) {
                   assistantMsg.content = rMsg.content;
-                } else {
+                }
+
+                else {
                   throw imgErr;
                 }
-              } catch (e2) {
+              }
+
+              catch (e2) {
                 throw new Error(imgErr.message || 'Gorsel uretilemedi.');
               }
-	            }
-	            closeCanvas();
-            await enrichAssistantMessage(originalText, assistantMsg);
-	            saveAll(); renderMessages(chat.messages); return;
-	          } else if (activeProv === 'custom') {
-	            setStatus('Gorsel uretiliyor...');
-	            assistantMsg.content = await callCustomRouter(modA, history) || 'Gorsel uretilemedi.';
-	            closeCanvas();
-            await enrichAssistantMessage(originalText, assistantMsg);
-	            saveAll(); renderMessages(chat.messages); return;
-	          }
-	        }
+            }
 
-        if (classification.mode === 'video-gen') {
-          const vidPrompt = originalText.replace('Video uret: ', '').trim();
+            closeCanvas();
+            saveAll(); renderMessages(chat.messages); return;
+          }
+
+          else if (activeProv === 'custom') {
+            setStatus('Gorsel uretiliyor...');
+            assistantMsg.content = await callCustomRouter(modA, history) || 'Gorsel uretilemedi.';
+            closeCanvas();
+            saveAll(); renderMessages(chat.messages); return;
+          }
+        }
+
+        // Video gen
+        if (text.startsWith("Video uret: ")) {
+          const vidPrompt = text.replace("Video uret: ", "").trim();
+
           if (activeProv === 'puter') {
             if (!VIDEO_MODELS.includes(modA)) throw new Error('Video modeli secin.');
             setStatus('Video uretiliyor...');
+
             try {
-              const vid = await puter.ai.txt2vid(vidPrompt, { model: modA });
+              const vid = await puter.ai.txt2vid(vidPrompt, {
+                model: modA
+              });
               const vidSrc = vid?.src || vid?.url || (typeof vid === 'string' ? vid : null);
               if (!vidSrc) throw new Error('Video verisi alinamadi.');
-              assistantMsg.content = ` ![video](${vidSrc})`;
-            } catch (vidErr) {
+
+              assistantMsg.content = ` ![video](${vidSrc
+                })`;
+            }
+
+            catch (vidErr) {
               try {
-                const r = await withTimeout(puter.ai.chat([{ role: 'user', content: vidPrompt }], { model: modA }), 120000, 'puter-video-chat');
+                const r = await withTimeout(puter.ai.chat([{
+                  role: 'user', content: vidPrompt
+                }
+
+                ], {
+                  model: modA
+                }), 120000, 'puter-video-chat');
                 const rMsg = r?.message || r;
+
                 if (rMsg?.images && rMsg.images.length > 0) {
                   const parts = [];
                   if (rMsg.content) parts.push(rMsg.content);
+
                   rMsg.images.forEach(im => {
                     const u = im?.image_url?.url || im?.url || '';
-                    if (u) parts.push(` ![video](${u})`);
+
+                    if (u) parts.push(` ![video](${u
+                      })`);
                   });
                   assistantMsg.content = parts.join('\n\n');
-                } else if (typeof rMsg?.content === 'string' && rMsg.content) {
+                }
+
+                else if (typeof rMsg?.content === 'string' && rMsg.content) {
                   assistantMsg.content = rMsg.content;
-                } else {
+                }
+
+                else {
                   throw vidErr;
                 }
-              } catch (e2) {
+              }
+
+              catch (e2) {
                 throw new Error(vidErr.message || 'Video uretilemedi.');
               }
-	            }
-	            closeCanvas();
-            await enrichAssistantMessage(originalText, assistantMsg);
-	            saveAll(); renderMessages(chat.messages); return;
-	          } else if (activeProv === 'custom') {
-	            setStatus('Video uretiliyor...');
-	            assistantMsg.content = await callCustomRouter(modA, history) || 'Video uretilemedi.';
-	            closeCanvas();
-            await enrichAssistantMessage(originalText, assistantMsg);
-	            saveAll(); renderMessages(chat.messages); return;
-	          }
-	        }
+            }
+
+            closeCanvas();
+            saveAll(); renderMessages(chat.messages); return;
+          }
+
+          else if (activeProv === 'custom') {
+            setStatus('Video uretiliyor...');
+            assistantMsg.content = await callCustomRouter(modA, history) || 'Video uretilemedi.';
+            closeCanvas();
+            saveAll(); renderMessages(chat.messages); return;
+          }
+        }
 
         if (activeProv === 'custom') {
           assistantMsg.content = await callCustomRouter(modA, history) || 'Bos yanit.';
-        } else if (activeProv === 'anthropic') {
+        }
+
+        else if (activeProv === 'anthropic') {
           assistantMsg.content = await callAnthropicRouter(modA, history) || 'Bos yanit.';
-        } else if (prefs.stream) {
+        }
+
+        else if (prefs.stream) {
           setStatus('Stream...');
           assistantMsg.content = '';
+
+          // Thinking timer updater (only if thinking is enabled)
           let thinkTimerInterval = null;
+
           if (prefs.showThinking) {
             thinkTimerInterval = setInterval(() => {
               const el = document.getElementById('live-thinking-timer');
+
               if (el && streamThinkingText) {
                 const secs = Math.floor((Date.now() - thinkingStartTime) / 1000);
-                el.textContent = `Dusunuyor... ${secs}s`;
+
+                el.textContent = `Dusunuyor... ${secs
+                  }
+
+              s`;
               }
-            }, 1000);
+            }
+
+              , 1000);
           }
+
           await callPuterStream(modA, history, tok => {
             const dots = document.getElementById('thinking-dots');
             if (dots) dots.style.display = 'none';
@@ -7716,14 +7571,14 @@
             throttledRenderMessages(chat.messages);
             if (voiceConvMode) queueVoiceStreamChunk(tok);
           });
-          if (thinkTimerInterval) clearInterval(thinkTimerInterval);
-	        } else {
-	          assistantMsg.content = await callPuterOnce(modA, history) || 'Bos yanit.';
-	        }
+        }
 
-          await enrichAssistantMessage(originalText, assistantMsg);
-	        saveAll();
-	        renderMessages(chat.messages);
+        else {
+          assistantMsg.content = await callPuterOnce(modA, history) || 'Bos yanit.';
+        }
+
+        saveAll();
+        renderMessages(chat.messages);
 
         if (voiceConvMode && assistantMsg.content) {
           if (stylePrefs.streamMode && voiceStreamBuffer.trim()) {
@@ -7743,10 +7598,11 @@
           if (stylePrefs.streamMode) setTimeout(waitForSpeech, 400);
         }
 
+        // Finalize canvas if code was detected
         if (_pptxMode && assistantMsg.content) { generatePptxFromContent(assistantMsg.content); _pptxMode = false; }
         else if (_htmlSlideMode && assistantMsg.content) { generateHTMLFromContent(assistantMsg.content); _htmlSlideMode = false; }
-        else if (shouldUseCanvas && assistantMsg.content) finalizeCanvas(assistantMsg.content);
-        else if (canvasOpen && !shouldUseCanvas) closeCanvas();
+        else if (isCodeRequest && assistantMsg.content) finalizeCanvas(assistantMsg.content);
+        else if (canvasOpen && !isCodeRequest) closeCanvas();
       }
 
       catch (e) {
@@ -7755,10 +7611,19 @@
         const last = chat.messages[chat.messages.length - 1];
 
         if (last && last.role === 'assistant' && !last.content) {
-          last.model = 'System'; last.content = `Hata: ${errText}`;
+          last.model = 'System'; last.content = `Hata: ${errText
+            }
+
+        `;
         }
+
         else {
-          chat.messages.push({ role: 'assistant', model: 'System', content: `Hata: ${errText}` });
+          chat.messages.push({
+            role: 'assistant', model: 'System', content: `Hata: ${errText
+              }
+
+          `
+          });
         }
 
         saveAll(); renderMessages(chat.messages);
@@ -7775,7 +7640,8 @@
         $('user-input')?.focus();
         playNotificationSound();
 
-        if (chat && chat.messages.length === 2 && chat.title === originalText.slice(0, 30)) {
+        // Auto-title after first exchange
+        if (chat && chat.messages.length === 2 && chat.title === text.slice(0, 30)) {
           autoGenerateTitle(chat);
         }
       }
@@ -7847,7 +7713,6 @@
       $('anthropic-model-id').value = providerSettings.anthropic?.modelId || 'claude-3-5-sonnet-20241022';
       updateProviderFields();
       renderPromptLibrary();
-      populateEnhancedSettings();
       _populateSettingsAccount();
       _populateSettingsStats();
     }
@@ -7931,13 +7796,8 @@
 
       if (newAuth !== providerSettings.authMode) {
         if (newAuth === 'puter' && !puter.auth.isSignedIn()) {
-          try {
-            await puter.auth.signIn();
-          }
-
-          catch (e) {
-            alert('Puter girisi basarisiz.'); $('pref-auth-mode').value = 'local'; return;
-          }
+          openPuterAuthModal();
+          return; // Modal kapaninca reload olacak
         }
 
         providerSettings.authMode = newAuth;
@@ -7957,19 +7817,14 @@
 
         ;
       providerSettings.custom.baseUrl = $('custom-url')?.value.trim() || '';
-      providerSettings.custom.proxyUrl = $('pref-proxy-url')?.value.trim() || providerSettings.custom.proxyUrl || 'http://localhost:8787/v1';
       providerSettings.custom.token = $('custom-token')?.value.trim() || '';
       providerSettings.custom.modelId = $('custom-model-id')?.value.trim() || '';
       providerSettings.anthropic.baseUrl = $('anthropic-url')?.value.trim() || 'http://localhost:8080';
       providerSettings.anthropic.token = $('anthropic-token')?.value.trim() || '';
       providerSettings.anthropic.modelId = $('anthropic-model-id')?.value.trim() || 'claude-3-5-sonnet-20241022';
-      prefs.uiFont = $('pref-ui-font')?.value || prefs.uiFont || 'system';
-      prefs.uiDensity = $('pref-ui-density')?.value || prefs.uiDensity || 'comfortable';
-      prefs.codeTheme = $('pref-code-theme')?.value || prefs.codeTheme || 'dark';
       if (active === 'custom' && providerSettings.custom.modelId) prefs.modelA = providerSettings.custom.modelId;
       if (active === 'anthropic' && providerSettings.anthropic.modelId) prefs.modelA = providerSettings.anthropic.modelId;
       customModels = [];
-      applyAppearancePrefs();
       saveAll();
       closeSettings();
       await refreshModelDropdowns();
@@ -8017,7 +7872,7 @@
 
     let savedSystemPrompts = [];
     function loadSavedPrompts() {
-      try { savedSystemPrompts = normalizeSavedPromptLibrary(JSON.parse(localStorage.getItem('saved_sys_prompts') || '[]')); } catch (e) { savedSystemPrompts = []; }
+      try { savedSystemPrompts = JSON.parse(localStorage.getItem('saved_sys_prompts') || '[]'); } catch (e) { savedSystemPrompts = []; }
     }
     function saveSavedPrompts() {
       localStorage.setItem('saved_sys_prompts', JSON.stringify(savedSystemPrompts));
@@ -8027,11 +7882,9 @@
       if (!text) { setStatus('Once bir sistem promptu yazin.'); return; }
       const name = prompt('Bu promptun adi:', text.substring(0, 40));
       if (!name) return;
-      const tags = prompt('Etiketler (virgulle):', 'genel');
-      savedSystemPrompts.unshift({ id: Date.now(), name: name.trim(), prompt: text, tags: String(tags || '').split(',').map(x => x.trim()).filter(Boolean), favorite: false, version: 1, usageCount: 0, updatedAt: Date.now() });
+      savedSystemPrompts.push({ id: Date.now(), name: name.trim(), prompt: text });
       saveSavedPrompts();
       renderPromptLibrary();
-      recordFeatureUsage('prompt_save');
       setStatus('Prompt kaydedildi: ' + name.trim());
     }
     function applySystemPromptFromLibrary(id) {
@@ -8039,40 +7892,12 @@
       if (!p) return;
       const ta = $('pref-custom');
       if (ta) ta.value = p.prompt;
-      p.usageCount = Number(p.usageCount || 0) + 1;
-      p.updatedAt = Date.now();
-      saveSavedPrompts();
-      renderPromptLibrary();
-      recordFeatureUsage('prompt_apply', { id });
       setStatus('Prompt yuklendi: ' + p.name);
     }
     function deleteSystemPromptFromLibrary(id) {
       savedSystemPrompts = savedSystemPrompts.filter(x => x.id !== id);
       saveSavedPrompts();
       renderPromptLibrary();
-      recordFeatureUsage('prompt_delete', { id });
-    }
-    function togglePromptFavorite(id) {
-      const p = savedSystemPrompts.find(x => x.id === id);
-      if (!p) return;
-      p.favorite = !p.favorite;
-      p.updatedAt = Date.now();
-      saveSavedPrompts();
-      renderPromptLibrary();
-    }
-    function duplicatePromptVersion(id) {
-      const p = savedSystemPrompts.find(x => x.id === id);
-      if (!p) return;
-      savedSystemPrompts.unshift({ ...p, id: Date.now(), name: `${p.name} v${Number(p.version || 1) + 1}`, version: Number(p.version || 1) + 1, updatedAt: Date.now(), favorite: false });
-      saveSavedPrompts();
-      renderPromptLibrary();
-      recordFeatureUsage('prompt_version', { id });
-    }
-    function exportPromptItem(id) {
-      const p = savedSystemPrompts.find(x => x.id === id);
-      if (!p) return;
-      downloadJsonData(`${p.name.replace(/[^a-z0-9]+/gi, '_')}.prompt.json`, p);
-      recordExportUsage('prompt_json');
     }
     function renderPromptLibrary() {
       const list = $('prompt-library-list');
@@ -8083,491 +7908,16 @@
         list.innerHTML = '<div style="font-size:11px;color:#555;text-align:center;padding:12px 0">Henuz kaydedilmis prompt yok.<br>Yukardaki alana yaz ve &quot;+ Kutuphanye Kaydet&quot;e bas.</div>';
         return;
       }
-      list.innerHTML = savedSystemPrompts.sort((a, b) => Number(b.favorite) - Number(a.favorite) || (b.updatedAt || 0) - (a.updatedAt || 0)).map(p => `
+      list.innerHTML = savedSystemPrompts.map(p => `
         <div style="display:flex;align-items:center;gap:6px;padding:7px 8px;background:rgba(255,255,255,0.03);border:1px solid #1e1e1e;border-radius:8px">
           <div style="flex:1;min-width:0;cursor:pointer" onclick="applySystemPromptFromLibrary(${p.id})">
-            <div style="font-size:12px;font-weight:600;color:#d4d4d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.favorite ? '★ ' : ''}${p.name.replace(/</g, '&lt;')}</div>
+            <div style="font-size:12px;font-weight:600;color:#d4d4d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name.replace(/</g, '&lt;')}</div>
             <div style="font-size:10px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.prompt.substring(0, 60).replace(/</g, '&lt;')}${p.prompt.length > 60 ? '...' : ''}</div>
-            <div style="font-size:9px;color:#666;margin-top:3px">v${p.version || 1} • kullanim ${p.usageCount || 0}${p.tags?.length ? ' • ' + p.tags.map(tag => '#' + tag).join(' ') : ''}</div>
           </div>
           <button onclick="applySystemPromptFromLibrary(${p.id})" title="Uygula" style="padding:4px 8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);border-radius:6px;color:#60a5fa;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Sec</button>
-          <button onclick="togglePromptFavorite(${p.id})" title="Favori" style="padding:4px 6px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:#fbbf24;font-size:11px;cursor:pointer">★</button>
-          <button onclick="duplicatePromptVersion(${p.id})" title="Yeni Versiyon" style="padding:4px 6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:6px;color:#34d399;font-size:11px;cursor:pointer">+</button>
-          <button onclick="exportPromptItem(${p.id})" title="JSON" style="padding:4px 6px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);border-radius:6px;color:#67e8f9;font-size:11px;cursor:pointer">{ }</button>
           <button onclick="deleteSystemPromptFromLibrary(${p.id})" title="Sil" style="padding:4px 6px;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.2);border-radius:6px;color:#f87171;font-size:11px;cursor:pointer">&#xd7;</button>
         </div>
       `).join('');
-    }
-
-    function initProductEnhancements() {
-      ensureEnhancementStyle();
-      ensureEnhancementModals();
-      injectSidebarEnhancements();
-      injectCanvasEnhancements();
-      injectExportEnhancements();
-      injectSettingsEnhancements();
-      savedSystemPrompts = normalizeSavedPromptLibrary(savedSystemPrompts);
-      workspaceProjects = normalizeWorkspaceProjects(workspaceProjects);
-      saveSavedPrompts();
-      saveWorkspaceProjects();
-      saveAnalytics();
-    }
-
-    function ensureEnhancementStyle() {
-      if ($('app-enhancement-style')) return;
-      const style = document.createElement('style');
-      style.id = 'app-enhancement-style';
-      style.textContent = `
-        body[data-ui-font="serif"] { font-family: Georgia, "Times New Roman", serif; }
-        body[data-ui-font="mono"] { font-family: "JetBrains Mono", ui-monospace, monospace; }
-        body[data-ui-density="compact"] .msg-actions { margin-top: 2px; gap: 4px; }
-        body[data-ui-density="compact"] .msg-user-bubble { padding: 10px 14px; }
-        body[data-ui-density="compact"] .msg-ai-block { line-height: 1.45; }
-        body[data-ui-density="relaxed"] .msg-user-bubble { padding: 16px 22px; }
-        body[data-ui-density="relaxed"] .msg-ai-block { line-height: 1.8; }
-        body.code-theme-light .code-container { background:#f8fafc; border-color:#cbd5e1; }
-        body.code-theme-light .code-header { background:#e2e8f0; border-color:#cbd5e1; }
-        body.code-theme-light .code-body pre { color:#0f172a; }
-        body.code-theme-midnight .code-container { background:#020617; border-color:#1e293b; }
-        body.code-theme-midnight .code-header { background:#0f172a; border-color:#1e293b; }
-        .source-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid #262626; background:rgba(255,255,255,0.03); color:#a3a3a3; }
-        .source-chip a { color:#93c5fd; text-decoration:none; }
-        .source-chip a:hover { color:#bfdbfe; text-decoration:underline; }
-      `;
-      document.head.appendChild(style);
-    }
-
-    function ensureEnhancementModals() {
-      if (!$('task-panel-modal')) {
-        const modal = document.createElement('div');
-        modal.id = 'task-panel-modal';
-        modal.className = 'hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-        modal.innerHTML = `<div class="bg-[#111] border border-[#222] p-6 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-5">
-            <h3 class="text-base font-bold text-white">Gorev Paneli</h3>
-            <button onclick="closeTaskPanel()" class="text-neutral-500 hover:text-white text-lg">&times;</button>
-          </div>
-          <div id="task-panel-content" class="space-y-4"></div>
-        </div>`;
-        document.body.appendChild(modal);
-      }
-      if (!$('projects-modal')) {
-        const modal = document.createElement('div');
-        modal.id = 'projects-modal';
-        modal.className = 'hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-        modal.innerHTML = `<div class="bg-[#111] border border-[#222] p-6 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-5">
-            <h3 class="text-base font-bold text-white">Calisma Alanlari</h3>
-            <button onclick="closeProjectsManager()" class="text-neutral-500 hover:text-white text-lg">&times;</button>
-          </div>
-          <div class="flex gap-2 mb-4">
-            <button onclick="saveCanvasProjectAs()" class="px-3 py-2 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 text-sm font-semibold">Mevcut Projeyi Kaydet</button>
-            <button onclick="exportWorkspaceBundle()" class="px-3 py-2 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 text-sm font-semibold">Workspace Bundle</button>
-          </div>
-          <div id="projects-modal-content" class="space-y-3"></div>
-        </div>`;
-        document.body.appendChild(modal);
-      }
-    }
-
-    function injectSidebarEnhancements() {
-      if ($('task-panel-btn')) return;
-      const statsBtn = document.querySelector('button[onclick="openStatsModal()"]');
-      if (!statsBtn || !statsBtn.parentElement) return;
-      const btn = document.createElement('button');
-      btn.id = 'task-panel-btn';
-      btn.onclick = openTaskPanel;
-      btn.className = 'flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold text-neutral-600 hover:text-cyan-400 hover:bg-cyan-500/5 transition-all';
-      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Gorevler';
-      statsBtn.parentElement.appendChild(btn);
-    }
-
-    function injectCanvasEnhancements() {
-      if ($('canvas-save-project-btn')) return;
-      const downloadBtn = document.querySelector('button[onclick="downloadCanvasProject()"]');
-      if (!downloadBtn || !downloadBtn.parentElement) return;
-      const saveBtn = document.createElement('button');
-      saveBtn.id = 'canvas-save-project-btn';
-      saveBtn.onclick = saveCanvasProjectAs;
-      saveBtn.className = 'text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-blue-500/10 transition-all font-bold';
-      saveBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Kaydet';
-      const loadBtn = document.createElement('button');
-      loadBtn.id = 'canvas-projects-btn';
-      loadBtn.onclick = openProjectsManager;
-      loadBtn.className = 'text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-cyan-500/10 transition-all font-bold';
-      loadBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Projeler';
-      downloadBtn.parentElement.insertBefore(loadBtn, downloadBtn);
-      downloadBtn.parentElement.insertBefore(saveBtn, loadBtn);
-    }
-
-    function injectExportEnhancements() {
-      const container = document.querySelector('#export-modal .space-y-2');
-      if (!container || $('export-json-btn')) return;
-      container.insertAdjacentHTML('beforeend', `
-        <button id="export-json-btn" onclick="exportChat('json')" class="w-full flex items-center gap-3 p-3 bg-white/[0.02] rounded-xl border border-[#222] hover:bg-white/[0.04] transition-colors text-left">
-          <div class="w-8 h-8 rounded-lg bg-sky-600/10 flex items-center justify-center text-sky-400">{ }</div>
-          <div><div class="text-sm text-neutral-300 font-medium">JSON Export</div><div class="text-[10px] text-neutral-600">Mesajlar + kaynaklar + canvas</div></div>
-        </button>
-        <button id="export-html-report-btn" onclick="exportChat('html')" class="w-full flex items-center gap-3 p-3 bg-white/[0.02] rounded-xl border border-[#222] hover:bg-white/[0.04] transition-colors text-left">
-          <div class="w-8 h-8 rounded-lg bg-amber-600/10 flex items-center justify-center text-amber-400">H</div>
-          <div><div class="text-sm text-neutral-300 font-medium">HTML Rapor</div><div class="text-[10px] text-neutral-600">Paylasilabilir tek dosya rapor</div></div>
-        </button>
-        <button id="export-bundle-btn" onclick="exportWorkspaceBundle(); closeExportModal();" class="w-full flex items-center gap-3 p-3 bg-white/[0.02] rounded-xl border border-[#222] hover:bg-white/[0.04] transition-colors text-left">
-          <div class="w-8 h-8 rounded-lg bg-emerald-600/10 flex items-center justify-center text-emerald-400">B</div>
-          <div><div class="text-sm text-neutral-300 font-medium">Workspace Bundle</div><div class="text-[10px] text-neutral-600">Sohbet + projeler + analytics</div></div>
-        </button>`);
-    }
-
-    function injectSettingsEnhancements() {
-      const host = document.querySelector('#settings-modal .space-y-3');
-      if (!host || $('settings-enhanced-panel')) return;
-      const wrap = document.createElement('div');
-      wrap.id = 'settings-enhanced-panel';
-      wrap.className = 'space-y-3';
-      wrap.innerHTML = `
-        <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222] space-y-3">
-          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Arayuz Fontu</label>
-          <select id="pref-ui-font" class="w-full bg-[#0a0a0a] border border-[#222] rounded-lg p-2 text-sm text-neutral-300 outline-none">
-            <option value="system">System Sans</option>
-            <option value="serif">Serif</option>
-            <option value="mono">Mono</option>
-          </select>
-          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Yogunluk</label>
-          <select id="pref-ui-density" class="w-full bg-[#0a0a0a] border border-[#222] rounded-lg p-2 text-sm text-neutral-300 outline-none">
-            <option value="comfortable">Konforlu</option>
-            <option value="compact">Kompakt</option>
-            <option value="relaxed">Ferah</option>
-          </select>
-          <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Kod Tema</label>
-          <select id="pref-code-theme" class="w-full bg-[#0a0a0a] border border-[#222] rounded-lg p-2 text-sm text-neutral-300 outline-none">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="midnight">Midnight</option>
-          </select>
-        </div>
-        <div class="p-3 bg-white/[0.02] rounded-xl border border-[#222] space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Local Proxy</label>
-            <button onclick="configureLocalProxy()" type="button" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold">Hizli Kur</button>
-          </div>
-          <input id="pref-proxy-url" type="text" placeholder="http://localhost:8787/v1" class="w-full bg-[#0a0a0a] border border-[#222] rounded-lg p-2 text-sm text-neutral-300 outline-none">
-          <div class="text-[10px] text-neutral-600">Tokenlari localStorage yerine yerel proxy ile yonetmek icin kullan.</div>
-        </div>`;
-      host.appendChild(wrap);
-    }
-
-    function populateEnhancedSettings() {
-      if ($('pref-ui-font')) $('pref-ui-font').value = prefs.uiFont || 'system';
-      if ($('pref-ui-density')) $('pref-ui-density').value = prefs.uiDensity || 'comfortable';
-      if ($('pref-code-theme')) $('pref-code-theme').value = prefs.codeTheme || 'dark';
-      if ($('pref-proxy-url')) $('pref-proxy-url').value = providerSettings.custom?.proxyUrl || 'http://localhost:8787/v1';
-    }
-
-    function configureLocalProxy() {
-      if ($('provider-select')) $('provider-select').value = 'custom';
-      if ($('custom-url')) $('custom-url').value = ($('pref-proxy-url')?.value || 'http://localhost:8787/v1').trim();
-      if ($('custom-token')) $('custom-token').value = '';
-      if ($('custom-model-id') && !$('custom-model-id').value.trim()) $('custom-model-id').value = 'gpt-4o-mini';
-      updateProviderFields();
-      recordFeatureUsage('proxy_quick_config');
-      setStatus('Local proxy ayarlari dolduruldu.');
-    }
-
-    function applyAppearancePrefs() {
-      document.body.dataset.uiFont = prefs.uiFont || 'system';
-      document.body.dataset.uiDensity = prefs.uiDensity || 'comfortable';
-      document.body.classList.remove('code-theme-light', 'code-theme-midnight');
-      if ((prefs.codeTheme || 'dark') === 'light') document.body.classList.add('code-theme-light');
-      if ((prefs.codeTheme || 'dark') === 'midnight') document.body.classList.add('code-theme-midnight');
-    }
-
-    function normalizeSavedPromptLibrary(items) {
-      return (Array.isArray(items) ? items : []).map(item => ({
-        id: item.id || Date.now() + Math.random(),
-        name: item.name || 'Adsiz Prompt',
-        prompt: item.prompt || '',
-        tags: Array.isArray(item.tags) ? item.tags : String(item.tags || '').split(',').map(x => x.trim()).filter(Boolean),
-        favorite: !!item.favorite,
-        version: Number(item.version || 1),
-        usageCount: Number(item.usageCount || 0),
-        updatedAt: Number(item.updatedAt || Date.now())
-      })).filter(item => item.prompt);
-    }
-
-    function normalizeWorkspaceProjects(items) {
-      return (Array.isArray(items) ? items : []).map(item => ({
-        id: item.id || Date.now() + Math.random(),
-        name: item.name || 'Adsiz Proje',
-        files: item.files || {},
-        createdAt: Number(item.createdAt || Date.now()),
-        updatedAt: Number(item.updatedAt || Date.now()),
-        chatId: item.chatId || null
-      })).filter(item => item.files && Object.keys(item.files).length > 0);
-    }
-
-    function saveWorkspaceProjects() {
-      localStorage.setItem(KEY_PROJECTS, JSON.stringify(workspaceProjects));
-    }
-
-    function saveAnalytics() {
-      appAnalytics.lastUpdated = Date.now();
-      localStorage.setItem(KEY_ANALYTICS, JSON.stringify(appAnalytics));
-    }
-
-    function recordFeatureUsage(feature, meta = {}) {
-      if (!appAnalytics.featureUsage[feature]) appAnalytics.featureUsage[feature] = 0;
-      appAnalytics.featureUsage[feature] += 1;
-      appAnalytics.history = Array.isArray(appAnalytics.history) ? appAnalytics.history : [];
-      appAnalytics.history.unshift({ feature, at: Date.now(), meta });
-      appAnalytics.history = appAnalytics.history.slice(0, 100);
-      saveAnalytics();
-    }
-
-    function recordModelUsage(model) {
-      if (!model) return;
-      if (!appAnalytics.modelUsage[model]) appAnalytics.modelUsage[model] = 0;
-      appAnalytics.modelUsage[model] += 1;
-      saveAnalytics();
-    }
-
-    function recordExportUsage(kind) {
-      if (!kind) return;
-      if (!appAnalytics.exports[kind]) appAnalytics.exports[kind] = 0;
-      appAnalytics.exports[kind] += 1;
-      saveAnalytics();
-    }
-
-    function dedupeSources(items) {
-      const seen = new Set();
-      return (Array.isArray(items) ? items : []).filter(item => {
-        const key = `${item.type || ''}|${item.url || ''}|${item.label || ''}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    }
-
-    async function collectResponseSources(query, content) {
-      const sources = [];
-      const text = String(content || '');
-      extractUrlsFromText(text).slice(0, 8).forEach(url => {
-        sources.push({ type: 'web', label: url.replace(/^https?:\/\//, ''), url });
-      });
-      if (window.RAGModule && typeof window.RAGModule.search === 'function') {
-        try {
-          const ragResults = window.RAGModule.search(query, 3) || [];
-          ragResults.forEach(item => {
-            const docName = item?.meta?.docName || item?.meta?.name || item?.docName;
-            if (docName) sources.push({ type: 'document', label: docName });
-          });
-        } catch (e) { }
-      }
-      if (sources.length === 0 && window.WebSearchModule && typeof window.WebSearchModule.search === 'function' && window.WebSearchModule.needsWebSearch?.(query)) {
-        try {
-          const webResults = await window.WebSearchModule.search(query);
-          (webResults || []).slice(0, 3).forEach(item => {
-            sources.push({ type: 'web', label: item.title || item.url || 'Kaynak', url: item.url || '' });
-          });
-        } catch (e) { }
-      }
-      return dedupeSources(sources).slice(0, 6);
-    }
-
-    function buildAssistantMetaHtml(msg) {
-      const sources = Array.isArray(msg?.sources) ? msg.sources : [];
-      const actions = Array.isArray(msg?.actions) ? msg.actions : [];
-      if (sources.length === 0 && actions.length === 0) return '';
-      const sourcesHtml = sources.length > 0 ? `<div class="mt-3 flex flex-wrap gap-2">${sources.map(item => {
-        const label = escapeHtml(item.label || item.url || 'Kaynak');
-        return `<span class="source-chip">${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label}${item.type ? `<span class="text-[10px] text-neutral-600">${escapeHtml(item.type)}</span>` : ''}</span>`;
-      }).join('')}</div>` : '';
-      const actionsHtml = actions.length > 0 ? `<div class="mt-3 text-[11px] text-neutral-500">${actions.map(action => `<div>• ${escapeHtml(action)}</div>`).join('')}</div>` : '';
-      return sourcesHtml + actionsHtml;
-    }
-
-    function extractTaskInsights(chat = chats.find(c => c.id === currentChatId)) {
-      const insights = { tasks: [], decisions: [], links: [], codeFiles: Object.keys(canvasFiles || {}), prompts: [] };
-      if (!chat) return insights;
-      (chat.messages || []).forEach(msg => {
-        const text = typeof msg.content === 'string' ? msg.content : '';
-        text.split('\n').forEach(line => {
-          const trimmed = line.trim();
-          if (/^(?:- \[(?: |x)\]|[-*] |(?:\d+[\.\)]) )/.test(trimmed)) insights.tasks.push(trimmed.replace(/^(?:- \[(?: |x)\]|[-*] |(?:\d+[\.\)]) )/, ''));
-          if (/^(?:karar|decision|sonuc|oner[ie]):/i.test(trimmed)) insights.decisions.push(trimmed.replace(/^[^:]+:\s*/, ''));
-        });
-        extractUrlsFromText(text).forEach(url => insights.links.push(url));
-        if (msg.role === 'user' && text.length > 20) insights.prompts.push(text.slice(0, 160));
-      });
-      insights.tasks = [...new Set(insights.tasks)].slice(0, 20);
-      insights.decisions = [...new Set(insights.decisions)].slice(0, 12);
-      insights.links = [...new Set(insights.links)].slice(0, 12);
-      insights.prompts = [...new Set(insights.prompts)].slice(0, 8);
-      return insights;
-    }
-
-    function openTaskPanel() {
-      ensureEnhancementModals();
-      renderTaskPanel();
-      $('task-panel-modal')?.classList.remove('hidden');
-      recordFeatureUsage('task_panel_open');
-    }
-
-    function closeTaskPanel() {
-      $('task-panel-modal')?.classList.add('hidden');
-    }
-
-    function renderTaskPanel() {
-      const host = $('task-panel-content');
-      if (!host) return;
-      const data = extractTaskInsights();
-      const section = (title, items, render = item => escapeHtml(item)) => `<div class="p-4 bg-white/[0.02] rounded-xl border border-[#222]"><div class="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">${title}</div>${items.length ? items.map(item => `<div class="text-sm text-neutral-300 mb-2 last:mb-0">${render(item)}</div>`).join('') : '<div class="text-sm text-neutral-600">Kayit bulunamadi.</div>'}</div>`;
-      host.innerHTML = [
-        section('Gorevler', data.tasks),
-        section('Kararlar', data.decisions),
-        section('Linkler', data.links, item => `<a href="${escapeHtml(item)}" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300">${escapeHtml(item)}</a>`),
-        section('Canvas Dosyalari', data.codeFiles),
-        section('Son Kullanici Promptlari', data.prompts)
-      ].join('');
-    }
-
-    function saveCanvasProjectAs() {
-      if (!canvasFiles || Object.keys(canvasFiles).length === 0) {
-        setStatus('Kaydedilecek canvas projesi yok.');
-        return;
-      }
-      const suggested = Object.keys(canvasFiles).find(f => f.endsWith('.html'))?.replace(/\.[^.]+$/, '') || 'Yeni Proje';
-      const name = prompt('Proje adi:', suggested);
-      if (!name) return;
-      const existing = workspaceProjects.find(project => project.name.toLowerCase() === name.trim().toLowerCase());
-      const payload = {
-        id: existing?.id || Date.now() + Math.random(),
-        name: name.trim(),
-        files: JSON.parse(JSON.stringify(canvasFiles)),
-        createdAt: existing?.createdAt || Date.now(),
-        updatedAt: Date.now(),
-        chatId: currentChatId
-      };
-      workspaceProjects = workspaceProjects.filter(project => project.id !== payload.id).concat(payload).sort((a, b) => b.updatedAt - a.updatedAt);
-      saveWorkspaceProjects();
-      renderProjectsManager();
-      recordFeatureUsage('project_save');
-      setStatus('Proje kaydedildi: ' + payload.name);
-    }
-
-    function openProjectsManager() {
-      ensureEnhancementModals();
-      renderProjectsManager();
-      $('projects-modal')?.classList.remove('hidden');
-      recordFeatureUsage('project_manager_open');
-    }
-
-    function closeProjectsManager() {
-      $('projects-modal')?.classList.add('hidden');
-    }
-
-    function renderProjectsManager() {
-      const host = $('projects-modal-content');
-      if (!host) return;
-      if (workspaceProjects.length === 0) {
-        host.innerHTML = '<div class="text-sm text-neutral-600 text-center py-8">Henuz kaydedilmis proje yok.</div>';
-        return;
-      }
-      host.innerHTML = workspaceProjects.sort((a, b) => b.updatedAt - a.updatedAt).map(project => `
-        <div class="p-4 bg-white/[0.02] rounded-xl border border-[#222]">
-          <div class="flex items-center justify-between gap-3">
-            <div class="min-w-0">
-              <div class="text-sm font-semibold text-white truncate">${escapeHtml(project.name)}</div>
-              <div class="text-[11px] text-neutral-500">${Object.keys(project.files || {}).length} dosya • ${new Date(project.updatedAt).toLocaleString('tr-TR')}</div>
-            </div>
-            <div class="flex gap-2 shrink-0">
-              <button onclick="loadWorkspaceProject(${project.id})" class="px-2 py-1 rounded-lg text-[11px] bg-blue-600/15 text-blue-400 border border-blue-500/20">Yukle</button>
-              <button onclick="exportWorkspaceProject(${project.id})" class="px-2 py-1 rounded-lg text-[11px] bg-emerald-600/15 text-emerald-400 border border-emerald-500/20">JSON</button>
-              <button onclick="deleteWorkspaceProject(${project.id})" class="px-2 py-1 rounded-lg text-[11px] bg-red-600/15 text-red-400 border border-red-500/20">Sil</button>
-            </div>
-          </div>
-        </div>`).join('');
-    }
-
-    function loadWorkspaceProject(id) {
-      const project = workspaceProjects.find(item => item.id === id);
-      if (!project) return;
-      canvasFiles = JSON.parse(JSON.stringify(project.files || {}));
-      finalizeCanvas('', true);
-      closeProjectsManager();
-      recordFeatureUsage('project_load');
-      setStatus('Proje yuklendi: ' + project.name);
-    }
-
-    function deleteWorkspaceProject(id) {
-      workspaceProjects = workspaceProjects.filter(item => item.id !== id);
-      saveWorkspaceProjects();
-      renderProjectsManager();
-      recordFeatureUsage('project_delete');
-    }
-
-    function exportWorkspaceProject(id) {
-      const project = workspaceProjects.find(item => item.id === id);
-      if (!project) return;
-      downloadJsonData(`${project.name.replace(/[^a-z0-9]+/gi, '_')}.project.json`, project);
-      recordExportUsage('project_json');
-    }
-
-    function downloadJsonData(filename, data) {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(link.href);
-    }
-
-    function exportWorkspaceBundle() {
-      const chat = chats.find(c => c.id === currentChatId);
-      const bundle = {
-        exportedAt: Date.now(),
-        currentChatId,
-        chat,
-        projects: workspaceProjects,
-        prompts: savedSystemPrompts,
-        analytics: appAnalytics
-      };
-      downloadJsonData(`workspace_bundle_${Date.now()}.json`, bundle);
-      recordExportUsage('workspace_bundle');
-      setStatus('Workspace bundle indirildi.');
-    }
-
-    function buildHtmlReport(data) {
-      const messagesHtml = (data.messages || []).map(msg => `<section style="padding:16px;border:1px solid #e5e7eb;border-radius:14px;margin-bottom:12px;background:#fff"><div style="font-size:12px;color:#64748b;font-weight:700;margin-bottom:8px">${escapeHtml(msg.role === 'user' ? 'Kullanici' : (msg.model || 'AI'))}</div><div style="font-size:14px;line-height:1.65;color:#0f172a;white-space:pre-wrap">${escapeHtml(msg.content || '')}</div></section>`).join('');
-      const sourcesHtml = (data.citations || []).length ? `<div style="margin-top:24px"><h2 style="font-size:16px">Kaynaklar</h2><ul>${data.citations.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>` : '';
-      return `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(data.title || 'Rapor')}</title></head><body style="font-family:Segoe UI,system-ui,sans-serif;background:#f8fafc;color:#0f172a;padding:32px;max-width:960px;margin:0 auto"><h1 style="margin-bottom:8px">${escapeHtml(data.title || 'AI Sohbet Raporu')}</h1><div style="color:#64748b;font-size:13px;margin-bottom:24px">${new Date().toLocaleString('tr-TR')}</div>${messagesHtml}${sourcesHtml}</body></html>`;
-    }
-
-    async function enrichAssistantMessage(query, assistantMsg, options = {}) {
-      assistantMsg.sources = dedupeSources([...(options.sources || []), ...await collectResponseSources(query, assistantMsg.content)]);
-      if (!assistantMsg.actions) assistantMsg.actions = [];
-      recordModelUsage(assistantMsg.model);
-      return assistantMsg;
-    }
-
-    function writeCanvasArtifact(name, content) {
-      if (!name || !content) return;
-      canvasFiles[name] = content;
-      finalizeCanvas('', true);
-    }
-
-    function applyAgentActions(query, result) {
-      const actions = [];
-      if (/```/.test(result || '')) {
-        finalizeCanvas(result);
-        actions.push('Kod bloklari canvas projesine aktarildi');
-      }
-      if (/rapor|report/i.test(query) && typeof result === 'string' && result.trim()) {
-        writeCanvasArtifact('agent-report.md', result);
-        actions.push('agent-report.md olusturuldu');
-      }
-      const insightCount = extractTaskInsights({ messages: [{ role: 'assistant', content: result || '' }] }).tasks.length;
-      if (insightCount > 0) actions.push(`${insightCount} gorev maddesi gorev paneline eklendi`);
-      return [...new Set(actions)];
     }
 
     // ---- Stop Generation
@@ -9002,42 +8352,128 @@
 
     function exportChat(format) {
       const chat = chats.find(c => c.id === currentChatId);
-      if (!chat || !window.ExportModule) return;
-      const data = window.ExportModule._normalizeExportData('chat', { chat });
+      if (!chat) return;
       let content = '', filename = '', type = 'text/plain';
 
       if (format === 'md') {
-        content = window.ExportModule._buildMarkdownFromNormalized(data, { forNotion: true });
-        filename = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
+        content = `# ${chat.title
+          }
+
+        \n\n`;
+
+        chat.messages.forEach(m => {
+          if (m.role === 'user') content += `## Kullanici\n${m.content
+            }
+
+            \n\n`;
+
+          else content += `## ${m.model || 'AI'
+            }
+
+            \n${m.content
+            }
+
+            \n\n`;
+        });
+
+        filename = `${chat.title.replace(/[^a-zA-Z0-9]/g, '_')
+          }
+
+        .md`;
       }
 
       else if (format === 'json') {
-        content = JSON.stringify(data, null, 2);
-        filename = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+        content = JSON.stringify(chat, null, 2);
+
+        filename = `${chat.title.replace(/[^a-zA-Z0-9]/g, '_')
+          }
+
+        .json`;
         type = 'application/json';
       }
 
-      else if (format === 'html') {
-        content = buildHtmlReport(data);
-        filename = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
-        type = 'text/html';
-      }
-
       else {
-        content = data.messages.map(m => `[${m.role === 'user' ? 'Kullanici' : (m.model || 'AI')}]: ${m.content}`).join('\n\n');
-        filename = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+        chat.messages.forEach(m => {
+          if (m.role === 'user') content += `[Kullanici]: ${m.content
+            }
+
+            \n\n`;
+
+          else content += `[${m.model || 'AI'
+            }
+
+            ]: ${m.content
+            }
+
+            \n\n`;
+        });
+
+        filename = `${chat.title.replace(/[^a-zA-Z0-9]/g, '_')
+          }
+
+        .txt`;
       }
 
-      window.ExportModule._downloadText(filename, content, type);
-      recordExportUsage(format || 'txt');
+      const blob = new Blob([content], {
+        type
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+      URL.revokeObjectURL(a.href);
       closeExportModal();
       setStatus('Indirildi: ' + filename);
     }
 
     function exportChatPDF() {
+      const chat = chats.find(c => c.id === currentChatId);
+      if (!chat) return;
       closeExportModal();
-      if (!window.ExportModule) return;
-      window.ExportModule.exportFullChatPDF();
+      const isLight = document.body.classList.contains('light-mode');
+      const bg = isLight ? '#ffffff' : '#0a0a0a';
+      const fg = isLight ? '#1a1a2e' : '#e2e8f0';
+      const border = isLight ? '#e5e5e5' : '#1e1e1e';
+      const userBg = '#2563eb';
+      const aiBg = isLight ? '#f7f7f8' : '#111111';
+
+      let rows = '';
+      chat.messages.forEach(m => {
+        if (m.role === 'system') return;
+        if (typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__')) return;
+        const role = m.role === 'user' ? 'Kullanici' : (m.model || 'AI');
+        const isUser = m.role === 'user';
+        const text = (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        const ts = m.ts ? new Date(m.ts).toLocaleString('tr-TR') : '';
+        rows += `<div class="msg ${isUser ? 'user-msg' : 'ai-msg'}">
+          <div class="msg-header"><span class="role">${role}</span><span class="ts">${ts}</span></div>
+          <div class="msg-body">${text}</div>
+        </div>`;
+      });
+
+      const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>${chat.title}</title><style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:${bg};color:${fg};padding:24px;font-size:13px;line-height:1.6}
+        h1{font-size:18px;font-weight:700;margin-bottom:4px;padding-bottom:12px;border-bottom:1px solid ${border}}
+        .meta{font-size:11px;color:#888;margin-bottom:20px;padding-top:6px}
+        .msg{margin-bottom:16px;padding:14px 16px;border-radius:12px;border:1px solid ${border};background:${aiBg};break-inside:avoid}
+        .user-msg{background:#1d3557;border-color:#2563eb33}
+        .msg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#60a5fa}
+        .user-msg .role{color:#93c5fd}
+        .ts{font-size:10px;color:#666}
+        .msg-body{white-space:pre-wrap;word-break:break-word}
+        @media print{body{padding:16px}@page{margin:16mm}}
+      </style></head><body>
+        <h1>${chat.title}</h1>
+        <div class="meta">${chat.messages.filter(m => m.role !== 'system').length} mesaj &bull; ${new Date().toLocaleDateString('tr-TR')}</div>
+        ${rows}
+      </body></html>`;
+
+      const win = window.open('', '_blank');
+      if (!win) { setStatus('Popup engellendi. Lutfen izin verin.'); return; }
+      win.document.write(html);
+      win.document.close();
+      win.onload = () => { win.focus(); win.print(); };
+      setStatus('PDF penceresi acildi.');
     }
 
     // ---- Persona Gallery
@@ -10063,9 +9499,6 @@
           totalTokens += Math.ceil(text.length / 4);
         });
       });
-      const topModel = Object.entries(appAnalytics.modelUsage || {}).sort((a, b) => b[1] - a[1])[0];
-      const topFeature = Object.entries(appAnalytics.featureUsage || {}).sort((a, b) => b[1] - a[1])[0];
-      const exportCount = Object.values(appAnalytics.exports || {}).reduce((sum, val) => sum + Number(val || 0), 0);
 
       $('stats-content').innerHTML = ` <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Toplam Sohbet</span><span class="text-sm font-bold text-white" >${totalChats
         }
@@ -10079,25 +9512,10 @@
       </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Tahmini Token</span><span class="text-sm font-bold text-white" >${totalTokens.toLocaleString()
         }
 
-	      </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Yer Imleri</span><span class="text-sm font-bold text-white" >${bookmarks.length
-	        }
+      </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Yer Imleri</span><span class="text-sm font-bold text-white" >${bookmarks.length
+        }
 
-	      </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Kayitli Prompt</span><span class="text-sm font-bold text-white" >${savedSystemPrompts.length
-          }
-
-        </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Kayitli Proje</span><span class="text-sm font-bold text-white" >${workspaceProjects.length
-          }
-
-        </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >Top Export</span><span class="text-sm font-bold text-white" >${exportCount
-          }
-
-        </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >En Cok Kullanilan Model</span><span class="text-sm font-bold text-white" >${escapeHtml(topModel ? `${topModel[0]} (${topModel[1]})` : 'Veri yok')
-          }
-
-        </span> </div> <div class="flex justify-between p-3 bg-white/[0.02] rounded-xl border border-[#222]" > <span class="text-sm text-neutral-400" >En Cok Kullanilan Ozellik</span><span class="text-sm font-bold text-white" >${escapeHtml(topFeature ? `${topFeature[0]} (${topFeature[1]})` : 'Veri yok')
-          }
-
-        </span> </div> `;
+      </span> </div> `;
     }
 
     function closeStatsModal() {
@@ -10523,9 +9941,10 @@
       if (pre) pre.textContent = code;
       renderCanvasFileTree();
 
+      // Update preview when any web file is selected
       const htmlFile = Object.keys(canvasFiles).find(f => f.endsWith('.html'));
       if (htmlFile) {
-        throttledCanvasPreviewRefresh(canvasFiles[htmlFile]);
+        updateCanvasPreview(canvasFiles[htmlFile]);
       }
     }
 
@@ -10583,7 +10002,7 @@
       while ((match = regex.exec(content)) !== null) {
         const lang = (match[1] || '').toLowerCase();
         const code = match[2].trim();
-        if (code.length > 10) {
+        if (code.length > 10) { // Only non-trivial code blocks
           codeBlocks.push({ lang, code });
         }
       }
@@ -10593,21 +10012,20 @@
       const prevCanvasFiles = { ...canvasFiles };
       const newFiles = {};
       let hasHtml = false;
-      const filenameCounts = {};
 
       codeBlocks.forEach((block, idx) => {
         let filename;
         const ext = block.lang || 'txt';
         if (ext === 'html' || ext === 'htm') { filename = 'index.html'; hasHtml = true; }
-        else if (ext === 'css') filename = 'styles.css';
-        else if (ext === 'javascript' || ext === 'js') filename = codeBlocks.length > 3 ? 'src/main.js' : 'script.js';
+        else if (ext === 'css') filename = 'index.css';
+        else if (ext === 'javascript' || ext === 'js') filename = codeBlocks.length > 3 ? `src/main.js` : 'script.js';
         else if (ext === 'typescript' || ext === 'ts') filename = 'src/main.ts';
         else if (ext === 'tsx') filename = 'src/App.tsx';
         else if (ext === 'jsx') filename = 'src/App.jsx';
         else if (ext === 'python' || ext === 'py') filename = 'main.py';
-        else if (ext === 'cpp' || ext === 'c++' || ext === 'cc' || ext === 'cxx') filename = 'main.cpp';
-        else if (ext === 'c') filename = 'main.c';
-        else if (ext === 'h' || ext === 'hpp') filename = `header.${ext}`;
+        else if (ext === 'cpp' || ext === 'c++' || ext === 'cc' || ext === 'cxx') filename = canvasFiles['main.cpp'] ? `file_${idx}.cpp` : 'main.cpp';
+        else if (ext === 'c') filename = canvasFiles['main.c'] ? `file_${idx}.c` : 'main.c';
+        else if (ext === 'h' || ext === 'hpp') filename = `header${idx > 0 ? idx : ''}.${ext}`;
         else if (ext === 'java') filename = 'Main.java';
         else if (ext === 'rust' || ext === 'rs') filename = 'main.rs';
         else if (ext === 'go' || ext === 'golang') filename = 'main.go';
@@ -10617,22 +10035,20 @@
         else if (ext === 'json') filename = idx === 0 ? 'package.json' : 'config.json';
         else filename = `file${idx > 0 ? idx : ''}.${ext}`;
 
-        if (newFiles[filename] || prevCanvasFiles[filename]) {
-          filenameCounts[filename] = (filenameCounts[filename] || 1) + 1;
-          const dot = filename.lastIndexOf('.');
-          const base = dot > -1 ? filename.slice(0, dot) : filename;
-          const extPart = dot > -1 ? filename.slice(dot) : '';
-          filename = `${base}_${filenameCounts[filename]}${extPart}`;
-        }
+        // Avoid duplicate names
+        if (newFiles[filename]) filename = `${filename.split('.')[0]}_${idx}.${ext}`;
         newFiles[filename] = block.code;
       });
 
-      const freshProjectMode = BUILDER_FRESH_MODES.has(canvasExtractionMode);
-      canvasFiles = freshProjectMode ? { ...newFiles } : { ...prevCanvasFiles, ...newFiles };
+      // Merge new files into existing canvas (preserves files not mentioned in this response)
+      canvasFiles = { ...prevCanvasFiles, ...newFiles };
 
+      // If there's a standalone HTML with full content, try to detect project structure
       if (hasHtml && codeBlocks.length >= 3) {
+        // Check for React/Vite project patterns
         const hasReactLike = codeBlocks.some(b => b.code.includes('import React') || b.code.includes('createRoot') || b.code.includes('tsx'));
         if (hasReactLike) {
+          // Reorganize
           const reactFiles = {};
           Object.keys(canvasFiles).forEach(f => {
             if (!f.startsWith('src/') && !f.endsWith('.html') && !f.endsWith('.json')) {
@@ -10719,21 +10135,12 @@
     }
 
     async function deployCanvasProject() {
-      if (!puter.auth.isSignedIn()) {
-        alert("Yayina almak icin ayarlardan Puter ile giris yapmalisiniz.");
+      if (typeof puter !== 'undefined' && puter.auth && !puter.auth.isSignedIn()) {
+        alert("Yayına almak için ayarlardan Puter ile giriş yapmalısınız. (Mobil WebView'de bu ekran popup gerektirebilir)");
         return;
       }
       const files = Object.keys(canvasFiles);
       if (files.length === 0) return;
-      const savedSubdomain = localStorage.getItem('puter_canvas_subdomain') || '';
-      const siteName = prompt('Puter subdomain:', savedSubdomain || ('app-' + Math.random().toString(36).substr(2, 6)));
-      if (!siteName) return;
-      const cleanSubdomain = siteName.trim().toLowerCase();
-      if (!/^[a-z0-9-]+$/.test(cleanSubdomain)) {
-        alert('Subdomain sadece kucuk harf, rakam ve tire icerebilir.');
-        return;
-      }
-      localStorage.setItem('puter_canvas_subdomain', cleanSubdomain);
 
       const btn = document.getElementById('deploy-canvas-btn');
       const originalText = btn.innerHTML;
@@ -10741,8 +10148,8 @@
       btn.disabled = true;
 
       try {
-        const remoteDir = `${cleanSubdomain}-site`;
-        try { await puter.fs.mkdir(remoteDir, { createMissingParents: true }); } catch (_) { }
+        const siteName = "app-" + Math.random().toString(36).substr(2, 6);
+        await puter.fs.mkdir(siteName);
 
         const hasHtmlFile = files.some(f => f.endsWith('.html'));
         const hasSeparateCssOrJs = files.some(f => f.endsWith('.css') || f.endsWith('.js'));
@@ -10750,35 +10157,29 @@
         if (hasHtmlFile && hasSeparateCssOrJs) {
           const htmlKey = files.find(f => f === 'index.html') || files.find(f => f.endsWith('.html'));
           const inlinedHtml = buildCanvasPreviewHtml(canvasFiles[htmlKey]);
-          await puter.fs.write(`${remoteDir}/index.html`, inlinedHtml);
+          await puter.fs.write(`${siteName}/index.html`, inlinedHtml);
         } else {
           for (const f of files) {
             const parts = f.split('/');
             if (parts.length > 1) {
               const dir = parts.slice(0, -1).join('/');
-              try { await puter.fs.mkdir(`${remoteDir}/${dir}`, { createMissingParents: true }); } catch (_) { }
+              try { await puter.fs.mkdir(`${siteName}/${dir}`, { createMissingParents: true }); } catch (_) { }
             }
-            await puter.fs.write(`${remoteDir}/${f}`, canvasFiles[f]);
+            await puter.fs.write(`${siteName}/${f}`, canvasFiles[f]);
           }
         }
 
-        let site = null;
-        try {
-          site = await puter.hosting.update(cleanSubdomain, remoteDir);
-        } catch (updateError) {
-          site = await puter.hosting.create(cleanSubdomain, remoteDir);
-        }
+        const site = await puter.hosting.create(siteName, siteName);
 
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Yayinlandi`;
-        recordFeatureUsage('canvas_deploy', { subdomain: cleanSubdomain });
         setTimeout(() => {
-          window.open(`https://${(site?.subdomain || cleanSubdomain)}.puter.site`, '_blank');
+          window.open(`https://${site.subdomain}.puter.site`, '_blank');
           btn.innerHTML = originalText;
           btn.disabled = false;
         }, 1500);
       } catch (e) {
         console.error("Deploy Hatasi:", e);
-        alert("Yayinlama basarisiz: " + (e?.message || JSON.stringify(e) || String(e)));
+        alert("Yayinlama basarisiz: " + e.message);
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
@@ -10847,9 +10248,11 @@
       openCanvas();
       renderCanvasFileTree();
 
+      // Auto-select and preview HTML file
       const htmlFile = Object.keys(canvasFiles).find(f => f.endsWith('.html'));
       if (htmlFile) {
         selectCanvasFile(htmlFile);
+        updateCanvasPreview(canvasFiles[htmlFile]);
         switchCanvasTab('preview');
       } else {
         const first = Object.keys(canvasFiles)[0];
@@ -10947,13 +10350,12 @@
           synthesis = await callAnthropicRouter(modA, [{ role: 'system', content: 'Sen bir arastirma sentez uzmanis.' }, { role: 'user', content: synthesisPrompt }]);
         }
 
-	        researchDiv.remove();
+        researchDiv.remove();
 
-	        const assistantMsg = { role: 'assistant', model: modA + ' (DR)', content: synthesis };
-          await enrichAssistantMessage(query, assistantMsg);
-	        chat.messages.push(assistantMsg);
-	        saveAll();
-	        renderMessages(chat.messages);
+        const assistantMsg = { role: 'assistant', model: modA + ' (DR)', content: synthesis };
+        chat.messages.push(assistantMsg);
+        saveAll();
+        renderMessages(chat.messages);
         setStatus('Deep Research tamamlandi.');
 
       } catch (e) {
@@ -11028,10 +10430,6 @@
       }
 
       try {
-        if (window.MindMapModule) {
-          window.MindMapModule.clear();
-          window.MindMapModule.addNode('root', 'HEDEF: ' + query.substring(0, 40) + '...', '#f43f5e', 0);
-        }
         updateStatus('Gorev alt adimlara bolunuyor...');
         addAgentStep('Gorev analizi baslatildi', query);
 
@@ -11040,26 +10438,15 @@
 
         addAgentStep('Plan olusturuldu', planResult, true);
 
-        const stepLines = (planResult || '').split('\n').filter(l => /^\d+[\.\)]\s/.test(l.trim()));
-        const steps = stepLines.map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(s => s.length > 0);
+        const stepLines = (planResult || '').split('\n').filter(l => /^\\d+[\\.\\)]\\s/.test(l.trim()));
+        const steps = stepLines.map(l => l.replace(/^\\d+[\\.\\)]\\s*/, '').trim()).filter(s => s.length > 0);
         if (steps.length === 0) steps.push(query);
-
-        if (window.MindMapModule) {
-          steps.forEach((s, idx) => {
-            window.MindMapModule.addNode('step-' + idx, s.substring(0, 30) + '...', '#10b981', 1);
-            window.MindMapModule.addEdge('root', 'step-' + idx);
-          });
-        }
 
         let allResults = [];
         for (let i = 0; i < steps.length; i++) {
           const step = steps[i];
           updateStatus(`Adim ${i + 1}/${steps.length}: ${step.substring(0, 30)}...`);
           const currentStepEl = addAgentStep(`Adim ${i + 1}: ${step}`, null);
-
-          if (window.MindMapModule) {
-            window.MindMapModule.nodes.update({ id: 'step-' + i, color: { background: '#f59e0b', border: '#f59e0b' } });
-          }
 
           const stepPrompt = `Gorev: "${query}"\nMevcut adim: ${step}\n${allResults.length > 0 ? 'Onceki sonuclar:\n' + allResults.map((r, j) => `Adim ${j + 1}: ${r.substring(0, 300)}`).join('\n') : ''}\nBu adimi detayli uygula.`;
 
@@ -11077,12 +10464,6 @@
               checkbox.replaceWith(checkSvg.firstElementChild);
             }
           }
-          if (window.MindMapModule) {
-            window.MindMapModule.nodes.update({ id: 'step-' + i, color: { background: '#10b981', border: '#10b981' } });
-            const subId = 'res-' + i;
-            window.MindMapModule.addNode(subId, 'Sonuç ' + (i + 1), '#3b82f6', 2);
-            window.MindMapModule.addEdge('step-' + i, subId);
-          }
           currentStepEl.querySelector('.text-neutral-600')?.remove();
           const detail = document.createElement('div');
           detail.className = 'text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed';
@@ -11099,12 +10480,9 @@
         addAgentStep('Sentez tamamlandi', null, true);
         agentDiv.remove();
 
-          const agentActions = applyAgentActions(query, finalResult || '-');
-          const assistantMsg = { role: 'assistant', model: `${modA} (Ajan)`, content: finalResult || '-', timestamp: Date.now(), actions: agentActions };
-          await enrichAssistantMessage(query, assistantMsg);
-	        chat.messages.push(assistantMsg);
-	        saveAll();
-	        renderMessages(chat.messages);
+        chat.messages.push({ role: 'assistant', model: `${modA} (Ajan)`, content: finalResult || '-', timestamp: Date.now() });
+        saveAll();
+        renderMessages(chat.messages);
         setStatus('Ajan gorevi tamamlandi.');
       } catch (e) {
         agentDiv.remove();
@@ -11880,1455 +11258,7 @@
       handleSend();
     }
 
-    // Expose key variables/functions for modules.js integration
-    Object.defineProperty(window, 'chats', { get() { return chats; }, set(v) { chats = v; } });
-    Object.defineProperty(window, 'canvasFiles', { get() { return canvasFiles; }, set(v) { canvasFiles = v; } });
-    Object.defineProperty(window, 'selectedFiles', { get() { return selectedFiles; }, set(v) { selectedFiles = v; } });
-    window.providerSettings = providerSettings;
-    Object.defineProperty(window, 'currentChatId', { get() { return currentChatId; }, set(v) { currentChatId = v; } });
-    Object.defineProperty(window, 'agentActive', { get() { return agentActive; }, set(v) { agentActive = v; } });
-    Object.defineProperty(window, 'isGenerating', { get() { return isGenerating; }, set(v) { isGenerating = v; } });
-    Object.defineProperty(window, 'voiceConvMode', { get() { return voiceConvMode; }, set(v) { voiceConvMode = v; } });
-    window.selectCanvasFile = selectCanvasFile;
-    window.updateCanvasPreview = updateCanvasPreview;
-    window.deepResearch = deepResearch;
-    window.runAgent = runAgent;
-    window.voiceConvSpeak = voiceConvSpeak;
-    window.handleSend = handleSend;
-    window.buildHistoryForModel = buildHistoryForModel;
-    window.callPuterOnce = callPuterOnce;
-    window.callCustomRouter = callCustomRouter;
-    window.callAnthropicRouter = callAnthropicRouter;
-    window.saveAll = saveAll;
-    window.renderMessages = renderMessages;
-    window.setStatus = setStatus;
-    window.escapeHtml = escapeHtml;
-    window.renderFilePreviews = renderFilePreviews;
-    window.recognition = typeof recognition !== 'undefined' ? recognition : null;
-    window.currentUtterance = typeof currentUtterance !== 'undefined' ? currentUtterance : null;
-    window.setVoiceOverlayState = typeof setVoiceOverlayState !== 'undefined' ? setVoiceOverlayState : null;
-
     boot();
-  </script>
-
-  <!-- Enhancement Modules: Monaco, Vision, RAG, Voice+, Export, MindMap -->
-  <script>
-    // ============================================================
-    // AI Chat + Research v18 - Enhancement Modules
-    // Monaco Editor, Vision, RAG, Advanced Voice, Export, Mind Map
-    // ============================================================
-
-    (function () {
-      'use strict';
-
-      const _$ = id => document.getElementById(id);
-
-      // ============================================================
-      // MODULE 1: Monaco Editor Integration (Code Station)
-      // ============================================================
-      const MonacoModule = {
-        editor: null,
-        currentFile: null,
-        monacoReady: false,
-
-        init() {
-          if (window._monacoLoaded) return;
-          window._monacoLoaded = true;
-
-          const loaderScript = document.createElement('script');
-          loaderScript.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js';
-          loaderScript.onload = () => {
-            require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
-            window.MonacoEnvironment = {
-              getWorkerUrl: function (workerId, label) {
-                return `data:text/javascript;charset=utf-8,${encodeURIComponent(
-                  'self.MonacoEnvironment={baseUrl:"https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/"};importScripts("https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/worker/workerMain.js");'
-                )}`;
-              }
-            };
-            require(['vs/editor/editor.main'], () => {
-              MonacoModule.monacoReady = true;
-              MonacoModule._replaceCodeViewer();
-              console.log('[Monaco] Editor ready');
-            });
-          };
-          document.head.appendChild(loaderScript);
-        },
-
-        _replaceCodeViewer() {
-          const viewer = _$('canvas-file-viewer');
-          if (!viewer) return;
-
-          viewer.innerHTML = '<div id="monaco-container" style="width:100%;height:100%;"></div>';
-
-          this.editor = monaco.editor.create(_$('monaco-container'), {
-            value: '// Select a file to edit',
-            language: 'html',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            minimap: { enabled: true, maxColumn: 80 },
-            fontSize: 13,
-            fontFamily: "'JetBrains Mono', monospace",
-            lineNumbers: 'on',
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            tabSize: 2,
-            renderWhitespace: 'selection',
-            smoothScrolling: true,
-            cursorBlinking: 'smooth',
-            cursorSmoothCaretAnimation: 'on',
-            bracketPairColorization: { enabled: true },
-            padding: { top: 12 }
-          });
-
-          this.editor.onDidChangeModelContent(() => {
-            if (!this.currentFile || !window.canvasFiles) return;
-            const newContent = this.editor.getValue();
-            window.canvasFiles[this.currentFile] = newContent;
-
-            clearTimeout(this._previewTimer);
-            this._previewTimer = setTimeout(() => {
-              const htmlFile = Object.keys(window.canvasFiles).find(f => f.endsWith('.html'));
-              if (htmlFile && typeof window.updateCanvasPreview === 'function') {
-                window.updateCanvasPreview(window.canvasFiles[htmlFile]);
-              }
-            }, 400);
-          });
-        },
-
-        loadFile(path) {
-          if (!this.editor || !this.monacoReady) return;
-          this.currentFile = path;
-          const content = (window.canvasFiles && window.canvasFiles[path]) || '';
-          const lang = this._detectLanguage(path);
-          const model = this.editor.getModel();
-          if (model) {
-            monaco.editor.setModelLanguage(model, lang);
-            model.setValue(content);
-          }
-        },
-
-        _detectLanguage(filename) {
-          const ext = (filename || '').split('.').pop().toLowerCase();
-          const map = {
-            'html': 'html', 'htm': 'html', 'css': 'css', 'js': 'javascript',
-            'ts': 'typescript', 'tsx': 'typescript', 'jsx': 'javascript',
-            'json': 'json', 'py': 'python', 'java': 'java', 'cpp': 'cpp',
-            'c': 'c', 'rs': 'rust', 'go': 'go', 'rb': 'ruby', 'php': 'php',
-            'sh': 'shell', 'md': 'markdown', 'xml': 'xml', 'sql': 'sql',
-            'yaml': 'yaml', 'yml': 'yaml', 'scss': 'scss', 'less': 'less',
-            'swift': 'swift', 'kt': 'kotlin', 'dart': 'dart'
-          };
-          return map[ext] || 'plaintext';
-        }
-      };
-
-      // ============================================================
-      // MODULE 2: Visual Analysis (Multimodal / Vision)
-      // ============================================================
-      const VisionModule = {
-        init() {
-          this._addVisionButton();
-        },
-
-        _addVisionButton() {
-          const attachBtn = _$('attach-btn');
-          if (!attachBtn) return;
-
-          const visionBtn = document.createElement('button');
-          visionBtn.id = 'vision-btn';
-          visionBtn.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-cyan-400 hover:bg-white/5 transition-all shrink-0';
-          visionBtn.title = 'Gorsel Analiz - Resim yukle, AI analiz etsin';
-          visionBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-          visionBtn.onclick = () => this.openVisionMode();
-          attachBtn.parentNode.insertBefore(visionBtn, attachBtn.nextSibling);
-        },
-
-        openVisionMode() {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            await this.analyzeImage(file);
-          };
-          input.click();
-        },
-
-        async analyzeImage(file) {
-          if (typeof setStatus === 'function') setStatus('Gorsel analiz hazirlaniyor...');
-          const base64 = await this._fileToBase64(file);
-          const userInput = _$('user-input');
-          const analysisType = await this._showAnalysisModal(file.name);
-          if (!analysisType) return;
-
-          const prompts = {
-            'describe': 'Bu gorseli detayli acikla. Ne goruyorsun?',
-            'code': 'Bu gorsel/diyagrami HTML/CSS/JS koduna cevir. Tam calisan bir web sayfasi uret.',
-            'table': 'Bu gorseldeki verileri (fatura, tablo vb.) Markdown tablo formatina cevir.',
-            'ocr': 'Bu gorseldeki tum metinleri cikar ve duzenli bir sekilde listele.',
-            'diagram': 'Bu diyagrami analiz et ve yapilanlari adim adim acikla.'
-          };
-
-          const prompt = prompts[analysisType] || prompts['describe'];
-
-          if (!window.selectedFiles) window.selectedFiles = [];
-          window.selectedFiles.push({
-            id: Date.now() + Math.random(),
-            name: file.name,
-            type: file.type,
-            file: file,
-            preview: base64,
-            size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
-          });
-
-          if (typeof renderFilePreviews === 'function') renderFilePreviews();
-          if (userInput) {
-            userInput.value = prompt;
-            userInput.dispatchEvent(new Event('input'));
-          }
-          if (typeof setStatus === 'function') setStatus("Gorsel yuklendi. Gondermek icin Enter'a basin.");
-        },
-
-        async _showAnalysisModal(filename) {
-          return new Promise(resolve => {
-            const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4';
-            overlay.innerHTML = `
-          <div class="bg-[#111] border border-[#222] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 class="text-base font-bold text-white mb-1">Gorsel Analiz</h3>
-            <p class="text-xs text-neutral-500 mb-4">${filename}</p>
-            <div class="space-y-2" id="vision-options">
-              <button data-type="describe" class="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-[#222] hover:border-cyan-500/30 transition-all text-sm text-neutral-200">
-                <span class="font-semibold">Gorseli Acikla</span>
-                <span class="block text-[10px] text-neutral-500 mt-0.5">Ne goruldugunu detayli anlat</span>
-              </button>
-              <button data-type="code" class="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-[#222] hover:border-cyan-500/30 transition-all text-sm text-neutral-200">
-                <span class="font-semibold">Koda Cevir</span>
-                <span class="block text-[10px] text-neutral-500 mt-0.5">Diyagrami/tasarimi HTML/CSS/JS koduna donustur</span>
-              </button>
-              <button data-type="table" class="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-[#222] hover:border-cyan-500/30 transition-all text-sm text-neutral-200">
-                <span class="font-semibold">Tablo Olustur</span>
-                <span class="block text-[10px] text-neutral-500 mt-0.5">Fatura/veri gorselini tabloya cevir</span>
-              </button>
-              <button data-type="ocr" class="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-[#222] hover:border-cyan-500/30 transition-all text-sm text-neutral-200">
-                <span class="font-semibold">Metin Cikar (OCR+)</span>
-                <span class="block text-[10px] text-neutral-500 mt-0.5">Gorseldeki tum metinleri cikar</span>
-              </button>
-              <button data-type="diagram" class="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-[#222] hover:border-cyan-500/30 transition-all text-sm text-neutral-200">
-                <span class="font-semibold">Diyagram Analizi</span>
-                <span class="block text-[10px] text-neutral-500 mt-0.5">Akis diyagrami/semalari analiz et</span>
-              </button>
-            </div>
-            <button id="vision-cancel" class="mt-3 w-full py-2 text-xs text-neutral-500 hover:text-white transition-all">Iptal</button>
-          </div>`;
-            document.body.appendChild(overlay);
-            overlay.querySelector('#vision-cancel').onclick = () => { overlay.remove(); resolve(null); };
-            overlay.querySelector('#vision-options').addEventListener('click', e => {
-              const btn = e.target.closest('button[data-type]');
-              if (btn) { overlay.remove(); resolve(btn.dataset.type); }
-            });
-            overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); resolve(null); } });
-          });
-        },
-
-        _fileToBase64(file) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }
-      };
-
-      // ============================================================
-      // MODULE 3: RAG (Retrieval-Augmented Generation) System
-      // ============================================================
-      const RAGModule = {
-        documents: [],
-        chunks: [],
-        panelOpen: false,
-        activeCollection: 'Genel',
-        supportedExts: ['pdf', 'txt', 'md', 'csv', 'json', 'docx', 'xlsx', 'xls', 'xml', 'js', 'py', 'html', 'css'],
-        maxStoredChars: 180000,
-        _renderDocListThrottled: null,
-
-        getCollections() {
-          return ['Tum Koleksiyonlar', ...new Set(this.documents.map(doc => doc.collection || 'Genel'))];
-        },
-
-        getFileExtension(file) {
-          return String(file?.name || '').split('.').pop().toLowerCase();
-        },
-
-        isSupportedFile(file) {
-          const ext = this.getFileExtension(file);
-          return this.supportedExts.includes(ext);
-        },
-
-        hasDocumentFingerprint(fingerprint) {
-          return this.documents.some(doc => doc.fingerprint === fingerprint);
-        },
-
-        setCollection(value) {
-          this.activeCollection = value || 'Genel';
-          const select = _$('rag-collection-select');
-          if (select) select.value = this.activeCollection;
-          this._renderDocList();
-        },
-
-        init() {
-          this._renderDocListThrottled = throttle(() => this._renderDocList(), 120);
-          this._createPanel();
-          this._loadSavedDocs();
-        },
-
-        _createPanel() {
-          const panel = document.createElement('aside');
-          panel.id = 'rag-panel';
-          panel.style.cssText = 'position:fixed;top:0;right:0;bottom:0;width:360px;background:#0a0a0a;border-left:1px solid #1a1a1a;z-index:80;transform:translateX(100%);transition:transform 0.3s;display:flex;flex-direction:column;';
-          panel.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #1a1a1a;flex-shrink:0;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span style="font-size:14px;font-weight:700;color:#fff;">Bilgi Bankasi (RAG)</span>
-            <span id="rag-doc-count" style="font-size:10px;background:rgba(168,85,247,0.2);color:#c084fc;padding:2px 6px;border-radius:999px;font-weight:700;">0</span>
-          </div>
-          <button onclick="window.RAGModule.togglePanel()" style="color:#737373;font-size:20px;background:none;border:none;cursor:pointer;">&times;</button>
-        </div>
-        <div style="padding:16px;border-bottom:1px solid #1a1a1a;flex-shrink:0;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <select id="rag-collection-select" style="flex:1;background:#111;border:1px solid #222;border-radius:10px;padding:8px 10px;color:#e5e7eb;font-size:12px;"></select>
-            <input id="rag-collection-input" placeholder="Koleksiyon" style="width:110px;background:#111;border:1px solid #222;border-radius:10px;padding:8px 10px;color:#e5e7eb;font-size:12px;" />
-          </div>
-          <div id="rag-drop-zone" style="border:2px dashed #333;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" style="margin:0 auto 8px;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <div style="font-size:12px;color:#ccc;font-weight:600;">Belge yukle (PDF, DOCX, XLSX, TXT...)</div>
-            <div style="font-size:10px;color:#555;margin-top:4px;">Maks 30 dosya, her biri 50MB</div>
-          </div>
-          <input type="file" id="rag-file-input" style="display:none;" multiple accept=".pdf,.txt,.md,.csv,.json,.docx,.xlsx,.xls,.xml,.js,.py,.html,.css" />
-        </div>
-        <div id="rag-doc-list" style="flex:1;overflow-y:auto;padding:12px;"></div>
-        <div style="padding:12px;border-top:1px solid #1a1a1a;flex-shrink:0;">
-          <button onclick="window.RAGModule.clearAll()" style="width:100%;padding:8px;border-radius:8px;font-size:12px;font-weight:600;color:#f87171;background:none;border:1px solid rgba(239,68,68,0.2);cursor:pointer;">Tum Dokumanlari Temizle</button>
-        </div>`;
-          document.body.appendChild(panel);
-
-          const dropZone = panel.querySelector('#rag-drop-zone');
-          const fileInput = panel.querySelector('#rag-file-input');
-          const collectionSelect = panel.querySelector('#rag-collection-select');
-          const collectionInput = panel.querySelector('#rag-collection-input');
-          dropZone.onclick = () => fileInput.click();
-          fileInput.onchange = (e) => this._handleFiles(Array.from(e.target.files));
-          collectionSelect.onchange = () => this.setCollection(collectionSelect.value);
-          collectionInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              const value = collectionInput.value.trim();
-              if (!value) return;
-              this.setCollection(value);
-              collectionInput.value = '';
-            }
-          });
-          dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#a855f7'; });
-          dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#333'; });
-          dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#333';
-            this._handleFiles(Array.from(e.dataTransfer.files));
-          });
-          this._renderCollectionOptions();
-        },
-
-        _renderCollectionOptions() {
-          const select = _$('rag-collection-select');
-          if (!select) return;
-          const current = this.activeCollection || 'Genel';
-          select.innerHTML = this.getCollections().map(name => `<option value="${name}">${name}</option>`).join('');
-          if (![...select.options].some(option => option.value === current)) {
-            const option = document.createElement('option');
-            option.value = current;
-            option.textContent = current;
-            select.appendChild(option);
-          }
-          select.value = current;
-        },
-
-        togglePanel() {
-          this.panelOpen = !this.panelOpen;
-          const panel = _$('rag-panel');
-          if (panel) panel.style.transform = this.panelOpen ? 'translateX(0)' : 'translateX(100%)';
-        },
-
-        async _handleFiles(files, options = {}) {
-          const silentBatch = !!options.silentBatch;
-          let processed = 0;
-          for (const file of files) {
-            if (this.documents.length >= 30) { if (typeof setStatus === 'function') setStatus('Maks 30 dokuman yuklendi.'); break; }
-            if (file.size > 50 * 1024 * 1024) { if (typeof setStatus === 'function') setStatus(file.name + ' cok buyuk (maks 50MB).'); continue; }
-            if (!this.isSupportedFile(file)) continue;
-            const fingerprint = createRequestFingerprint(file);
-            if (this.hasDocumentFingerprint(fingerprint)) continue;
-            const doc = {
-              id: Date.now() + Math.random(),
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              text: '',
-              chunks: [],
-              pages: 0,
-              collection: this.activeCollection || 'Genel',
-              createdAt: Date.now(),
-              fingerprint,
-              sourceMeta: {}
-            };
-            if (!silentBatch && typeof setStatus === 'function') setStatus(file.name + ' isleniyor...');
-            try {
-              const extracted = await this._extractDocument(file);
-              doc.pages = extracted.pages || 0;
-              doc.text = extracted.text || '';
-              doc.sourceMeta = extracted.sourceMeta || {};
-              doc.chunks = this._chunkText(doc.text, doc, extracted.chunkHints || []);
-              this.documents.push(doc);
-              this.chunks.push(...doc.chunks);
-              processed++;
-              this._saveDocs();
-              this._renderCollectionOptions();
-              this._renderDocListThrottled ? this._renderDocListThrottled() : this._renderDocList();
-              if (!silentBatch && typeof setStatus === 'function') setStatus(file.name + ' yuklendi (' + doc.chunks.length + ' parca).');
-            } catch (e) {
-              if (typeof setStatus === 'function') setStatus(file.name + ' islenemedi: ' + e.message);
-            }
-          }
-          if (silentBatch && processed > 0 && typeof setStatus === 'function') {
-            setStatus(processed + ' dokuman bilgi bankasina eklendi.');
-          }
-        },
-
-        async _extractDocument(file) {
-          if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-            return await this._extractPdfWithPages(file);
-          }
-          if (file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            const arrayBuffer = await file.arrayBuffer();
-            const result = await mammoth.extractRawText({ arrayBuffer });
-            return { text: result.value, sourceMeta: {} };
-          }
-          if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-            return await this._extractSpreadsheet(file);
-          }
-          const text = await file.text();
-          return { text, sourceMeta: {} };
-        },
-
-        async _extractSpreadsheet(file) {
-          const data = await file.arrayBuffer();
-          const workbook = XLSX.read(data, { type: 'array' });
-          let text = '';
-          const chunkHints = [];
-          workbook.SheetNames.forEach(sheetName => {
-            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
-            rows.forEach((row, rowIndex) => {
-              const rowText = row.map(cell => String(cell)).join(' | ').trim();
-              if (!rowText) return;
-              const line = `[Sheet: ${sheetName} | Row: ${rowIndex + 1}] ${rowText}`;
-              text += line + '\n';
-              chunkHints.push({ text: line, sourceMeta: { sheetName, rowStart: rowIndex + 1, rowEnd: rowIndex + 1 } });
-            });
-            text += '\n';
-          });
-          return { text, chunkHints, sourceMeta: { sheets: workbook.SheetNames } };
-        },
-
-        async _extractPdfWithPages(file) {
-          const ab = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
-          let fullText = '';
-          const chunkHints = [];
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const tc = await page.getTextContent();
-            const pageText = tc.items.map(x => x.str).join(' ').trim();
-            const line = '[Sayfa ' + i + '] ' + pageText;
-            fullText += line + '\n\n';
-            chunkHints.push({ text: line, sourceMeta: { page: i } });
-          }
-          return { text: fullText, pages: pdf.numPages, chunkHints, sourceMeta: { pages: pdf.numPages } };
-        },
-
-        _chunkText(text, doc, chunkHints = [], chunkSize = 900) {
-          const hints = chunkHints.length > 0 ? chunkHints : text.split(/\n\s*\n/).filter(p => p.trim().length > 20).map(paragraph => ({ text: paragraph, sourceMeta: {} }));
-          const chunks = [];
-          let currentText = '';
-          let currentMeta = {};
-          hints.forEach((hint, index) => {
-            const part = hint.text.trim();
-            if (!part) return;
-            if ((currentText + '\n\n' + part).length > chunkSize && currentText) {
-              chunks.push({
-                id: `${doc.id}-${chunks.length}`,
-                text: currentText.trim(),
-                source: doc.name,
-                sourceMeta: currentMeta,
-                collection: doc.collection || 'Genel',
-                fingerprint: doc.fingerprint,
-                type: doc.type || ''
-              });
-              currentText = '';
-              currentMeta = {};
-            }
-            currentText += (currentText ? '\n\n' : '') + part;
-            currentMeta = { ...currentMeta, ...hint.sourceMeta };
-            if (index === hints.length - 1 && currentText.trim()) {
-              chunks.push({
-                id: `${doc.id}-${chunks.length}`,
-                text: currentText.trim(),
-                source: doc.name,
-                sourceMeta: currentMeta,
-                collection: doc.collection || 'Genel',
-                fingerprint: doc.fingerprint,
-                type: doc.type || ''
-              });
-            }
-          });
-          return chunks;
-        },
-
-        buildCitation(chunk) {
-          const meta = chunk.sourceMeta || {};
-          if (meta.page) return `${chunk.source} s.${meta.page}`;
-          if (meta.sheetName) return `${chunk.source} / ${meta.sheetName} satir ${meta.rowStart || '?'}-${meta.rowEnd || meta.rowStart || '?'}`;
-          if (meta.section) return `${chunk.source} / ${meta.section}`;
-          return chunk.source;
-        },
-
-        search(query, topK = 5, options = {}) {
-          if (this.chunks.length === 0) return [];
-          const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-          const allowedFingerprints = options.preferFingerprints || null;
-          const activeCollection = options.collection || this.activeCollection;
-          const filteredChunks = this.chunks.filter(chunk => {
-            if (allowedFingerprints && allowedFingerprints.length && allowedFingerprints.includes(chunk.fingerprint)) return true;
-            if (activeCollection && activeCollection !== 'Tum Koleksiyonlar' && activeCollection !== 'Genel' && chunk.collection !== activeCollection) return false;
-            return true;
-          });
-          if (queryWords.length === 0) return filteredChunks.slice(0, topK);
-          const scored = filteredChunks.map(chunk => {
-            const lower = chunk.text.toLowerCase();
-            let score = 0;
-            for (const word of queryWords) {
-              const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-              score += (lower.match(regex) || []).length;
-              if (lower.includes(query.toLowerCase())) score += 5;
-            }
-            return { ...chunk, score };
-          });
-          scored.sort((a, b) => b.score - a.score);
-          const matched = scored.filter(s => s.score > 0).slice(0, topK);
-          if (matched.length === 0 && allowedFingerprints && allowedFingerprints.length) {
-            return filteredChunks.filter(chunk => allowedFingerprints.includes(chunk.fingerprint)).slice(0, topK);
-          }
-          return matched;
-        },
-
-        buildContext(query, options = {}) {
-          const results = this.search(query, options.topK || 6, options);
-          if (results.length === 0 && this.documents.length === 0) return '';
-          let ctx = '\n\n--- BILGI BANKASI BAGLAMI ---\n';
-          const docs = this.documents.filter(doc => !options.collection || options.collection === 'Tum Koleksiyonlar' || doc.collection === options.collection || options.preferFingerprints?.includes(doc.fingerprint));
-          ctx += '\nYuklu Dokumanlar:\n';
-          docs.forEach((doc, i) => {
-            ctx += `${i + 1}. "${doc.name}" [${doc.collection || 'Genel'}] (${doc.chunks.length} parca${doc.pages ? ', ' + doc.pages + ' sayfa' : ''}, ${(doc.size / 1024).toFixed(0)}KB)\n`;
-          });
-          if (results.length > 0) {
-            ctx += '\nIlgili Parcalar:\n';
-            results.forEach(result => {
-              ctx += `\n[Kaynak: ${this.buildCitation(result)}]\n${result.text}\n---\n`;
-            });
-          }
-          ctx += '\nYaniti olustururken uygun yerlerde kaynak referansi ver.\n';
-          return ctx;
-        },
-
-
-        _renderDocList() {
-          const list = _$('rag-doc-list');
-          const countEl = _$('rag-doc-count');
-          if (countEl) countEl.textContent = this.documents.length;
-          if (!list) return;
-          this._renderCollectionOptions();
-          const docs = this.documents.filter(doc => this.activeCollection === 'Tum Koleksiyonlar' || this.activeCollection === 'Genel' || doc.collection === this.activeCollection);
-          if (docs.length === 0) {
-            list.innerHTML = '<div style="text-align:center;color:#555;font-size:12px;padding:32px 0;">Henuz dokuman yuklenmedi</div>';
-            return;
-          }
-          list.innerHTML = docs.map(doc => `
-        <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid #1a1a1a;margin-bottom:8px;">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(168,85,247,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12px;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${doc.name}</div>
-            <div style="font-size:10px;color:#555;">${doc.collection || 'Genel'} | ${doc.chunks.length} parca${doc.pages ? ' | ' + doc.pages + ' sayfa' : ''} | ${(doc.size / 1024).toFixed(0)}KB</div>
-          </div>
-          <button onclick="window.RAGModule.removeDoc(${doc.id})" style="color:#555;background:none;border:none;cursor:pointer;font-size:18px;" title="Sil">&times;</button>
-        </div>`).join('');
-        },
-
-        removeDoc(id) {
-          this.documents = this.documents.filter(d => d.id !== id);
-          this.chunks = [];
-          this.documents.forEach(d => this.chunks.push(...d.chunks));
-          this._saveDocs();
-          this._renderCollectionOptions();
-          this._renderDocList();
-        },
-
-        clearAll() {
-          this.documents = [];
-          this.chunks = [];
-          this._saveDocs();
-          this._renderDocList();
-          if (typeof setStatus === 'function') setStatus('Tum RAG dokumanlari temizlendi.');
-        },
-
-        _saveDocs() {
-          try {
-            const save = this.documents.map(d => ({
-              id: d.id,
-              name: d.name,
-              type: d.type,
-              size: d.size,
-              text: (d.text || '').substring(0, this.maxStoredChars),
-              pages: d.pages,
-              collection: d.collection || 'Genel',
-              createdAt: d.createdAt || Date.now(),
-              fingerprint: d.fingerprint,
-              sourceMeta: d.sourceMeta || {}
-            }));
-            localStorage.setItem('rag_documents', JSON.stringify(save));
-          } catch (e) { console.warn('RAG save error:', e); }
-        },
-
-        _loadSavedDocs() {
-          try {
-            const saved = JSON.parse(localStorage.getItem('rag_documents') || '[]');
-            for (const doc of saved) {
-              doc.chunks = this._chunkText(doc.text || '', doc);
-              this.documents.push(doc);
-              this.chunks.push(...doc.chunks);
-            }
-            this._renderCollectionOptions();
-            this._renderDocList();
-          } catch (e) { console.warn('RAG load error:', e); }
-        }
-      };
-
-      // ============================================================
-      // MODULE 4: Advanced Voice Mode & Sentiment Analysis
-      // ============================================================
-      const AdvancedVoiceModule = {
-        sentimentEnabled: true,
-        currentEmotion: 'neutral',
-
-        init() {
-          this._enhanceVoiceOverlay();
-          this._setupInterrupt();
-        },
-
-        _enhanceVoiceOverlay() {
-          const overlay = _$('voice-overlay');
-          if (!overlay) return;
-
-          const emotionDiv = document.createElement('div');
-          emotionDiv.id = 'voice-emotion';
-          emotionDiv.style.cssText = 'font-size:12px;margin-top:8px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid #222;';
-          emotionDiv.innerHTML = '<span id="emotion-icon">😊</span> <span id="emotion-label" style="color:#a3a3a3;">Normal</span>';
-
-          const interruptBtn = document.createElement('button');
-          interruptBtn.id = 'voice-interrupt-btn';
-          interruptBtn.style.cssText = 'display:none;margin-top:8px;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);cursor:pointer;';
-          interruptBtn.textContent = 'Sozunu Kes';
-          interruptBtn.onclick = () => this.interrupt();
-
-          const closeBtn = overlay.querySelector('button');
-          if (closeBtn) {
-            overlay.insertBefore(emotionDiv, closeBtn);
-            overlay.insertBefore(interruptBtn, closeBtn);
-          }
-        },
-
-        _setupInterrupt() {
-          document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && window.speechSynthesis && window.speechSynthesis.speaking) {
-              this.interrupt();
-            }
-          });
-        },
-
-        interrupt() {
-          if (window.speechSynthesis) { window.speechSynthesis.cancel(); window.currentUtterance = null; }
-          const btn = _$('voice-interrupt-btn');
-          if (btn) btn.style.display = 'none';
-          if (typeof setStatus === 'function') setStatus('Konusma kesildi.');
-          if (window.voiceConvMode && window.recognition) {
-            if (typeof setVoiceOverlayState === 'function') setVoiceOverlayState('listening');
-            setTimeout(() => { try { window.recognition.start(); } catch (e) { } }, 300);
-          }
-        },
-
-        analyzeSentiment(text) {
-          if (!text || !this.sentimentEnabled) return 'neutral';
-          const lower = text.toLowerCase();
-          const emotionKeywords = {
-            happy: ['mutlu', 'guzel', 'harika', 'mukemmel', 'seviyorum', 'tesekkur', 'super', 'muthis', 'happy', 'great', 'awesome', 'love', 'thanks', 'excellent', 'wonderful'],
-            sad: ['uzgun', 'kotu', 'maalesef', 'uzucu', 'sad', 'sorry', 'unfortunately', 'bad', 'terrible', 'basarisiz'],
-            angry: ['sinir', 'kizgin', 'berbat', 'rezalet', 'angry', 'furious', 'horrible', 'worst', 'annoying', 'nefret'],
-            curious: ['nasil', 'neden', 'niye', 'merak', 'acaba', 'how', 'why', 'what', 'curious', 'wonder', 'arastir'],
-          };
-          let maxScore = 0;
-          let detected = 'neutral';
-          for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
-            let score = keywords.filter(kw => lower.includes(kw)).length;
-            if (score > maxScore) { maxScore = score; detected = emotion; }
-          }
-          this.currentEmotion = detected;
-          this._updateEmotionDisplay(detected);
-          return detected;
-        },
-
-        _updateEmotionDisplay(emotion) {
-          const icons = { happy: '😊', sad: '😢', angry: '😠', curious: '🤔', neutral: '😐' };
-          const labels = { happy: 'Mutlu', sad: 'Uzgun', angry: 'Kizgin', curious: 'Merakli', neutral: 'Normal' };
-          const iconEl = _$('emotion-icon');
-          const labelEl = _$('emotion-label');
-          if (iconEl) iconEl.textContent = icons[emotion] || '😐';
-          if (labelEl) labelEl.textContent = labels[emotion] || 'Normal';
-        },
-
-        getVoiceParams(emotion) {
-          const params = { happy: { rate: 1.1, pitch: 1.1 }, sad: { rate: 0.85, pitch: 0.9 }, angry: { rate: 1.15, pitch: 1.2 }, curious: { rate: 1.0, pitch: 1.05 }, neutral: { rate: 1.0, pitch: 1.0 } };
-          return params[emotion] || params.neutral;
-        },
-
-        onSpeakStart() { const btn = _$('voice-interrupt-btn'); if (btn) btn.style.display = ''; },
-        onSpeakEnd() { const btn = _$('voice-interrupt-btn'); if (btn) btn.style.display = 'none'; }
-      };
-
-      // ============================================================
-      // MODULE 5: Export & Share System
-      // ============================================================
-      const ExportModule = {
-        init() {
-          this._loadJsPdf();
-          this._addExportButtons();
-        },
-
-        _loadJsPdf() {
-          if (document.querySelector('script[src*="jspdf"]')) return;
-          const s = document.createElement('script');
-          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-          document.head.appendChild(s);
-        },
-
-        _addExportButtons() {
-          const runScan = throttle(() => {
-            document.querySelectorAll('.msg-wrap').forEach(el => this._addExportBtn(el));
-          }, 120);
-          const observer = new MutationObserver(() => runScan());
-          const chatWin = _$('chat-window');
-          if (chatWin) observer.observe(chatWin, { childList: true, subtree: true });
-          setTimeout(() => runScan(), 400);
-        },
-
-	        _normalizeExportData(kind, payload = {}) {
-	          const chat = payload.chat || (window.chats && window.chats.find(c => c.id === window.currentChatId));
-          const collectCitationLabels = (messages) => (messages || []).flatMap(msg => (msg?.sources || []).map(src => src.url || src.label)).filter(Boolean);
-	          if (kind === 'message') {
-	            const msg = payload.message || {};
-	            return {
-	              title: payload.title || 'Mesaj Export',
-	              kind,
-	              messages: [{ role: msg.role || 'assistant', model: msg.model || '', content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content || '') }],
-	              canvas: payload.canvas || null,
-	              citations: payload.citations || collectCitationLabels([msg])
-	            };
-	          }
-	          if (kind === 'canvas') {
-	            return { title: payload.title || 'Canvas Export', kind, messages: [], canvas: payload.canvas || null, citations: payload.citations || [] };
-	          }
-	          return {
-	            title: (chat && chat.title) || payload.title || 'AI Sohbet',
-	            kind,
-	            messages: ((chat && chat.messages) || payload.messages || []).filter(m => !(typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__'))).map(m => ({ role: m.role, model: m.model || '', content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '') })),
-	            canvas: payload.canvas || (chat && chat.canvas) || null,
-	            citations: payload.citations || collectCitationLabels((chat && chat.messages) || payload.messages || [])
-	          };
-	        },
-
-        _buildMarkdownFromNormalized(data, options = {}) {
-          let out = `# ${data.title}\n\n`;
-          if (data.messages && data.messages.length) {
-            data.messages.forEach(msg => {
-              const heading = msg.role === 'user' ? 'Kullanici' : (msg.model || 'AI');
-              out += `## ${heading}\n${msg.content || ''}\n\n`;
-            });
-          }
-          if (data.canvas) {
-            out += '## Canvas Dosyalari\n';
-            Object.entries(data.canvas).forEach(([name, content]) => {
-              out += `\n### ${name}\n\n\`\`\`\n${content}\n\`\`\`\n`;
-            });
-          }
-          if (options.forNotion && data.citations?.length) {
-            out += '\n## Kaynaklar\n';
-            data.citations.forEach(item => { out += `- ${item}\n`; });
-          }
-          return out.trim();
-        },
-
-        _downloadText(filename, content, type = 'text/plain') {
-          const blob = new Blob([content], { type });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = filename;
-          a.click();
-          URL.revokeObjectURL(a.href);
-        },
-
-        _addExportBtn(msgEl) {
-          if (msgEl.dataset.exportBound === '1' || msgEl.querySelector('.export-msg-btn')) return;
-          msgEl.dataset.exportBound = '1';
-          const aiBlock = msgEl.querySelector('.msg-ai-block');
-          if (!aiBlock) return;
-          const btnGroup = document.createElement('div');
-          btnGroup.className = 'export-msg-btn';
-          btnGroup.style.cssText = 'display:flex;align-items:center;gap:4px;margin-top:8px;opacity:0;transition:opacity 0.2s;';
-          btnGroup.innerHTML = `
-        <button onclick="window.ExportModule.exportPDF(this)" style="font-size:10px;color:#525252;background:none;border:1px solid #222;border-radius:6px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;" title="PDF Indir">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF
-        </button>
-        <button onclick="window.ExportModule.copyMarkdown(this)" style="font-size:10px;color:#525252;background:none;border:1px solid #222;border-radius:6px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;" title="Markdown Kopyala">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Markdown
-        </button>
-        <button onclick="window.ExportModule.sharePublic(this)" style="font-size:10px;color:#525252;background:none;border:1px solid #222;border-radius:6px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;" title="Paylas">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Paylas
-        </button>`;
-          msgEl.addEventListener('mouseenter', () => { btnGroup.style.opacity = '1'; });
-          msgEl.addEventListener('mouseleave', () => { btnGroup.style.opacity = '0'; });
-          aiBlock.appendChild(btnGroup);
-        },
-
-        exportPDF(btnEl) {
-          try {
-            const jspdfLib = window.jspdf;
-            if (!jspdfLib) { if (typeof setStatus === 'function') setStatus('PDF kutuphanesi yukleniyor, tekrar deneyin...'); return; }
-            const msgWrap = btnEl.closest('.msg-wrap');
-            const chat = window.chats && window.chats.find(c => c.id === window.currentChatId);
-            const msgIdx = msgWrap ? Array.from(msgWrap.parentNode.children).filter(c => c.classList.contains('msg-wrap')).indexOf(msgWrap) : -1;
-            const data = this._normalizeExportData('message', { message: chat?.messages?.[msgIdx], title: 'Mesaj Export' });
-            const { jsPDF } = jspdfLib;
-            const doc = new jsPDF();
-            doc.setFont('helvetica');
-            doc.setFontSize(14);
-            doc.text(data.title, 15, 20);
-            doc.setFontSize(8);
-            doc.setTextColor(128, 128, 128);
-            doc.text(new Date().toLocaleString('tr-TR'), 15, 28);
-            doc.setFontSize(10);
-            doc.setTextColor(40, 40, 40);
-            const lines = doc.splitTextToSize(this._buildMarkdownFromNormalized(data), 180);
-            let y = 40;
-            for (const line of lines) {
-              if (y > 280) { doc.addPage(); y = 20; }
-              doc.text(line, 15, y);
-              y += 5;
-            }
-	            doc.save('ai-chat-' + Date.now() + '.pdf');
-              if (typeof recordExportUsage === 'function') recordExportUsage('pdf_message');
-	            if (typeof setStatus === 'function') setStatus('PDF indirildi.');
-          } catch (e) {
-            if (typeof setStatus === 'function') setStatus('PDF hatasi: ' + e.message);
-          }
-        },
-
-        exportFullChatPDF() {
-          try {
-            const jspdfLib = window.jspdf;
-            if (!jspdfLib) { if (typeof setStatus === 'function') setStatus('PDF kutuphanesi yukleniyor, tekrar deneyin...'); return; }
-            const data = this._normalizeExportData('chat');
-            const { jsPDF } = jspdfLib;
-            const doc = new jsPDF();
-            doc.setFontSize(16);
-            doc.text(data.title || 'AI Sohbet', 15, 20);
-            doc.setFontSize(8);
-            doc.setTextColor(128, 128, 128);
-            doc.text(new Date().toLocaleString('tr-TR'), 15, 28);
-            let y = 40;
-            doc.setFontSize(10);
-            const lines = doc.splitTextToSize(this._buildMarkdownFromNormalized(data), 180);
-            for (const line of lines) {
-              if (y > 280) { doc.addPage(); y = 20; }
-              doc.text(line, 15, y);
-              y += 5;
-            }
-	            doc.save((data.title || 'sohbet').replace(/[^a-z0-9]/gi, '_') + '-' + Date.now() + '.pdf');
-              if (typeof recordExportUsage === 'function') recordExportUsage('pdf_chat');
-	            if (typeof setStatus === 'function') setStatus('Tam sohbet PDF olarak indirildi.');
-          } catch (e) {
-            if (typeof setStatus === 'function') setStatus('PDF hatasi: ' + e.message);
-          }
-        },
-
-        copyMarkdown(btnEl) {
-          const msgWrap = btnEl.closest('.msg-wrap');
-          if (!msgWrap) return;
-          const chat = window.chats && window.chats.find(c => c.id === window.currentChatId);
-          const msgIdx = Array.from(msgWrap.parentNode.children).filter(c => c.classList.contains('msg-wrap')).indexOf(msgWrap);
-          const data = this._normalizeExportData('message', { message: chat?.messages?.[msgIdx], title: 'Mesaj Export' });
-	          navigator.clipboard.writeText(this._buildMarkdownFromNormalized(data, { forNotion: true })).then(() => {
-              if (typeof recordExportUsage === 'function') recordExportUsage('markdown_copy');
-	            if (typeof setStatus === 'function') setStatus('Markdown olarak kopyalandi.');
-	          });
-        },
-
-        async sharePublic(btnEl) {
-          try {
-            const data = this._normalizeExportData('chat');
-            if (typeof setStatus === 'function') setStatus('Paylasim linki olusturuluyor...');
-            const shareData = {
-              title: data.title,
-              messages: data.messages,
-              canvas: data.canvas,
-              sharedAt: Date.now()
-            };
-            if (window.puter && window.puter.kv) {
-              const shareId = 'share_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-              await puter.kv.set(shareId, JSON.stringify(shareData));
-              const shareUrl = window.location.origin + window.location.pathname + '?share=' + shareId;
-	              await navigator.clipboard.writeText(shareUrl);
-                if (typeof recordExportUsage === 'function') recordExportUsage('share_link');
-	              if (typeof setStatus === 'function') setStatus('Paylasim linki kopyalandi!');
-	            } else {
-	              this._downloadText('sohbet-' + Date.now() + '.json', JSON.stringify(shareData, null, 2), 'application/json');
-                if (typeof recordExportUsage === 'function') recordExportUsage('share_json');
-	              if (typeof setStatus === 'function') setStatus('Sohbet JSON olarak indirildi.');
-            }
-          } catch (e) {
-            if (typeof setStatus === 'function') setStatus('Paylasim hatasi: ' + e.message);
-          }
-        }
-      };
-
-      // ============================================================
-      // MODULE 6: Mind Map (Node-based Thinking Visualization)
-      // ============================================================
-      const MindMapModule = {
-        container: null,
-        nodes: [],
-        edges: [],
-        nodeIdCounter: 0,
-        svgEl: null,
-        overlayEl: null,
-        history: [],
-
-        init() {
-          const style = document.createElement('style');
-          style.textContent = `
-        .mindmap-container { position:relative;width:100%;min-height:300px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;overflow:hidden;margin:12px 0; }
-        .mindmap-svg { position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none; }
-        .mindmap-node { position:absolute;padding:10px 16px;border-radius:12px;font-size:11px;font-weight:600;max-width:200px;text-align:center;transition:all 0.3s ease;cursor:default;box-shadow:0 2px 8px rgba(0,0,0,0.3); }
-        .mindmap-node.root { background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:2px solid #a855f7;font-size:13px;z-index:2; }
-        .mindmap-node.step { background:#1a1a2e;color:#e2e8f0;border:1px solid #333; }
-        .mindmap-node.step.active { border-color:#3b82f6;box-shadow:0 0 12px rgba(59,130,246,0.3); }
-        .mindmap-node.step.done { border-color:#22c55e;background:#0a2e1a; }
-        .mindmap-node.result { background:linear-gradient(135deg,#1e3a5f,#1e1e3f);color:#93c5fd;border:1px solid #3b82f6; }
-        .mindmap-edge { stroke:#333;stroke-width:2;fill:none;transition:all 0.3s; }
-        .mindmap-edge.active { stroke:#3b82f6;stroke-width:2.5; }
-        .mindmap-edge.done { stroke:#22c55e; }
-        @keyframes mindmap-pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.05);} }
-        .mindmap-node.active { animation:mindmap-pulse 1.5s ease-in-out infinite; }
-        .mindmap-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);z-index:9999;display:none;flex-direction:column;overflow-y:auto;}
-        .mindmap-overlay.open{display:flex;}
-        .mindmap-overlay-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid #1a1a1a;flex-shrink:0;}
-        .mindmap-overlay-body{flex:1;padding:24px;overflow-y:auto;}
-        .mindmap-history-item{background:#111;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;}
-        .mindmap-history-title{font-size:14px;font-weight:700;color:#a855f7;margin-bottom:8px;}
-        .mindmap-history-time{font-size:10px;color:#555;margin-bottom:12px;}`;
-          document.head.appendChild(style);
-          this._createOverlay();
-        },
-
-        _createOverlay() {
-          this.overlayEl = document.createElement('div');
-          this.overlayEl.className = 'mindmap-overlay';
-          this.overlayEl.innerHTML = `
-            <div class="mindmap-overlay-header">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-                </div>
-                <div>
-                  <div style="font-size:16px;font-weight:700;color:white;">Düşünce Haritası</div>
-                  <div style="font-size:11px;color:#666;">Ajan modundaki son işlem adımları</div>
-                </div>
-              </div>
-              <button onclick="window.MindMapModule.toggle()" style="background:rgba(255,255,255,0.08);border:1px solid #333;color:white;padding:8px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;">✕ Kapat</button>
-            </div>
-            <div class="mindmap-overlay-body" id="mindmap-overlay-body"></div>
-          `;
-          document.body.appendChild(this.overlayEl);
-        },
-
-        toggle() {
-          if (!this.overlayEl) this._createOverlay();
-          const isOpen = this.overlayEl.classList.contains('open');
-          if (isOpen) {
-            this.overlayEl.classList.remove('open');
-          } else {
-            this._renderOverlay();
-            this.overlayEl.classList.add('open');
-          }
-        },
-
-        _renderOverlay() {
-          const body = this.overlayEl.querySelector('#mindmap-overlay-body');
-          if (!body) return;
-          if (this.history.length === 0 && this.nodes.length === 0) {
-            body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div style="font-size:48px;margin-bottom:16px;">🧠</div><div style="font-size:16px;color:#666;font-weight:600;">Henüz düşünce haritası yok</div><div style="font-size:12px;color:#444;margin-top:8px;">Ajan modunu kullandığınızda işlem adımları burada görselleştirilecek.</div></div>';
-            return;
-          }
-          let html = '';
-          const allMaps = [...this.history];
-          if (this.nodes.length > 0) {
-            allMaps.push({ query: this.nodes[0]?.label || 'Aktif Görev', time: Date.now(), nodes: [...this.nodes] });
-          }
-          allMaps.reverse().forEach((map, mi) => {
-            html += '<div class="mindmap-history-item">';
-            html += `<div class="mindmap-history-title">🎯 ${map.query}</div>`;
-            html += `<div class="mindmap-history-time">${new Date(map.time).toLocaleString('tr-TR')}</div>`;
-            html += '<div style="position:relative;min-height:200px;background:#0a0a0a;border-radius:12px;overflow:hidden;" id="mm-hist-' + mi + '">';
-            const svgId = 'mm-svg-' + mi;
-            html += `<svg class="mindmap-svg" id="${svgId}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></svg>`;
-            map.nodes.forEach(n => {
-              const cls = 'mindmap-node ' + (n.type || 'step') + (n.el?.classList.contains('done') ? ' done' : '') + (n.el?.classList.contains('active') ? ' active' : '');
-              html += `<div class="${cls}" style="position:absolute;" title="${n.label}">${(n.label || '').substring(0, 50)}</div>`;
-            });
-            html += '</div></div>';
-          });
-          body.innerHTML = html;
-          // Re-layout each history container
-          allMaps.reverse().forEach((map, mi) => {
-            const cont = body.querySelector('#mm-hist-' + mi);
-            if (!cont) return;
-            const w = cont.offsetWidth || 600;
-            const svgEl = cont.querySelector('#mm-svg-' + mi);
-            const divNodes = cont.querySelectorAll('.mindmap-node');
-            const root = map.nodes[0];
-            if (root && divNodes[0]) { divNodes[0].style.left = (w / 2 - 60) + 'px'; divNodes[0].style.top = '20px'; }
-            const children = map.nodes.filter(n => n.id > 0);
-            const levels = {};
-            children.forEach(n => { const l = n.parentId === 0 ? 1 : 2; if (!levels[l]) levels[l] = []; levels[l].push(n); });
-            for (const [level, lvlNodes] of Object.entries(levels)) {
-              const lv = parseInt(level);
-              const yPos = 20 + lv * 80;
-              const spacing = w / (lvlNodes.length + 1);
-              lvlNodes.forEach((n, i) => {
-                const idx = map.nodes.indexOf(n);
-                if (divNodes[idx]) { divNodes[idx].style.left = (spacing * (i + 1) - 70) + 'px'; divNodes[idx].style.top = yPos + 'px'; }
-              });
-            }
-            const height = (Object.keys(levels).length + 1) * 80 + 60;
-            cont.style.height = height + 'px';
-          });
-        },
-
-        saveToHistory() {
-          if (this.nodes.length > 0) {
-            this.history.push({
-              query: this.nodes[0]?.label || 'Görev',
-              time: Date.now(),
-              nodes: this.nodes.map(n => ({ ...n, el: { classList: { contains: (cls) => n.el?.classList?.contains(cls) || false } } }))
-            });
-            if (this.history.length > 20) this.history.shift();
-          }
-        },
-
-        createForAgent(containerId, rootLabel) {
-          this.saveToHistory();
-          this.nodes = [];
-          this.edges = [];
-          this.nodeIdCounter = 0;
-          const container = document.createElement('div');
-          container.className = 'mindmap-container';
-          container.id = 'mindmap-' + Date.now();
-          container.style.height = '320px';
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.classList.add('mindmap-svg');
-          container.appendChild(svg);
-          this.container = container;
-          this.svgEl = svg;
-          this.addNode(rootLabel, 'root', null);
-          return container;
-        },
-
-        addNode(label, type, parentId) {
-          const id = this.nodeIdCounter++;
-          const node = { id, label, type: type || 'step', parentId, el: null, x: 0, y: 0 };
-          this.nodes.push(node);
-          const el = document.createElement('div');
-          el.className = 'mindmap-node ' + (type || 'step');
-          el.textContent = label.length > 50 ? label.substring(0, 47) + '...' : label;
-          el.title = label;
-          this.container.appendChild(el);
-          node.el = el;
-          this._layout();
-          if (parentId !== null && parentId !== undefined && id > 0) this._addEdge(parentId, id);
-          return id;
-        },
-
-        updateNode(id, state) {
-          const node = this.nodes.find(n => n.id === id);
-          if (!node || !node.el) return;
-          node.el.classList.remove('active', 'done');
-          if (state === 'active') node.el.classList.add('active');
-          if (state === 'done') node.el.classList.add('done');
-          const edge = this.edges.find(e => e.to === id);
-          if (edge && edge.el) {
-            edge.el.classList.remove('active', 'done');
-            if (state === 'active') edge.el.classList.add('active');
-            if (state === 'done') edge.el.classList.add('done');
-          }
-        },
-
-        addResultNode(label) { return this.addNode(label, 'result', 0); },
-
-        _addEdge(fromId, toId) {
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.classList.add('mindmap-edge');
-          this.svgEl.appendChild(path);
-          this.edges.push({ from: fromId, to: toId, el: path });
-          this._updateEdges();
-        },
-
-        _layout() {
-          if (!this.container) return;
-          const w = this.container.offsetWidth || 600;
-          const root = this.nodes[0];
-          if (root && root.el) { root.x = w / 2; root.y = 40; root.el.style.left = (root.x - 60) + 'px'; root.el.style.top = root.y + 'px'; }
-          const children = this.nodes.filter(n => n.id > 0);
-          const levels = {};
-          children.forEach(n => { const l = n.parentId === 0 ? 1 : 2; if (!levels[l]) levels[l] = []; levels[l].push(n); });
-          for (const [level, nodes] of Object.entries(levels)) {
-            const l = parseInt(level);
-            const yPos = 40 + l * 90;
-            const spacing = w / (nodes.length + 1);
-            nodes.forEach((n, i) => { n.x = spacing * (i + 1); n.y = yPos; if (n.el) { n.el.style.left = (n.x - 70) + 'px'; n.el.style.top = n.y + 'px'; } });
-          }
-          this._updateEdges();
-        },
-
-        _updateEdges() {
-          for (const edge of this.edges) {
-            const from = this.nodes.find(n => n.id === edge.from);
-            const to = this.nodes.find(n => n.id === edge.to);
-            if (!from || !to || !edge.el) continue;
-            const x1 = from.x, y1 = from.y + 35, x2 = to.x, y2 = to.y;
-            const cy = y1 + (y2 - y1) / 2;
-            edge.el.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + cy + ', ' + x2 + ' ' + cy + ', ' + x2 + ' ' + y2);
-          }
-        }
-      };
-
-      // ============================================================
-      // MODULE 7: Web Search (Live Internet Search)
-      // ============================================================
-      const WebSearchModule = {
-        init() { },
-
-        async search(query) {
-          try {
-            // Use multiple CORS-friendly search APIs as fallbacks
-            const results = await this._searchDuckDuckGo(query);
-            return results;
-          } catch (e) {
-            console.warn('[WebSearch] Search failed:', e);
-            return [];
-          }
-        },
-
-        async _searchDuckDuckGo(query) {
-          try {
-            const resp = await fetch('https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1');
-            const data = await resp.json();
-            const results = [];
-            if (data.AbstractText) {
-              results.push({ title: data.Heading || query, snippet: data.AbstractText, url: data.AbstractURL || '' });
-            }
-            if (data.RelatedTopics) {
-              data.RelatedTopics.forEach(t => {
-                if (t.Text && results.length < 8) {
-                  results.push({ title: t.Text.substring(0, 80), snippet: t.Text, url: t.FirstURL || '' });
-                }
-                if (t.Topics) {
-                  t.Topics.forEach(sub => {
-                    if (sub.Text && results.length < 8) {
-                      results.push({ title: sub.Text.substring(0, 80), snippet: sub.Text, url: sub.FirstURL || '' });
-                    }
-                  });
-                }
-              });
-            }
-            return results;
-          } catch (e) {
-            return [];
-          }
-        },
-
-        formatResults(results) {
-          if (!results || results.length === 0) return '';
-          let text = '\n\n--- WEB ARAMA SONUCLARI ---\n';
-          results.forEach((r, i) => {
-            text += `\n${i + 1}. ${r.title}\n${r.snippet}\n${r.url ? '[Kaynak: ' + r.url + ']' : ''}\n`;
-          });
-          text += '---\nYukaridaki web arama sonuclarini kullanarak guncel bilgi ile yanit ver.\n';
-          return text;
-        },
-
-        needsWebSearch(query) {
-          const searchKeywords = [
-            'bugün', 'bugun', 'güncel', 'guncel', 'son dakika', 'şu an', 'su an',
-            'kur', 'dolar', 'euro', 'bitcoin', 'btc', 'altın', 'altin', 'borsa',
-            'hava durumu', 'sıcaklık', 'sicaklik', 'derece',
-            'skor', 'maç', 'mac', 'sonuç', 'sonuc',
-            'en yeni', 'son sürüm', 'son surum', 'latest', 'newest', 'current',
-            'ne zaman', 'kaç', 'kac', 'fiyat', 'fiyatı',
-            'haberleri', 'haberler', 'news',
-            'nerede', 'adres', 'telefon',
-            'kimdir', 'who is', 'what is',
-            'ara', 'search', 'bul', 'find',
-            '2024', '2025', '2026'
-          ];
-          const lower = query.toLowerCase();
-          return searchKeywords.some(kw => lower.includes(kw));
-        }
-      };
-
-      // ============================================================
-      // INTEGRATION: Hook into existing app functions
-      // ============================================================
-      function integrateModules() {
-        // 1. Monaco: Override selectCanvasFile to load into Monaco
-        const origSelectCanvasFile = window.selectCanvasFile;
-        window.selectCanvasFile = function (path) {
-          if (origSelectCanvasFile) origSelectCanvasFile(path);
-          if (MonacoModule.monacoReady && MonacoModule.editor) MonacoModule.loadFile(path);
-        };
-
-        // 2. RAG: Enhance deepResearch
-        const origDeepResearch = window.deepResearch;
-        window.deepResearch = async function (query) {
-          if (RAGModule.documents.length > 0) {
-            const ragCtx = RAGModule.buildContext(query);
-            if (ragCtx) query = query + ragCtx;
-          }
-          if (origDeepResearch) return origDeepResearch(query);
-        };
-
-        // 3. Voice: Add sentiment analysis & interrupt support
-        const origVoiceConvSpeak = window.voiceConvSpeak;
-        window.voiceConvSpeak = function (rawText) {
-          AdvancedVoiceModule.analyzeSentiment(rawText);
-          AdvancedVoiceModule.onSpeakStart();
-          if (origVoiceConvSpeak) origVoiceConvSpeak(rawText);
-        };
-
-        // 4. Agent Mode: Replace with Mind Map enhanced version
-        window.runAgent = async function (query) {
-          const chat = window.chats && window.chats.find(c => c.id === window.currentChatId);
-          if (!chat) return;
-          const modA = _$('model-a') ? _$('model-a').value : 'gpt-4o-mini';
-          const activeProv = (window.providerSettings && window.providerSettings.active) || 'puter';
-          const win = _$('chat-window');
-          window.agentActive = true;
-
-          const agentDiv = document.createElement('div');
-          agentDiv.className = 'flex flex-col gap-2 w-full animate-in msg-wrap';
-          agentDiv.innerHTML = '<div class="flex items-center gap-2.5 px-1"><div class="w-6 h-6 rounded-lg bg-gradient-to-br from-rose-600 to-orange-600 flex items-center justify-center text-[9px] font-bold text-white">🤖</div><span class="text-[11px] text-rose-400 font-semibold">Ajan Modu</span><span class="text-[10px] text-neutral-600">+ Dusunce Haritasi</span></div><div class="pl-[34px]"><div id="agent-mindmap-container"></div><div id="agent-steps" class="space-y-2 mt-3"></div><div id="agent-status" class="text-[11px] text-neutral-500 mt-2 flex items-center gap-2"><div class="w-1.5 h-1.5 bg-rose-500 rounded-full dot-pulse"></div><span>Gorev analiz ediliyor...</span></div></div>';
-          win.appendChild(agentDiv);
-          win.scrollTop = win.scrollHeight;
-
-          const mmContainer = MindMapModule.createForAgent('agent-mm', query.substring(0, 40) + '...');
-          const mmHolder = agentDiv.querySelector('#agent-mindmap-container');
-          if (mmHolder) mmHolder.appendChild(mmContainer);
-
-          const stepsEl = agentDiv.querySelector('#agent-steps');
-          const statusEl = agentDiv.querySelector('#agent-status span');
-
-          function addStep(title, detail, done) {
-            const step = document.createElement('div');
-            step.className = 'p-2.5 rounded-lg border text-[12px] ' + (done ? 'border-green-800/30 bg-green-900/10' : 'border-[#222] bg-white/[0.02]');
-            const esc = typeof window.escapeHtml === 'function' ? window.escapeHtml : (s => s);
-            step.innerHTML = '<div class="flex items-center gap-2 ' + (done ? 'text-green-400' : 'text-neutral-400') + '">' + (done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '<div class="w-3 h-3 border border-neutral-600 rounded-sm"></div>') + '<span class="font-medium">' + esc(title) + '</span></div>' + (detail ? '<div class="text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed">' + esc(detail).substring(0, 300) + '</div>' : '');
-            stepsEl.appendChild(step);
-            win.scrollTop = win.scrollHeight;
-            return step;
-          }
-
-          function updateStatus(text) { if (statusEl) statusEl.textContent = text; }
-
-          async function callModel(messages) {
-            if (activeProv === 'custom') return await window.callCustomRouter(modA, messages);
-            if (activeProv === 'anthropic') return await window.callAnthropicRouter(modA, messages);
-            return await window.callPuterOnce(modA, messages);
-          }
-
-          try {
-            updateStatus('Gorev alt adimlara bolunuyor...');
-            addStep('Gorev analizi baslatildi', query);
-
-            const planPrompt = 'Sen bir AI ajansin. Gorevi uygulanabilir adimlara bol. SADECE numarali liste ver.\nGorev: "' + query + '"';
-            let planResult = await callModel([{ role: 'system', content: 'Sen bir uzman planlayicisin.' }, { role: 'user', content: planPrompt }]);
-            addStep('Plan olusturuldu', planResult, true);
-
-            const planNodeId = MindMapModule.addNode('Plan', 'step', 0);
-            MindMapModule.updateNode(planNodeId, 'done');
-
-            const stepLines = (planResult || '').split('\n').filter(l => /^\d+[.)]\s/.test(l.trim()));
-            const steps = stepLines.map(l => l.replace(/^\d+[.)]\s*/, '').trim()).filter(s => s.length > 0);
-            if (steps.length === 0) steps.push(query);
-
-            const stepNodeIds = steps.map((s, i) => MindMapModule.addNode((i + 1) + '. ' + s.substring(0, 35), 'step', 0));
-
-            let allResults = [];
-            for (let i = 0; i < steps.length; i++) {
-              const step = steps[i];
-              updateStatus('Adim ' + (i + 1) + '/' + steps.length + ': ' + step.substring(0, 30) + '...');
-              MindMapModule.updateNode(stepNodeIds[i], 'active');
-              const currentStepEl = addStep('Adim ' + (i + 1) + ': ' + step, null);
-
-              let ragCtx = RAGModule.documents.length > 0 ? RAGModule.buildContext(step) : '';
-              const stepPrompt = 'Gorev: "' + query + '"\nMevcut adim: ' + step + '\n' + (allResults.length > 0 ? 'Onceki sonuclar:\n' + allResults.map((r, j) => 'Adim ' + (j + 1) + ': ' + r.substring(0, 300)).join('\n') : '') + ragCtx + '\nBu adimi detayli uygula.';
-              let stepResult = await callModel([{ role: 'system', content: 'Gorevi uygula.' }, { role: 'user', content: stepPrompt }]);
-              allResults.push(stepResult || '-');
-              MindMapModule.updateNode(stepNodeIds[i], 'done');
-
-              currentStepEl.className = 'p-2.5 rounded-lg border text-[12px] border-green-800/30 bg-green-900/10';
-              const icon = currentStepEl.querySelector('div:first-child');
-              if (icon) {
-                icon.className = 'flex items-center gap-2 text-green-400';
-                const checkbox = icon.querySelector('div');
-                if (checkbox) { const s = document.createElement('span'); s.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'; checkbox.replaceWith(s.firstElementChild); }
-              }
-              const detail = document.createElement('div');
-              detail.className = 'text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed';
-              detail.textContent = (stepResult || '').substring(0, 150) + '...';
-              currentStepEl.appendChild(detail);
-            }
-
-            updateStatus('Sonuclar derleniyor...');
-            addStep('Sentezleme asamasina gecildi', null);
-            MindMapModule.addResultNode('Sentez');
-
-            const synthesisPrompt = 'Gorev: "' + query + '"\nAdimlar ve Sonuclari:\n' + allResults.map((r, i) => '### Adim ' + (i + 1) + ': ' + steps[i] + '\n' + r).join('\n\n') + '\nSimdi butun bunlari birlestirip son ve tam bir cozum raporu/kod sun.';
-            let finalResult = await callModel([{ role: 'system', content: 'Sentez uzmanisin.' }, { role: 'user', content: synthesisPrompt }]);
-
-            addStep('Sentez tamamlandi', null, true);
-            agentDiv.remove();
-
-            chat.messages.push({ role: 'assistant', model: modA + ' (Ajan)', content: finalResult || '-', timestamp: Date.now() });
-            if (typeof saveAll === 'function') saveAll();
-            if (typeof renderMessages === 'function') renderMessages(chat.messages);
-            if (typeof setStatus === 'function') setStatus('Ajan gorevi tamamlandi.');
-          } catch (e) {
-            agentDiv.remove();
-            chat.messages.push({ role: 'assistant', model: 'System', content: 'Ajan Hatasi: ' + e.message });
-            if (typeof saveAll === 'function') saveAll();
-            if (typeof renderMessages === 'function') renderMessages(chat.messages);
-            if (typeof setStatus === 'function') setStatus('Ajan hatasi.');
-          } finally {
-            window.agentActive = false;
-            const inp = _$('user-input');
-            if (inp) inp.placeholder = 'Mesajinizi buraya yazin...';
-          }
-        };
-
-        // 5. buildHistoryForModel: Inject RAG into every LLM call
-        const origBuildHistory = window.buildHistoryForModel;
-        if (origBuildHistory) {
-          window.buildHistoryForModel = function (chat) {
-            const history = origBuildHistory(chat);
-            if (RAGModule.documents.length > 0 && history.length > 0) {
-              for (let i = history.length - 1; i >= 0; i--) {
-                if (history[i].role === 'user') {
-                  let userText = '';
-                  const content = history[i].content;
-
-                  // Extract user text from both string and array content formats
-                  if (typeof content === 'string') {
-                    userText = content;
-                  } else if (Array.isArray(content)) {
-                    const textPart = content.find(p => p.type === 'text');
-                    if (textPart) userText = textPart.text || '';
-                  }
-
-                  if (userText) {
-                    const ragCtx = RAGModule.buildContext(userText);
-                    if (ragCtx) {
-                      if (typeof content === 'string') {
-                        history[i].content += ragCtx;
-                      } else if (Array.isArray(content)) {
-                        const textPart = content.find(p => p.type === 'text');
-                        if (textPart) {
-                          textPart.text += ragCtx;
-                        } else {
-                          content.unshift({ type: 'text', text: ragCtx });
-                        }
-                      }
-                    }
-                  }
-                  break;
-                }
-              }
-            }
-            return history;
-          };
-        }
-
-        console.log('[v18 Modules] All 6 modules integrated successfully');
-      }
-
-      // ============================================================
-      // BOOT
-      // ============================================================
-      function bootModules() {
-        MonacoModule.init();
-        VisionModule.init();
-        RAGModule.init();
-        MindMapModule.init();
-        AdvancedVoiceModule.init();
-        ExportModule.init();
-        WebSearchModule.init();
-        setTimeout(integrateModules, 1500);
-      }
-
-      window.MonacoModule = MonacoModule;
-      window.VisionModule = VisionModule;
-      window.RAGModule = RAGModule;
-      window.AdvancedVoiceModule = AdvancedVoiceModule;
-      window.ExportModule = ExportModule;
-      window.MindMapModule = MindMapModule;
-      window.WebSearchModule = WebSearchModule;
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bootModules);
-      } else {
-        setTimeout(bootModules, 500);
-      }
-
-    })();
   </script>
 
   <!-- Share Overlay -->
