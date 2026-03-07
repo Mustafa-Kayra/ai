@@ -1499,6 +1499,29 @@
           win.appendChild(div);
         }
 
+        else if (m.role === 'assistant' && m.agentState) {
+          const state = m.agentState || {};
+          const progressCard = document.createElement('div');
+          progressCard.className = 'flex justify-start animate-in msg-wrap';
+          progressCard.innerHTML = `<div style="max-width:680px;width:100%;background:linear-gradient(135deg,#111827,#111111);border:1px solid rgba(244,63,94,0.18);border-radius:20px;padding:18px 20px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f43f5e,#fb923c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px">AI</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:14px;font-weight:700;color:#ffe4e6">Ajan Modu Calisiyor</div>
+      <div style="font-size:12px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(state.query || '')}</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:#fda4af;margin-bottom:12px">${escapeHtml(state.status || 'Isleniyor...')}</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    ${(state.steps || []).map((step, stepIdx) => `<div style="padding:10px 12px;border-radius:12px;border:1px solid ${step.done ? 'rgba(16,185,129,0.18)' : 'rgba(255,255,255,0.06)'};background:${step.done ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)'}">
+      <div style="font-size:12px;font-weight:700;color:${step.done ? '#86efac' : '#f3f4f6'}">${step.done ? 'Tamam' : 'Calisiyor'} · ${stepIdx + 1}. ${escapeHtml(step.title || 'Adim')}</div>
+      ${step.detail ? `<div style="font-size:11px;color:#9ca3af;margin-top:4px;line-height:1.5">${escapeHtml(step.detail).replace(/\n/g, '<br>')}</div>` : ''}
+    </div>`).join('')}
+  </div>
+</div>`;
+          win.appendChild(progressCard);
+        }
+
         else if (m.role === 'assistant' && typeof m.content === 'string' && m.content.startsWith('__PPTX_DOWNLOAD__')) {
           const parts = m.content.match(/__PPTX_DOWNLOAD__(blob:.*?)__FILENAME__(.*?)__TITLE__(.*?)__SLIDES__(\d+)/);
           if (parts) {
@@ -2189,6 +2212,7 @@
       const imageGen = text.startsWith('Resim uret: ');
       const videoGen = text.startsWith('Video uret: ');
       const isCodeLike = /\b(kod|code|uygulama|app|html|css|javascript|react|game|oyun|hesap|calculator|website|site|sayfa|program|yaz|olustur|create|build|make|python|py|c\+\+|cpp|java|rust|golang|script|fonksiyon|function|class|algoritma|algorithm|component|dashboard|landing page|portfolio|blog)\b/i.test(text);
+      const canvasFollowupIntent = isCanvasFollowupIntent(text);
       const mode = builderSpec ? 'builder'
         : quickAction ? 'quick-action'
           : deepResearch ? 'deep-research'
@@ -2198,8 +2222,8 @@
                   : 'chat';
       const shouldUseCanvas = mode === 'builder'
         || (mode === 'quick-action' && quickAction?.shouldUseCanvas)
-        || (mode === 'chat' && isCodeLike);
-      return { mode, builderSpec, quickAction, deepResearch, agentMode, imageGen, videoGen, fileSummary, shouldUseCanvas, isCodeLike };
+        || (mode === 'chat' && (isCodeLike || (hasActiveCanvasProject() && canvasFollowupIntent)));
+      return { mode, builderSpec, quickAction, deepResearch, agentMode, imageGen, videoGen, fileSummary, shouldUseCanvas, isCodeLike, canvasFollowupIntent };
     }
 
     function buildBuilderPrompt(spec) {
@@ -2217,6 +2241,95 @@
       return classification.mode === 'builder' ? 'builder' : 'merge';
     }
 
+    function hasActiveCanvasProject() {
+      return !!canvasFiles && Object.keys(canvasFiles).length > 0;
+    }
+
+    function isCanvasFollowupIntent(text) {
+      const normalized = String(text || '').toLowerCase();
+      return /\b(gelistir|geliştir|iyilestir|iyileştir|duzelt|düzelt|fix|refactor|refakt[oö]r|revize|guncelle|güncelle|degistir|değiştir|ekle|cikar|çıkar|yenile|optimize|temizle|polish|improve|update|edit|modify|continue|devam)\b/.test(normalized)
+        || /(burayi|burayı|surayi|şurayı|this part|that part)/.test(normalized);
+    }
+
+    function detectCanvasLanguageFromFilename(filename) {
+      const ext = String(filename || '').split('.').pop().toLowerCase();
+      const map = {
+        html: 'html',
+        htm: 'html',
+        css: 'css',
+        js: 'javascript',
+        mjs: 'javascript',
+        cjs: 'javascript',
+        ts: 'typescript',
+        tsx: 'tsx',
+        jsx: 'jsx',
+        json: 'json',
+        py: 'python',
+        md: 'markdown',
+        txt: 'text',
+        java: 'java',
+        php: 'php',
+        rb: 'ruby',
+        go: 'go',
+        rs: 'rust',
+        cpp: 'cpp',
+        c: 'c',
+        sh: 'bash',
+        xml: 'xml',
+        yml: 'yaml',
+        yaml: 'yaml'
+      };
+      return map[ext] || ext || 'text';
+    }
+
+    function buildCanvasContextForModel(userText) {
+      const files = Object.entries(canvasFiles || {});
+      if (files.length === 0) return '';
+      const active = canvasActiveFile || '';
+      const preferredOrder = [active, 'index.html', 'styles.css', 'script.js', 'src/main.js', 'src/App.jsx', 'src/App.tsx'];
+      const sortedFiles = files
+        .sort((a, b) => {
+          const aIdx = preferredOrder.indexOf(a[0]);
+          const bIdx = preferredOrder.indexOf(b[0]);
+          if (aIdx !== -1 || bIdx !== -1) return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+          return a[0].localeCompare(b[0]);
+        });
+
+      let remaining = 12000;
+      const sections = [];
+      for (const [name, rawContent] of sortedFiles) {
+        const content = String(rawContent || '').trim();
+        if (!content) continue;
+        if (remaining < 400) break;
+        const preferredBudget = /\.(html|tsx|jsx)$/i.test(name) ? 4200 : /\.(css|js|ts)$/i.test(name) ? 2800 : 1800;
+        const budget = Math.min(remaining, preferredBudget);
+        const clipped = content.length > budget ? content.slice(0, budget) + '\n/* ... truncated ... */' : content;
+        sections.push(`FILE: ${name}\n\`\`\`${detectCanvasLanguageFromFilename(name)} ${name}\n${clipped}\n\`\`\``);
+        remaining -= clipped.length;
+      }
+
+      if (sections.length === 0) return '';
+      return `\n\n--- MEVCUT CANVAS PROJESI ---\nKullanici mevcut canvas projesi uzerinden devam ediyor. Projeyi sifirdan yazma; mevcut dosyalari koruyup sadece gerekenleri guncelle.\nKod bloklarinda dosya adini fence satirinda belirt (orn: \`\`\`html index.html, \`\`\`css styles.css, \`\`\`javascript script.js).\nIstek: ${userText}\n\n${sections.join('\n\n')}`;
+    }
+
+    function injectCanvasContextIntoHistory(history, userText, shouldUseCanvas) {
+      if (!shouldUseCanvas || !hasActiveCanvasProject()) return history;
+      const canvasCtx = buildCanvasContextForModel(userText);
+      if (!canvasCtx) return history;
+      for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].role !== 'user') continue;
+        if (typeof history[i].content === 'string') {
+          history[i].content += canvasCtx;
+        } else if (Array.isArray(history[i].content)) {
+          const textPart = history[i].content.find(part => part.type === 'text');
+          if (textPart) textPart.text += canvasCtx;
+          else history[i].content.unshift({ type: 'text', text: canvasCtx });
+        }
+        break;
+      }
+      return history;
+    }
+
     let canvasExtractionMode = 'merge';
     let lastStructuredOcr = null;
     const throttledCanvasPreviewRefresh = throttle((htmlContent) => updateCanvasPreview(htmlContent), CANVAS_PREVIEW_THROTTLE_MS);
@@ -2226,6 +2339,36 @@
       let t;
       const timeout = new Promise((_, rej) => t = setTimeout(() => rej(new Error(label + ' timeout')), ms));
       return Promise.race([promise, timeout]).finally(() => clearTimeout(t));
+    }
+
+    function createAbortError(label) {
+      try {
+        return new DOMException((label || 'request') + ' aborted', 'AbortError');
+      } catch (e) {
+        const err = new Error((label || 'request') + ' aborted');
+        err.name = 'AbortError';
+        return err;
+      }
+    }
+
+    function isAbortError(error) {
+      return !!error && (error.name === 'AbortError' || /aborted|durduruldu|iptal/i.test(String(error.message || error)));
+    }
+
+    function assertNotAborted(signal, label) {
+      if (signal?.aborted) throw createAbortError(label);
+    }
+
+    function withAbortSignal(promise, signal, label) {
+      if (!signal) return promise;
+      if (signal.aborted) return Promise.reject(createAbortError(label));
+      let cleanup = null;
+      const abortPromise = new Promise((_, reject) => {
+        const onAbort = () => reject(createAbortError(label));
+        cleanup = () => signal.removeEventListener('abort', onAbort);
+        signal.addEventListener('abort', onAbort, { once: true });
+      });
+      return Promise.race([promise, abortPromise]).finally(() => cleanup && cleanup());
     }
 
     // Smart fetch: Directly uses puter.net.fetch for remote APIs to bypass CORS
@@ -2239,7 +2382,7 @@
 
       // Remote: use puter.net.fetch directly for CORS-free requests
       try {
-        const resp = await withTimeout(puter.net.fetch(url, options), timeoutMs || 300000, 'puter-fetch');
+        const resp = await withAbortSignal(withTimeout(puter.net.fetch(url, options), timeoutMs || 300000, 'puter-fetch'), options?.signal, 'puter-fetch');
         return resp;
       }
 
@@ -2368,8 +2511,9 @@
     }
 
     // ---- API Calls
-    async function callPuterStream(modelId, history, onToken) {
+    async function callPuterStream(modelId, history, onToken, signal) {
       try {
+        assertNotAborted(signal, 'puter-stream');
         const streamOpts = {
           model: modelId, stream: true
         }
@@ -2389,10 +2533,11 @@
           }
         }
 
-        const it = await puter.ai.chat(history, streamOpts);
+        const it = await withAbortSignal(puter.ai.chat(history, streamOpts), signal, 'puter-stream');
         let inThinkingStructured = false;
 
         for await (const part of it) {
+          assertNotAborted(signal, 'puter-stream');
           if (part?.type === 'thinking' || part?.thinking) {
             let chunk = String(part?.thinking || part?.text || part?.content || '');
 
@@ -2422,6 +2567,7 @@
       }
 
       catch (e) {
+        if (isAbortError(e)) throw e;
         if (e.message && e.message.includes('multimodal')) {
           if (onToken) onToken("\n[Bu model dosya analizi ile stream desteklemiyor.]");
         }
@@ -2432,7 +2578,8 @@
       }
     }
 
-    async function callPuterOnce(modelId, history) {
+    async function callPuterOnce(modelId, history, signal) {
+      assertNotAborted(signal, 'puter-once');
       const callOpts = {
         model: modelId
       }
@@ -2452,7 +2599,8 @@
         }
       }
 
-      const r = await withTimeout(puter.ai.chat(history, callOpts), 300000, 'puter.ai.chat');
+      const r = await withAbortSignal(withTimeout(puter.ai.chat(history, callOpts), 300000, 'puter.ai.chat'), signal, 'puter-once');
+      assertNotAborted(signal, 'puter-once');
       if (typeof r === 'string') return r;
 
       // Extract thinking from structured response
@@ -2544,7 +2692,8 @@
       ` : content;
     }
 
-    async function callCustomRouter(modelId, history) {
+    async function callCustomRouter(modelId, history, signal) {
+      assertNotAborted(signal, 'custom-router');
       const {
         token, baseUrl
       }
@@ -2568,7 +2717,7 @@
           `, 'Content-Type': 'application/json'
           }
 
-          , body: JSON.stringify({
+          , signal, body: JSON.stringify({
             model: modelId, messages: cleanHistory, stream: false
           })
         }
@@ -2710,7 +2859,8 @@
       }
     }
 
-    async function callAnthropicRouter(modelId, history) {
+    async function callAnthropicRouter(modelId, history, signal) {
+      assertNotAborted(signal, 'anthropic-router');
       const {
         token, baseUrl
       }
@@ -2760,7 +2910,7 @@
 
       try {
         const resp = await smartFetch(url, {
-          method: 'POST', headers, body: JSON.stringify(reqBody)
+          method: 'POST', headers, signal, body: JSON.stringify(reqBody)
         }
 
           , 300000);
@@ -3021,6 +3171,7 @@
       try {
         let history = buildHistoryForModel(chat);
         const activeProv = providerSettings.active || 'puter';
+        const requestSignal = currentAbortController?.signal;
         let effectiveText = originalText;
 
         if (classification.mode === 'builder' && classification.builderSpec) {
@@ -3088,6 +3239,9 @@
             }
           }
         }
+
+        const shouldUseCanvasForContext = !_noCanvas && classification.shouldUseCanvas;
+        history = injectCanvasContextIntoHistory(history, originalText, shouldUseCanvasForContext);
 
         requestFiles.forEach(f => {
           if (f.type?.startsWith('video/') && f.preview) URL.revokeObjectURL(f.preview);
@@ -3211,9 +3365,9 @@
 	        }
 
         if (activeProv === 'custom') {
-          assistantMsg.content = await callCustomRouter(modA, history) || 'Bos yanit.';
+          assistantMsg.content = await callCustomRouter(modA, history, requestSignal) || 'Bos yanit.';
         } else if (activeProv === 'anthropic') {
-          assistantMsg.content = await callAnthropicRouter(modA, history) || 'Bos yanit.';
+          assistantMsg.content = await callAnthropicRouter(modA, history, requestSignal) || 'Bos yanit.';
         } else if (prefs.stream) {
           setStatus('Stream...');
           assistantMsg.content = '';
@@ -3230,13 +3384,14 @@
           await callPuterStream(modA, history, tok => {
             const dots = document.getElementById('thinking-dots');
             if (dots) dots.style.display = 'none';
+            if (requestSignal?.aborted) return;
             assistantMsg.content += tok;
             throttledRenderMessages(chat.messages);
             if (voiceConvMode) queueVoiceStreamChunk(tok);
-          });
+          }, requestSignal);
           if (thinkTimerInterval) clearInterval(thinkTimerInterval);
 	        } else {
-	          assistantMsg.content = await callPuterOnce(modA, history) || 'Bos yanit.';
+	          assistantMsg.content = await callPuterOnce(modA, history, requestSignal) || 'Bos yanit.';
 	        }
 
           await enrichAssistantMessage(originalText, assistantMsg);
@@ -3268,6 +3423,16 @@
       }
 
       catch (e) {
+        if (isAbortError(e)) {
+          const last = chat.messages[chat.messages.length - 1];
+          if (last && last.role === 'assistant' && !String(last.content || '').trim()) {
+            chat.messages.pop();
+          }
+          saveAll();
+          renderMessages(chat.messages);
+          setStatus('Durduruldu.');
+          return;
+        }
         if (canvasOpen) closeCanvas();
         let errText = e.message || String(e);
         const last = chat.messages[chat.messages.length - 1];
@@ -4094,6 +4259,7 @@
       isGenerating = false;
       $('send-btn').style.display = 'flex';
       $('stop-btn').style.display = 'none';
+      try { speechSynthesis.cancel(); } catch (e) { }
       setStatus('Durduruldu.');
     }
 
@@ -6094,15 +6260,48 @@
     }
 
     // Extract code blocks from AI response and populate canvas
+    function parseCanvasFenceInfo(info) {
+      const raw = String(info || '').trim();
+      if (!raw) return { lang: '', filename: '' };
+      const parts = raw.split(/\s+/).filter(Boolean);
+      let lang = '';
+      let filename = '';
+      if (parts.length > 0) {
+        const first = parts.shift();
+        if (/^[a-z0-9+#._-]+$/i.test(first) && !/[\\/]/.test(first) && !/\.[a-z0-9]+$/i.test(first)) {
+          lang = first.toLowerCase();
+        } else {
+          filename = first;
+          lang = detectCanvasLanguageFromFilename(first);
+        }
+      }
+      parts.forEach(part => {
+        if (!filename && /^filename=/i.test(part)) filename = part.split('=').slice(1).join('=');
+        else if (!filename && /[\\/]/.test(part)) filename = part;
+        else if (!filename && /\.[a-z0-9]+$/i.test(part)) filename = part;
+      });
+      return { lang, filename: filename.replace(/^["']|["']$/g, '') };
+    }
+
+    function extractCanvasFilenameFromCode(code) {
+      const match = String(code || '').match(/^(?:\/\/|#|<!--)\s*FILE:\s*([^\n\r>]+)(?:-->?)?\s*$/i);
+      if (!match) return { filename: '', code: String(code || '') };
+      const cleaned = String(code || '').replace(match[0], '').replace(/^\s+/, '');
+      return { filename: match[1].trim(), code: cleaned };
+    }
+
     function extractCanvasFromResponse(content) {
       const codeBlocks = [];
-      const regex = /```(\w+)?\s*\n([\s\S]*?)```/g;
+      const regex = /```([^\n]*)\n([\s\S]*?)```/g;
       let match;
       while ((match = regex.exec(content)) !== null) {
-        const lang = (match[1] || '').toLowerCase();
-        const code = match[2].trim();
+        const fenceInfo = parseCanvasFenceInfo(match[1] || '');
+        const codeMeta = extractCanvasFilenameFromCode(match[2] || '');
+        const lang = (fenceInfo.lang || detectCanvasLanguageFromFilename(codeMeta.filename)).toLowerCase();
+        const code = String(codeMeta.code || '').trim();
+        const filename = (codeMeta.filename || fenceInfo.filename || '').trim();
         if (code.length > 10) {
-          codeBlocks.push({ lang, code });
+          codeBlocks.push({ lang, code, filename });
         }
       }
 
@@ -6114,26 +6313,29 @@
       const filenameCounts = {};
 
       codeBlocks.forEach((block, idx) => {
-        let filename;
+        let filename = block.filename || '';
         const ext = block.lang || 'txt';
-        if (ext === 'html' || ext === 'htm') { filename = 'index.html'; hasHtml = true; }
-        else if (ext === 'css') filename = 'styles.css';
-        else if (ext === 'javascript' || ext === 'js') filename = codeBlocks.length > 3 ? 'src/main.js' : 'script.js';
-        else if (ext === 'typescript' || ext === 'ts') filename = 'src/main.ts';
-        else if (ext === 'tsx') filename = 'src/App.tsx';
-        else if (ext === 'jsx') filename = 'src/App.jsx';
-        else if (ext === 'python' || ext === 'py') filename = 'main.py';
-        else if (ext === 'cpp' || ext === 'c++' || ext === 'cc' || ext === 'cxx') filename = 'main.cpp';
-        else if (ext === 'c') filename = 'main.c';
-        else if (ext === 'h' || ext === 'hpp') filename = `header.${ext}`;
-        else if (ext === 'java') filename = 'Main.java';
-        else if (ext === 'rust' || ext === 'rs') filename = 'main.rs';
-        else if (ext === 'go' || ext === 'golang') filename = 'main.go';
-        else if (ext === 'ruby' || ext === 'rb') filename = 'main.rb';
-        else if (ext === 'php') filename = 'index.php';
-        else if (ext === 'bash' || ext === 'sh' || ext === 'shell') filename = 'script.sh';
-        else if (ext === 'json') filename = idx === 0 ? 'package.json' : 'config.json';
-        else filename = `file${idx > 0 ? idx : ''}.${ext}`;
+        if (!filename) {
+          if (ext === 'html' || ext === 'htm') { filename = 'index.html'; hasHtml = true; }
+          else if (ext === 'css') filename = 'styles.css';
+          else if (ext === 'javascript' || ext === 'js') filename = codeBlocks.length > 3 ? 'src/main.js' : 'script.js';
+          else if (ext === 'typescript' || ext === 'ts') filename = 'src/main.ts';
+          else if (ext === 'tsx') filename = 'src/App.tsx';
+          else if (ext === 'jsx') filename = 'src/App.jsx';
+          else if (ext === 'python' || ext === 'py') filename = 'main.py';
+          else if (ext === 'cpp' || ext === 'c++' || ext === 'cc' || ext === 'cxx') filename = 'main.cpp';
+          else if (ext === 'c') filename = 'main.c';
+          else if (ext === 'h' || ext === 'hpp') filename = `header.${ext}`;
+          else if (ext === 'java') filename = 'Main.java';
+          else if (ext === 'rust' || ext === 'rs') filename = 'main.rs';
+          else if (ext === 'go' || ext === 'golang') filename = 'main.go';
+          else if (ext === 'ruby' || ext === 'rb') filename = 'main.rb';
+          else if (ext === 'php') filename = 'index.php';
+          else if (ext === 'bash' || ext === 'sh' || ext === 'shell') filename = 'script.sh';
+          else if (ext === 'json') filename = idx === 0 ? 'package.json' : 'config.json';
+          else filename = `file${idx > 0 ? idx : ''}.${ext}`;
+        }
+        if (/\.(html|htm)$/i.test(filename)) hasHtml = true;
 
         if (newFiles[filename] || prevCanvasFiles[filename]) {
           filenameCounts[filename] = (filenameCounts[filename] || 1) + 1;
@@ -6280,16 +6482,15 @@
           }
         }
 
-        let existingSite = null;
+        let site = null;
         try {
-          if (typeof puter.hosting.get === 'function') existingSite = await puter.hosting.get(cleanSubdomain);
-        } catch (_) { }
-        const site = existingSite
-          ? await puter.hosting.update(cleanSubdomain, remoteDir)
-          : await puter.hosting.create(cleanSubdomain, remoteDir);
+          site = await puter.hosting.update(cleanSubdomain, remoteDir);
+        } catch (updateError) {
+          site = await puter.hosting.create(cleanSubdomain, remoteDir);
+        }
 
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Yayinlandi`;
-        recordFeatureUsage(existingSite ? 'canvas_deploy_update' : 'canvas_deploy_create', { subdomain: cleanSubdomain });
+        recordFeatureUsage('canvas_deploy', { subdomain: cleanSubdomain });
         setTimeout(() => {
           window.open(`https://${(site?.subdomain || cleanSubdomain)}.puter.site`, '_blank');
           btn.innerHTML = originalText;
@@ -6297,7 +6498,7 @@
         }, 1500);
       } catch (e) {
         console.error("Deploy Hatasi:", e);
-        alert("Yayinlama basarisiz: " + e.message);
+        alert("Yayinlama basarisiz: " + (e?.message || JSON.stringify(e) || String(e)));
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
@@ -6891,7 +7092,7 @@
 
       _currentPresentationOptions = { transition, style, lang, density, color, notes };
 
-      const jsonPrompt = `Asagidaki konu icin ${count} slaytlik bir sunum icerigi hazirla. SADECE JSON ver, hicbir aciklama ekleme:\n\nKonu: ${topic}\nStil: ${styleMap[style] || 'sade ve profesyonel'}\nAksent rengi (hex, # olmadan): ${color}\n${langInstr}\n\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"${color}","slides":[{"title":"Slayt Basligi","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3"],"notes":"Konusmaci notu","keyword":"Pexels anahtar kelime (Ingilizce)"},...]}\n\nKurallar:\n- Her slayt icin tam ${bulletCount} madde noktasi\n- Her slayt icin konuya uygun emoji icon sec\n- keyword alani konuyla alakali Pexels gorsel arama terimi (Ingilizce, orn: "technology future", "climate change")\n- color alani: "${color}" kullan\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun${notes ? '\n- notes alanini dolu tut, konusmaci icin detayli not yaz' : ''}${deepExtra}`;
+      const jsonPrompt = `Asagidaki konu icin ${count} slaytlik, gorsel hiyerarsisi guclu bir sunum plani hazirla.\nYaniti yalnizca gecerli JSON olarak veya tek bir \`\`\`json\`\`\` blogu icinde ver; ekstra prose ekleme.\n\nKonu: ${topic}\nHedef format: ${format === 'pptx' ? 'PowerPoint (PPTX)' : 'HTML sunum'}\nStil: ${styleMap[style] || 'sade ve profesyonel'}\nAksent rengi (hex, # olmadan): ${color}\n${langInstr}\n\nBeklenen JSON semasi:\n{"title":"Sunum Basligi","subtitle":"Alt baslik veya tarih","color":"${color}","theme":"${style}","slides":[{"title":"Slayt Basligi","layout":"cover|split|spotlight|quote|compare","icon":"💡","bullets":["Madde 1","Madde 2","Madde 3"],"highlight":"One cikan tek cumle / KPI","quote":"Vurucu alinti veya ana tez","notes":"Konusmaci notu","keyword":"Pexels anahtar kelime (Ingilizce)"}]}\n\nKurallar:\n- Her slayt icin yaklasik ${bulletCount} madde uret, ancak icerik yogunsa daha az ve daha guclu maddeler tercih et\n- Her slaytin acilisi ayni kalipta olmasin; tekrar hissini azalt\n- layout alanini bilincli sec; art arda ayni layout'u yigma\n- highlight alaninda o slaytin en guclu verisini/cumlesini ver\n- quote alanini sadece gerekli slaytlarda doldur\n- keyword alani konuyla alakali Pexels gorsel arama terimi olsun (Ingilizce, orn: "technology future", "climate change")\n- color alani: "${color}" kullan\n- Son slayt baslik "Tesekkurler" veya "Sorular" olsun${notes ? '\n- notes alanini bos birakma; konusmaci icin net notlar yaz' : ''}${deepExtra}`;
 
       if (format === 'pptx') {
         _noCanvas = true;
@@ -7267,6 +7468,16 @@
       }
     }
 
+    function inferPresentationSlideLayout(slide, index) {
+      const explicit = String(slide?.layout || '').toLowerCase();
+      if (explicit) return explicit;
+      const text = [slide?.title || '', slide?.highlight || '', slide?.quote || '', ...(slide?.bullets || [])].join(' ').toLowerCase();
+      if (slide?.quote) return 'quote';
+      if (slide?.highlight || /\b(kpi|metric|istatistik|oran|growth|buyume|büyüme|roi|gelir|revenue)\b/.test(text)) return 'spotlight';
+      if ((slide?.bullets || []).length >= 6) return 'compare';
+      return ['split', 'spotlight', 'quote'][index % 3];
+    }
+
     async function buildAndDownloadPptx(data) {
       try {
         if (typeof PptxGenJS === 'undefined') { setStatus('PPTX kutuphanesi yukleniyor, tekrar deneyin.'); return; }
@@ -7295,6 +7506,8 @@
           const s = pptx.addSlide();
           const bg = i % 2 === 0 ? darkBg : darkBg2;
           const bgImgUrl = slide.backgroundImage || slide.bgImage || slide.image || '';
+          const layout = inferPresentationSlideLayout(slide, i);
+          const highlightText = slide.highlight || slide.quote || (Array.isArray(slide.bullets) ? slide.bullets[0] : '') || '';
           if (bgImgUrl) {
             const b64 = await fetchImageAsBase64(bgImgUrl);
             if (b64) {
@@ -7303,18 +7516,49 @@
             } else { s.background = { color: bg }; }
           } else { s.background = { color: bg }; }
           s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.06, h: '100%', fill: { color: accent } });
-          s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 1.2, fill: { color: '000000', transparency: 60 } });
+          s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 1.05, fill: { color: '000000', transparency: 55 } });
+          s.addText(String(i + 1).padStart(2, '0'), { x: 8.72, y: 0.16, w: 0.56, h: 0.38, fontSize: 28, bold: true, color: 'FFFFFF', transparency: 82, align: 'right', fontFace: 'Aptos Display' });
           const icon = slide.icon || '';
           if (icon) s.addText(icon, { x: 0.3, y: 0.22, w: 0.7, h: 0.7, fontSize: 26, align: 'center' });
           s.addText(slide.title || '', { x: icon ? 1.0 : 0.35, y: 0.18, w: '82%', h: 0.85, fontSize: 24, bold: true, color: 'FFFFFF', align: 'left', fontFace: 'Calibri' });
           s.addShape(pptx.ShapeType.rect, { x: 0.35, y: 1.2, w: 3.0, h: 0.04, fill: { color: accent } });
           const bullets = Array.isArray(slide.bullets) ? slide.bullets : [];
-          if (bullets.length > 0) {
+          if (layout === 'quote') {
+            s.addShape(pptx.ShapeType.roundRect, { x: 0.62, y: 1.8, w: 8.0, h: 3.35, rectRadius: 0.12, fill: { color: '0f172a', transparency: bgImgUrl ? 20 : 0 }, line: { color: accent, transparency: 65, width: 1.2 } });
+            s.addText(highlightText || slide.title || '', { x: 1.0, y: 2.2, w: 7.2, h: 1.75, fontSize: 26, bold: true, italic: true, color: 'FFFFFF', align: 'center', valign: 'mid', fontFace: 'Georgia' });
+            if (bullets.length > 0) {
+              s.addText(bullets.slice(0, 2).map(b => ({ text: b, options: { bullet: { indent: 14 } } })), { x: 1.15, y: 5.45, w: 7.0, h: 0.9, fontSize: 14, color: textMuted, breakLine: true, fontFace: 'Calibri' });
+            }
+          } else if (layout === 'spotlight') {
+            s.addShape(pptx.ShapeType.roundRect, { x: 0.45, y: 1.55, w: 3.15, h: 4.95, rectRadius: 0.14, fill: { color: accent, transparency: 12 }, line: { color: accent, transparency: 50, width: 1 } });
+            s.addText(icon || '✦', { x: 0.78, y: 1.95, w: 0.6, h: 0.52, fontSize: 28, color: 'FFFFFF', align: 'center' });
+            s.addText(highlightText || slide.title || '', { x: 0.78, y: 2.8, w: 2.4, h: 1.7, fontSize: 24, bold: true, color: 'FFFFFF', valign: 'mid', fontFace: 'Aptos Display' });
+            if (slide.quote) s.addText(slide.quote, { x: 0.82, y: 4.85, w: 2.26, h: 0.9, fontSize: 12, italic: true, color: 'F8FAFC', fontFace: 'Georgia' });
+            if (bullets.length > 0) {
+              const rows = bullets.slice(0, 4).map((b, bi) => ([
+                { text: String(bi + 1).padStart(2, '0'), options: { color: accent, fontSize: 12, bold: true, align: 'center' } },
+                { text: b, options: { color: textLight, fontSize: 14, fontFace: 'Calibri' } }
+              ]));
+              s.addTable(rows, { x: 3.9, y: 1.72, w: 5.05, h: 4.7, colW: [0.5, 4.55], border: { type: 'none' }, fill: { color: '0b1220', transparency: 12 } });
+            }
+          } else if (layout === 'compare') {
+            s.addShape(pptx.ShapeType.roundRect, { x: 0.45, y: 1.6, w: 4.12, h: 4.92, rectRadius: 0.12, fill: { color: '0f172a', transparency: 4 }, line: { color: accent, transparency: 68, width: 1 } });
+            s.addShape(pptx.ShapeType.roundRect, { x: 4.8, y: 1.6, w: 4.12, h: 4.92, rectRadius: 0.12, fill: { color: '111827', transparency: 4 }, line: { color: accent, transparency: 82, width: 1 } });
+            s.addText(highlightText || 'Ana Fikir', { x: 0.78, y: 1.96, w: 3.24, h: 0.72, fontSize: 22, bold: true, color: 'FFFFFF', fontFace: 'Aptos Display' });
+            s.addText((bullets.slice(0, Math.ceil(bullets.length / 2)) || []).map(b => ({ text: b, options: { bullet: { indent: 14 } } })), { x: 0.82, y: 2.86, w: 3.08, h: 2.8, fontSize: 14, color: textLight, breakLine: true, fontFace: 'Calibri' });
+            s.addText(slide.quote || 'Detaylar', { x: 5.12, y: 1.96, w: 3.18, h: 0.62, fontSize: 20, bold: true, color: 'FFFFFF', fontFace: 'Aptos Display' });
+            s.addText((bullets.slice(Math.ceil(bullets.length / 2)) || []).map(b => ({ text: b, options: { bullet: { indent: 14 } } })), { x: 5.12, y: 2.86, w: 3.0, h: 2.8, fontSize: 14, color: textMuted, breakLine: true, fontFace: 'Calibri' });
+          } else if (bullets.length > 0) {
+            s.addShape(pptx.ShapeType.roundRect, { x: 0.42, y: 1.62, w: 8.7, h: 4.92, rectRadius: 0.12, fill: { color: bgImgUrl ? '000000' : '0f172a', transparency: bgImgUrl ? 55 : 8 }, line: { color: accent, transparency: 88, width: 0.8 } });
+            if (highlightText) {
+              s.addText(highlightText, { x: 0.72, y: 1.96, w: 7.6, h: 0.7, fontSize: 18, bold: true, color: 'FFFFFF', fontFace: 'Aptos Display' });
+              s.addShape(pptx.ShapeType.line, { x: 0.72, y: 2.74, w: 1.2, h: 0, line: { color: accent, width: 2 } });
+            }
             const rows = bullets.map((b, bi) => ([
               { text: ['①', '②', '③', '④', '⑤', '⑥'][bi] || '●', options: { color: accent, fontSize: 14, bold: true, align: 'center' } },
               { text: b, options: { color: textLight, fontSize: 15, fontFace: 'Calibri' } }
             ]));
-            s.addTable(rows, { x: 0.35, y: 1.4, w: 9.2, h: Math.min(4.5, bullets.length * 0.9), colW: [0.45, 8.75], border: { type: 'none' }, fill: { color: bgImgUrl ? '00000000' : bg, transparency: bgImgUrl ? 100 : 0 } });
+            s.addTable(rows, { x: 0.72, y: highlightText ? 2.98 : 1.95, w: 7.95, h: Math.min(3.55, bullets.length * 0.82), colW: [0.45, 7.5], border: { type: 'none' }, fill: { color: '00000000', transparency: 100 } });
           }
           const total = data.slides.length;
           const prog = ((i + 1) / total) * 9.14;
@@ -7422,6 +7666,8 @@
     window.renderMessages = renderMessages;
     window.setStatus = setStatus;
     window.escapeHtml = escapeHtml;
+    window.enrichAssistantMessage = enrichAssistantMessage;
+    window.applyAgentActions = applyAgentActions;
     window.renderFilePreviews = renderFilePreviews;
     window.recognition = typeof recognition !== 'undefined' ? recognition : null;
     window.currentUtterance = typeof currentUtterance !== 'undefined' ? currentUtterance : null;

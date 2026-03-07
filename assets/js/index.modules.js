@@ -489,9 +489,26 @@
           return chunk.source;
         },
 
+        _normalizeSearchText(value) {
+          return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/ı/g, 'i')
+            .replace(/ç/g, 'c')
+            .replace(/ğ/g, 'g')
+            .replace(/ö/g, 'o')
+            .replace(/ş/g, 's')
+            .replace(/ü/g, 'u')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        },
+
         search(query, topK = 5, options = {}) {
           if (this.chunks.length === 0) return [];
-          const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          const normalizedQuery = this._normalizeSearchText(query);
+          const queryWords = [...new Set(normalizedQuery.split(/\s+/).filter(w => w.length > 1))];
           const allowedFingerprints = options.preferFingerprints || null;
           const activeCollection = options.collection || this.activeCollection;
           const filteredChunks = this.chunks.filter(chunk => {
@@ -501,13 +518,14 @@
           });
           if (queryWords.length === 0) return filteredChunks.slice(0, topK);
           const scored = filteredChunks.map(chunk => {
-            const lower = chunk.text.toLowerCase();
+            const lower = this._normalizeSearchText([chunk.text, chunk.source, chunk.sourceMeta?.section || '', chunk.sourceMeta?.sheetName || ''].join(' '));
             let score = 0;
             for (const word of queryWords) {
               const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
               score += (lower.match(regex) || []).length;
-              if (lower.includes(query.toLowerCase())) score += 5;
+              if ((chunk.source || '').toLowerCase().includes(word)) score += 2;
             }
+            if (normalizedQuery && lower.includes(normalizedQuery)) score += 8;
             return { ...chunk, score };
           });
           scored.sort((a, b) => b.score - a.score);
@@ -515,6 +533,7 @@
           if (matched.length === 0 && allowedFingerprints && allowedFingerprints.length) {
             return filteredChunks.filter(chunk => allowedFingerprints.includes(chunk.fingerprint)).slice(0, topK);
           }
+          if (matched.length === 0) return filteredChunks.slice(0, topK);
           return matched;
         },
 
@@ -527,9 +546,12 @@
           docs.forEach((doc, i) => {
             ctx += `${i + 1}. "${doc.name}" [${doc.collection || 'Genel'}] (${doc.chunks.length} parca${doc.pages ? ', ' + doc.pages + ' sayfa' : ''}, ${(doc.size / 1024).toFixed(0)}KB)\n`;
           });
-          if (results.length > 0) {
+          const contextChunks = results.length > 0
+            ? results
+            : docs.flatMap(doc => (doc.chunks || []).slice(0, 1)).slice(0, Math.min(2, options.topK || 2));
+          if (contextChunks.length > 0) {
             ctx += '\nIlgili Parcalar:\n';
-            results.forEach(result => {
+            contextChunks.forEach(result => {
               ctx += `\n[Kaynak: ${this.buildCitation(result)}]\n${result.text}\n---\n`;
             });
           }
@@ -1236,33 +1258,47 @@
           if (!chat) return;
           const modA = _$('model-a') ? _$('model-a').value : 'gpt-4o-mini';
           const activeProv = (window.providerSettings && window.providerSettings.active) || 'puter';
-          const win = _$('chat-window');
           window.agentActive = true;
+          const progressMsg = {
+            role: 'assistant',
+            model: modA + ' (Ajan)',
+            content: '',
+            timestamp: Date.now(),
+            agentState: {
+              query,
+              status: 'Gorev analiz ediliyor...',
+              steps: []
+            }
+          };
+          chat.messages.push(progressMsg);
 
-          const agentDiv = document.createElement('div');
-          agentDiv.className = 'flex flex-col gap-2 w-full animate-in msg-wrap';
-          agentDiv.innerHTML = '<div class="flex items-center gap-2.5 px-1"><div class="w-6 h-6 rounded-lg bg-gradient-to-br from-rose-600 to-orange-600 flex items-center justify-center text-[9px] font-bold text-white">🤖</div><span class="text-[11px] text-rose-400 font-semibold">Ajan Modu</span><span class="text-[10px] text-neutral-600">+ Dusunce Haritasi</span></div><div class="pl-[34px]"><div id="agent-mindmap-container"></div><div id="agent-steps" class="space-y-2 mt-3"></div><div id="agent-status" class="text-[11px] text-neutral-500 mt-2 flex items-center gap-2"><div class="w-1.5 h-1.5 bg-rose-500 rounded-full dot-pulse"></div><span>Gorev analiz ediliyor...</span></div></div>';
-          win.appendChild(agentDiv);
-          win.scrollTop = win.scrollHeight;
-
-          const mmContainer = MindMapModule.createForAgent('agent-mm', query.substring(0, 40) + '...');
-          const mmHolder = agentDiv.querySelector('#agent-mindmap-container');
-          if (mmHolder) mmHolder.appendChild(mmContainer);
-
-          const stepsEl = agentDiv.querySelector('#agent-steps');
-          const statusEl = agentDiv.querySelector('#agent-status span');
-
-          function addStep(title, detail, done) {
-            const step = document.createElement('div');
-            step.className = 'p-2.5 rounded-lg border text-[12px] ' + (done ? 'border-green-800/30 bg-green-900/10' : 'border-[#222] bg-white/[0.02]');
-            const esc = typeof window.escapeHtml === 'function' ? window.escapeHtml : (s => s);
-            step.innerHTML = '<div class="flex items-center gap-2 ' + (done ? 'text-green-400' : 'text-neutral-400') + '">' + (done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '<div class="w-3 h-3 border border-neutral-600 rounded-sm"></div>') + '<span class="font-medium">' + esc(title) + '</span></div>' + (detail ? '<div class="text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed">' + esc(detail).substring(0, 300) + '</div>' : '');
-            stepsEl.appendChild(step);
-            win.scrollTop = win.scrollHeight;
-            return step;
+          function syncProgress() {
+            progressMsg.timestamp = Date.now();
+            if (typeof saveAll === 'function') saveAll();
+            if (window.currentChatId === chat.id && typeof renderMessages === 'function') renderMessages(chat.messages);
           }
 
-          function updateStatus(text) { if (statusEl) statusEl.textContent = text; }
+          function addStep(title, detail, done = false) {
+            progressMsg.agentState.steps.push({
+              title,
+              detail: detail ? String(detail).substring(0, 300) : '',
+              done: !!done
+            });
+            syncProgress();
+            return progressMsg.agentState.steps.length - 1;
+          }
+
+          function updateStep(index, patch) {
+            if (!progressMsg.agentState?.steps?.[index]) return;
+            Object.assign(progressMsg.agentState.steps[index], patch);
+            syncProgress();
+          }
+
+          function updateStatus(text) {
+            if (!progressMsg.agentState) return;
+            progressMsg.agentState.status = text;
+            syncProgress();
+          }
 
           async function callModel(messages) {
             if (activeProv === 'custom') return await window.callCustomRouter(modA, messages);
@@ -1272,66 +1308,48 @@
 
           try {
             updateStatus('Gorev alt adimlara bolunuyor...');
-            addStep('Gorev analizi baslatildi', query);
+            addStep('Gorev analizi baslatildi', query, true);
 
             const planPrompt = 'Sen bir AI ajansin. Gorevi uygulanabilir adimlara bol. SADECE numarali liste ver.\nGorev: "' + query + '"';
             let planResult = await callModel([{ role: 'system', content: 'Sen bir uzman planlayicisin.' }, { role: 'user', content: planPrompt }]);
             addStep('Plan olusturuldu', planResult, true);
 
-            const planNodeId = MindMapModule.addNode('Plan', 'step', 0);
-            MindMapModule.updateNode(planNodeId, 'done');
-
             const stepLines = (planResult || '').split('\n').filter(l => /^\d+[.)]\s/.test(l.trim()));
             const steps = stepLines.map(l => l.replace(/^\d+[.)]\s*/, '').trim()).filter(s => s.length > 0);
             if (steps.length === 0) steps.push(query);
-
-            const stepNodeIds = steps.map((s, i) => MindMapModule.addNode((i + 1) + '. ' + s.substring(0, 35), 'step', 0));
 
             let allResults = [];
             for (let i = 0; i < steps.length; i++) {
               const step = steps[i];
               updateStatus('Adim ' + (i + 1) + '/' + steps.length + ': ' + step.substring(0, 30) + '...');
-              MindMapModule.updateNode(stepNodeIds[i], 'active');
-              const currentStepEl = addStep('Adim ' + (i + 1) + ': ' + step, null);
+              const stepIndex = addStep('Adim ' + (i + 1) + ': ' + step, '', false);
 
               let ragCtx = RAGModule.documents.length > 0 ? RAGModule.buildContext(step) : '';
               const stepPrompt = 'Gorev: "' + query + '"\nMevcut adim: ' + step + '\n' + (allResults.length > 0 ? 'Onceki sonuclar:\n' + allResults.map((r, j) => 'Adim ' + (j + 1) + ': ' + r.substring(0, 300)).join('\n') : '') + ragCtx + '\nBu adimi detayli uygula.';
               let stepResult = await callModel([{ role: 'system', content: 'Gorevi uygula.' }, { role: 'user', content: stepPrompt }]);
               allResults.push(stepResult || '-');
-              MindMapModule.updateNode(stepNodeIds[i], 'done');
-
-              currentStepEl.className = 'p-2.5 rounded-lg border text-[12px] border-green-800/30 bg-green-900/10';
-              const icon = currentStepEl.querySelector('div:first-child');
-              if (icon) {
-                icon.className = 'flex items-center gap-2 text-green-400';
-                const checkbox = icon.querySelector('div');
-                if (checkbox) { const s = document.createElement('span'); s.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'; checkbox.replaceWith(s.firstElementChild); }
-              }
-              const detail = document.createElement('div');
-              detail.className = 'text-neutral-600 mt-1 pl-5 text-[11px] leading-relaxed';
-              detail.textContent = (stepResult || '').substring(0, 150) + '...';
-              currentStepEl.appendChild(detail);
+              updateStep(stepIndex, { done: true, detail: (stepResult || '').substring(0, 220) });
             }
 
             updateStatus('Sonuclar derleniyor...');
             addStep('Sentezleme asamasina gecildi', null);
-            MindMapModule.addResultNode('Sentez');
 
             const synthesisPrompt = 'Gorev: "' + query + '"\nAdimlar ve Sonuclari:\n' + allResults.map((r, i) => '### Adim ' + (i + 1) + ': ' + steps[i] + '\n' + r).join('\n\n') + '\nSimdi butun bunlari birlestirip son ve tam bir cozum raporu/kod sun.';
             let finalResult = await callModel([{ role: 'system', content: 'Sentez uzmanisin.' }, { role: 'user', content: synthesisPrompt }]);
 
             addStep('Sentez tamamlandi', null, true);
-            agentDiv.remove();
-
-            chat.messages.push({ role: 'assistant', model: modA + ' (Ajan)', content: finalResult || '-', timestamp: Date.now() });
-            if (typeof saveAll === 'function') saveAll();
-            if (typeof renderMessages === 'function') renderMessages(chat.messages);
+            const actions = typeof window.applyAgentActions === 'function' ? window.applyAgentActions(query, finalResult || '-') : [];
+            delete progressMsg.agentState;
+            progressMsg.content = finalResult || '-';
+            progressMsg.actions = actions;
+            if (typeof window.enrichAssistantMessage === 'function') await window.enrichAssistantMessage(query, progressMsg);
+            syncProgress();
             if (typeof setStatus === 'function') setStatus('Ajan gorevi tamamlandi.');
           } catch (e) {
-            agentDiv.remove();
-            chat.messages.push({ role: 'assistant', model: 'System', content: 'Ajan Hatasi: ' + e.message });
-            if (typeof saveAll === 'function') saveAll();
-            if (typeof renderMessages === 'function') renderMessages(chat.messages);
+            delete progressMsg.agentState;
+            progressMsg.model = 'System';
+            progressMsg.content = 'Ajan Hatasi: ' + e.message;
+            syncProgress();
             if (typeof setStatus === 'function') setStatus('Ajan hatasi.');
           } finally {
             window.agentActive = false;
