@@ -4359,6 +4359,7 @@
                 </option>
                 <option value="custom">Custom Provider
                   (OpenAI-Compatible)</option>
+                <option value="copilot" style="display:none">GitHub Copilot (Sadece Localhost)</option>
               </select></div>
             <!-- Custom Fields -->
             <div id="fields-custom" class="provider-fields hidden space-y-4">
@@ -4433,6 +4434,31 @@
                   placeholder="claude-3-5-sonnet-20241022"
                   class="w-full bg-[#0a0a0a] border border-[#222] rounded-xl p-3 mt-1.5 text-sm outline-none focus:border-red-500 transition-colors mono text-neutral-300"><datalist
                   id="anthropic-models-list"></datalist>
+              </div>
+            </div>
+            <!-- Copilot Fields -->
+            <div id="fields-copilot" class="provider-fields hidden space-y-4">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[10px] text-neutral-500 italic">GitHub Copilot API (sadece localhost)</span>
+                <button onclick="fetchCopilotModels(this)" class="text-[9px] text-green-400 hover:text-green-300 font-bold uppercase">Yenile</button>
+              </div>
+              <div>
+                <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider ml-1">GitHub Token</label>
+                <input type="password" id="copilot-token" placeholder="ghu_... veya gho_..."
+                  class="w-full bg-[#0a0a0a] border border-[#222] rounded-xl p-3 mt-1.5 text-sm outline-none focus:border-green-500 transition-colors mono text-neutral-300">
+                <p class="text-[10px] text-neutral-600 mt-1 ml-1">GitHub OAuth tokeni. <code>gh auth token</code> komutuyla alabilirsiniz.</p>
+              </div>
+              <div>
+                <div class="flex justify-between items-center ml-1">
+                  <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Model ID</label>
+                </div>
+                <input type="text" id="copilot-model-id" list="copilot-models-list" placeholder="gpt-4o"
+                  class="w-full bg-[#0a0a0a] border border-[#222] rounded-xl p-3 mt-1.5 text-sm outline-none focus:border-green-500 transition-colors mono text-neutral-300">
+                <datalist id="copilot-models-list">
+                  <option value="gpt-4o"><option value="gpt-4o-mini"><option value="gpt-4.1"><option value="gpt-4.1-mini">
+                  <option value="claude-3.5-sonnet"><option value="claude-3.7-sonnet"><option value="o1"><option value="o3-mini">
+                  <option value="gemini-2.0-flash">
+                </datalist>
               </div>
             </div>
           </div>

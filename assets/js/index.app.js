@@ -549,9 +549,11 @@
       ;
 
     // Migrate: if old active provider was removed, default to puter
-    if (['copilot', 'hf', 'g4f'].includes(providerSettings.active)) {
+    if (['hf', 'g4f'].includes(providerSettings.active)) {
       providerSettings.active = 'puter';
     }
+
+    if (!providerSettings.copilot) providerSettings.copilot = { token: '', modelId: 'gpt-4o' };
 
     let prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{"modelA":"gpt-4o-mini","stream":true,"maxTokens":4096,"fontSize":"md","accent":"blue","notifySound":false,"showThinking":true,"uiFont":"system","uiDensity":"comfortable","codeTheme":"dark"}');
     // Migrate: ensure showThinking exists in saved prefs
@@ -1306,6 +1308,11 @@
         html += '<option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>';
         html += '<option value="claude-3-opus-20240229">claude-3-opus</option>';
         html += '<option value="claude-3-haiku-20240307">claude-3-haiku</option>';
+      }
+
+      else if (prov === 'copilot') {
+        const mId = providerSettings.copilot?.modelId || 'gpt-4o';
+        html += COPILOT_MODELS.map(m => `<option value="${escapeHtml(m)}"${m === mId ? ' selected' : ''}>${escapeHtml(m)}</option>`).join('');
       }
 
       html += '<option disabled>──────────</option><option value="open_provider">Provider Degistir...</option>';
@@ -2960,6 +2967,68 @@
       }
     }
 
+    const COPILOT_BASE = 'https://api.githubcopilot.com';
+    const COPILOT_MODELS = [
+      'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+      'claude-3.5-sonnet', 'claude-3.7-sonnet', 'o1', 'o1-mini', 'o3-mini', 'gemini-2.0-flash'
+    ];
+
+    async function callCopilotRouter(modelId, history, signal) {
+      assertNotAborted(signal, 'copilot-router');
+      const token = providerSettings.copilot?.token;
+      if (!token) return 'GitHub Copilot token eksik. Ayarlardan ekleyin.';
+      const url = COPILOT_BASE + '/chat/completions';
+      const cleanHistory = history.map(m => ({
+        role: m.role, content: Array.isArray(m.content) ? m.content.map(c => c.text || '').join('\n').trim() : m.content
+      }));
+      try {
+        const resp = await smartFetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Editor-Version': 'vscode/1.95.0',
+            'Editor-Plugin-Version': 'copilot-chat/0.20.3',
+            'Copilot-Integration-Id': 'vscode-chat',
+            'User-Agent': 'GitHubCopilotChat/0.20.3'
+          },
+          signal,
+          body: JSON.stringify({ model: modelId, messages: cleanHistory, stream: false })
+        }, 120000);
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t || resp.statusText}`);
+        }
+        const data = await resp.json();
+        return data?.choices?.[0]?.message?.content || 'Bos yanit.';
+      } catch (e) {
+        throw new Error(`Copilot Hatasi: ${e.message}`);
+      }
+    }
+
+    async function fetchCopilotModels(btn) {
+      if (btn) { btn.textContent = '...'; btn.disabled = true; }
+      const token = $('copilot-token').value.trim();
+      if (!token) { setStatus('Token gerekli.'); if (btn) { btn.textContent = 'Yenile'; btn.disabled = false; } return; }
+      try {
+        const resp = await smartFetch(COPILOT_BASE + '/models', {
+          headers: { 'Authorization': `Bearer ${token}`, 'Editor-Version': 'vscode/1.95.0', 'Copilot-Integration-Id': 'vscode-chat' }
+        }, 10000);
+        if (resp.ok) {
+          const data = await resp.json();
+          const models = (data?.data || data?.models || []).map(m => m.id || m.name).filter(Boolean);
+          const list = $('copilot-models-list');
+          if (list) list.innerHTML = models.map(m => `<option value="${m}">`).join('');
+          setStatus(`${models.length} Copilot modeli yuklendi.`);
+        } else {
+          setStatus('Model listesi alinamadi: ' + resp.status);
+        }
+      } catch (e) {
+        setStatus('Copilot baglanti hatasi: ' + e.message);
+      }
+      if (btn) { btn.textContent = 'Yenile'; btn.disabled = false; }
+    }
+
     async function checkAnthropicHealth(btn) {
       const base = $('anthropic-url').value.trim(); if (!base) return;
       const orig = btn.textContent; btn.textContent = '...';
@@ -3370,6 +3439,8 @@
           assistantMsg.content = await callCustomRouter(modA, history, requestSignal) || 'Bos yanit.';
         } else if (activeProv === 'anthropic') {
           assistantMsg.content = await callAnthropicRouter(modA, history, requestSignal) || 'Bos yanit.';
+        } else if (activeProv === 'copilot') {
+          assistantMsg.content = await callCopilotRouter(modA, history, requestSignal) || 'Bos yanit.';
         } else if (prefs.stream) {
           setStatus('Stream...');
           assistantMsg.content = '';
@@ -3530,6 +3601,11 @@
       $('anthropic-url').value = providerSettings.anthropic?.baseUrl || 'http://localhost:8080';
       $('anthropic-token').value = providerSettings.anthropic?.token || '';
       $('anthropic-model-id').value = providerSettings.anthropic?.modelId || 'claude-3-5-sonnet-20241022';
+      if ($('copilot-token')) $('copilot-token').value = providerSettings.copilot?.token || '';
+      if ($('copilot-model-id')) $('copilot-model-id').value = providerSettings.copilot?.modelId || 'gpt-4o';
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const copilotOpt = document.querySelector('#provider-select option[value="copilot"]');
+      if (copilotOpt) copilotOpt.style.display = isLocal ? '' : 'none';
       updateProviderFields();
       renderPromptLibrary();
       populateEnhancedSettings();
@@ -3648,11 +3724,15 @@
       providerSettings.anthropic.baseUrl = $('anthropic-url')?.value.trim() || 'http://localhost:8080';
       providerSettings.anthropic.token = $('anthropic-token')?.value.trim() || '';
       providerSettings.anthropic.modelId = $('anthropic-model-id')?.value.trim() || 'claude-3-5-sonnet-20241022';
+      if (!providerSettings.copilot) providerSettings.copilot = { token: '', modelId: 'gpt-4o' };
+      providerSettings.copilot.token = $('copilot-token')?.value.trim() || '';
+      providerSettings.copilot.modelId = $('copilot-model-id')?.value.trim() || 'gpt-4o';
       prefs.uiFont = $('pref-ui-font')?.value || prefs.uiFont || 'system';
       prefs.uiDensity = $('pref-ui-density')?.value || prefs.uiDensity || 'comfortable';
       prefs.codeTheme = $('pref-code-theme')?.value || prefs.codeTheme || 'dark';
       if (active === 'custom' && providerSettings.custom.modelId) prefs.modelA = providerSettings.custom.modelId;
       if (active === 'anthropic' && providerSettings.anthropic.modelId) prefs.modelA = providerSettings.anthropic.modelId;
+      if (active === 'copilot' && providerSettings.copilot.modelId) prefs.modelA = providerSettings.copilot.modelId;
       customModels = [];
       applyAppearancePrefs();
       saveAll();
@@ -4385,16 +4465,33 @@
     }
 
     const VOICE_STYLE_PARAMS = {
-      samimi: { rate: 0.92, pitch: 1.10, volume: 1.0, femaleHints: ['zeynep', 'yelda', 'dilek', 'ayse', 'samantha', 'ava', 'karen', 'alice', 'victoria', 'moira', 'tessa', 'fiona', 'sara', 'anna', 'zira', 'hazel', 'heera'], maleHints: [] },
-      profesyonel: { rate: 0.80, pitch: 0.90, volume: 0.95, femaleHints: [], maleHints: ['ali', 'daniel', 'alex', 'david', 'mark', 'jorge', 'diego', 'luca', 'thomas', 'james', 'arthur', 'eddy', 'google uk english male', 'microsoft david'] },
-      zkusagi: { rate: 1.15, pitch: 1.15, volume: 1.0, femaleHints: ['samantha', 'ava', 'karen', 'alice', 'zeynep', 'yelda', 'zira', 'hazel'], maleHints: [] },
+      samimi: { rate: 0.90, pitch: 1.05, volume: 1.0, femaleHints: ['zeynep', 'yelda', 'dilek', 'ayse', 'samantha', 'ava', 'karen', 'alice', 'victoria', 'moira', 'tessa', 'fiona', 'sara', 'anna', 'zira', 'hazel', 'heera'], maleHints: [] },
+      profesyonel: { rate: 0.80, pitch: 0.95, volume: 0.95, femaleHints: [], maleHints: ['ali', 'daniel', 'alex', 'david', 'mark', 'jorge', 'diego', 'luca', 'thomas', 'james', 'arthur', 'eddy', 'google uk english male', 'microsoft david'] },
+      zkusagi: { rate: 1.10, pitch: 1.10, volume: 1.0, femaleHints: ['samantha', 'ava', 'karen', 'alice', 'zeynep', 'yelda', 'zira', 'hazel'], maleHints: [] },
     };
+
+    const TR_VOICE_PRIORITY = ['google türkçe', 'google turkce', 'microsoft emel', 'emel', 'zeynep', 'yelda', 'dilek', 'türkçe', 'turkce'];
 
     function getBestVoice(lang, style) {
       const voices = speechSynthesis.getVoices();
       const langCode = lang.toLowerCase();
+      const isTurkish = langCode.startsWith('tr');
       const candidates = voices.filter(v => v.lang.toLowerCase().startsWith(langCode.split('-')[0]));
       if (!candidates.length) return null;
+
+      if (isTurkish) {
+        for (const hint of TR_VOICE_PRIORITY) {
+          const match = candidates.find(v => v.name.toLowerCase().includes(hint));
+          if (match) return match;
+        }
+        const quality = ['google', 'microsoft', 'natural', 'premium', 'enhanced', 'neural'];
+        for (const kw of quality) {
+          const match = candidates.find(v => v.name.toLowerCase().includes(kw));
+          if (match) return match;
+        }
+        return candidates[0];
+      }
+
       const params = VOICE_STYLE_PARAMS[style || 'samimi'] || VOICE_STYLE_PARAMS.samimi;
       const hints = [...(params.femaleHints || []), ...(params.maleHints || [])];
       for (const hint of hints) {
@@ -4414,8 +4511,9 @@
       utter.lang = lang;
       const style = stylePrefs.voiceStyle || 'samimi';
       const params = VOICE_STYLE_PARAMS[style] || VOICE_STYLE_PARAMS.samimi;
-      utter.rate = params.rate;
-      utter.pitch = params.pitch;
+      const isTurkish = lang.toLowerCase().startsWith('tr');
+      utter.rate = isTurkish ? Math.min(params.rate, 0.88) : params.rate;
+      utter.pitch = isTurkish ? 1.0 : params.pitch;
       utter.volume = params.volume !== undefined ? params.volume : 1.0;
       const voice = getBestVoice(lang, style);
       if (voice) utter.voice = voice;
@@ -5403,7 +5501,7 @@
         , ...compareMessagesB];
 
       // Determine call function based on provider
-      const callFn = activeProv === 'custom' ? callCustomRouter : activeProv === 'anthropic' ? callAnthropicRouter : callPuterOnce;
+      const callFn = activeProv === 'custom' ? callCustomRouter : activeProv === 'anthropic' ? callAnthropicRouter : activeProv === 'copilot' ? callCopilotRouter : callPuterOnce;
 
       // Run both in parallel
       const promiseA = callFn(modelA, historyA).then(r => {
@@ -6569,6 +6667,8 @@
           subQs = await callCustomRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: subQPrompt }]);
         } else if (activeProv === 'anthropic') {
           subQs = await callAnthropicRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: subQPrompt }]);
+        } else if (activeProv === 'copilot') {
+          subQs = await callCopilotRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: subQPrompt }]);
         }
 
         addStep('Alt sorular olusturuldu', subQs.substring(0, 200), true);
@@ -6590,6 +6690,8 @@
             finding = await callCustomRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: researchPrompt }]);
           } else if (activeProv === 'anthropic') {
             finding = await callAnthropicRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: researchPrompt }]);
+          } else if (activeProv === 'copilot') {
+            finding = await callCopilotRouter(modA, [{ role: 'system', content: 'Sen bir arastirma asistanis.' }, { role: 'user', content: researchPrompt }]);
           }
 
           findings.push({ question: sq, answer: finding });
@@ -6608,6 +6710,8 @@
           synthesis = await callCustomRouter(modA, [{ role: 'system', content: 'Sen bir arastirma sentez uzmanis.' }, { role: 'user', content: synthesisPrompt }]);
         } else if (activeProv === 'anthropic') {
           synthesis = await callAnthropicRouter(modA, [{ role: 'system', content: 'Sen bir arastirma sentez uzmanis.' }, { role: 'user', content: synthesisPrompt }]);
+        } else if (activeProv === 'copilot') {
+          synthesis = await callCopilotRouter(modA, [{ role: 'system', content: 'Sen bir arastirma sentez uzmanis.' }, { role: 'user', content: synthesisPrompt }]);
         }
 
 	        researchDiv.remove();
@@ -6687,6 +6791,7 @@
       async function callModel(messages) {
         if (activeProv === 'custom') return await callCustomRouter(modA, messages);
         if (activeProv === 'anthropic') return await callAnthropicRouter(modA, messages);
+        if (activeProv === 'copilot') return await callCopilotRouter(modA, messages);
         return await callPuterOnce(modA, messages);
       }
 
@@ -7605,6 +7710,8 @@
     window.callPuterOnce = callPuterOnce;
     window.callCustomRouter = callCustomRouter;
     window.callAnthropicRouter = callAnthropicRouter;
+    window.callCopilotRouter = callCopilotRouter;
+    window.fetchCopilotModels = fetchCopilotModels;
     window.saveAll = saveAll;
     window.renderMessages = renderMessages;
     window.setStatus = setStatus;
