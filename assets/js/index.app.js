@@ -900,7 +900,11 @@
     function initSpeech() {
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         $('mic-btn').style.display = 'none';
-        $('voice-conv-btn').style.display = 'none';
+        const vcBtn = $('voice-conv-btn');
+        if (vcBtn) {
+          vcBtn.style.opacity = '0.4';
+          vcBtn.onclick = () => setStatus('Tarayiciniz ses tanima desteklemiyor. Chrome veya Edge kullanin.');
+        }
         return;
       }
 
