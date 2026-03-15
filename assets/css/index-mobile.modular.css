@@ -122,6 +122,20 @@
       margin: 12px 0;
     }
 
+    .code-block-inline pre {
+      margin: 0;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .code-block-inline code {
+      display: block;
+      color: #c9d1d9;
+      font-family: inherit;
+      line-height: 1.6;
+      white-space: pre;
+    }
+
     .code-header {
       background: #161b22;
       padding: 8px 14px;

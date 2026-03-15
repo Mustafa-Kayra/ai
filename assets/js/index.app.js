@@ -954,6 +954,9 @@
       recognition.onend = () => {
         $('mic-btn').classList.remove('text-red-500');
         $('voice-conv-btn').classList.remove('vc-listening');
+        if (voiceConvMode && !speechSynthesis.speaking && !isGenerating) {
+          setTimeout(() => { try { recognition.start(); } catch (e) { } }, 300);
+        }
       }
 
       $('mic-btn').onclick = () => {
@@ -1639,19 +1642,16 @@
             const codeId = 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
 
             const container = document.createElement('div');
-            container.className = 'code-container mt-2 mb-2 p-3 bg-[#111] border border-[#222] rounded-xl text-neutral-400 text-[12px] flex items-center justify-between';
             container.id = codeId;
 
-            container.innerHTML = ` <div class="flex items-center gap-2" > <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" ><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg> <span><b>${escapeHtml(lang).toUpperCase()
-              }
-
-              </b> dosyasina kod yazildi (${(code.split('\\n').length)
-              }
-
-                satir). Yan panelden (Canvas) gorebilirsiniz.</span> </div> <textarea class="hidden code-raw" >${escapeHtml(code)
-              }
-
-              </textarea>`;
+            if (m.usedCanvas) {
+              container.className = 'code-container mt-2 mb-2 p-3 bg-[#111] border border-[#222] rounded-xl text-neutral-400 text-[12px] flex items-center justify-between';
+              container.innerHTML = `<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span><b>${escapeHtml(lang).toUpperCase()}</b> dosyasina kod yazildi (${code.split('\n').length} satir). Yan panelden (Canvas) gorebilirsiniz.</span></div><textarea class="hidden code-raw">${escapeHtml(code)}</textarea>`;
+            } else {
+              container.className = 'code-block-inline mt-2 mb-2 rounded-xl overflow-hidden border border-[#222] bg-[#0d0d0d]';
+              const highlighted = (typeof hljs !== 'undefined' && lang !== 'code') ? (() => { try { return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value; } catch(e) { return escapeHtml(code); } })() : escapeHtml(code);
+              container.innerHTML = `<div class="flex items-center justify-between px-3 py-2 bg-[#111] border-b border-[#1a1a1a]"><span class="text-[11px] font-mono font-semibold text-neutral-500 uppercase tracking-wider">${escapeHtml(lang)}</span><button onclick="navigator.clipboard.writeText(this.closest('.code-block-inline').querySelector('code').textContent)" class="text-[11px] text-neutral-500 hover:text-neutral-200 flex items-center gap-1 transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Kopyala</button></div><pre class="p-3 overflow-x-auto text-[13px] leading-relaxed m-0"><code class="language-${escapeHtml(lang)}">${highlighted}</code></pre>`;
+            }
 
             const pre = codeEl.closest('pre');
             if (pre) pre.replaceWith(container);
@@ -3277,6 +3277,7 @@
 
         const _skipCanvasThisTime = _noCanvas; _noCanvas = false;
         const shouldUseCanvas = !_skipCanvasThisTime && classification.shouldUseCanvas;
+        assistantMsg.usedCanvas = shouldUseCanvas;
         canvasExtractionMode = getCanvasExtractionMode(classification);
         if (shouldUseCanvas) showCanvasBuilding();
 
