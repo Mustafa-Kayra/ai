@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator App</title>
-    <meta name="description" content="Responsive calculator app with keyboard shortcuts and history.">
+    <title>تطبيق الحاسبة</title>
+    <meta name="description" content="تطبيق حاسبة متجاوب مع اختصارات لوحة المفاتيح وسجل للعمليات.">
     <style>
       @import url("assets/css/calculator.css");
     </style>
@@ -13,43 +13,43 @@
     <main class="page-shell" data-calculator-root>
       <section class="hero">
         <div>
-          <p class="eyebrow">Calculator application</p>
-          <h1>Fast calculations in a clean interface.</h1>
+          <p class="eyebrow">تطبيق الحاسبة</p>
+          <h1>احسب بسرعة داخل واجهة نظيفة وواضحة.</h1>
           <p class="hero-copy">
-            A responsive calculator with four basic operations, keyboard support, percent handling,
-            sign toggle, backspace, and a restorable history of recent results.
+            حاسبة متجاوبة تدعم العمليات الأساسية الأربع، واختصارات لوحة المفاتيح، والنسبة المئوية،
+            وتبديل الإشارة، وحذف آخر رقم، مع سجل محفوظ يمكن الرجوع إليه بسهولة.
           </p>
         </div>
-        <div class="hero-badges" aria-label="Highlights">
-          <span class="badge">Keyboard shortcuts</span>
-          <span class="badge">Calculation history</span>
-          <span class="badge">Desktop + mobile layouts</span>
+        <div class="hero-badges" aria-label="أبرز المزايا">
+          <span class="badge">اختصارات لوحة المفاتيح</span>
+          <span class="badge">سجل العمليات</span>
+          <span class="badge">نسخة مكتب وجوال</span>
         </div>
       </section>
 
       <section class="app-shell">
-        <section class="calculator-panel" aria-label="Calculator">
+        <section class="calculator-panel" aria-label="الحاسبة">
           <div class="status-row">
-            <div class="context-pill">Mode: Standard</div>
-            <button type="button" class="ghost-button" data-action="clear-all">Reset all</button>
+            <div class="context-pill">وضع قياسي</div>
+            <button type="button" class="ghost-button" data-action="clear-all">إعادة تعيين</button>
           </div>
 
           <section class="display-panel" aria-live="polite" aria-atomic="true">
             <div id="expression-display" class="expression"> </div>
             <div id="main-display" class="display">0</div>
-            <div id="status-display" class="status">Ready for input</div>
+            <div id="status-display" class="status">جاهز للإدخال</div>
           </section>
 
-          <section class="keypad" aria-label="Calculator keypad">
+          <section class="keypad" aria-label="لوحة مفاتيح الحاسبة">
             <button type="button" class="calc-button calc-button--danger" data-action="clear-all">AC</button>
             <button type="button" class="calc-button calc-button--muted" data-action="clear-entry">CE</button>
             <button type="button" class="calc-button calc-button--muted" data-action="percent">%</button>
-            <button type="button" class="calc-button calc-button--operator" data-action="operator" data-operator="divide">/</button>
+            <button type="button" class="calc-button calc-button--operator" data-action="operator" data-operator="divide">÷</button>
 
             <button type="button" class="calc-button" data-digit="7">7</button>
             <button type="button" class="calc-button" data-digit="8">8</button>
             <button type="button" class="calc-button" data-digit="9">9</button>
-            <button type="button" class="calc-button calc-button--operator" data-action="operator" data-operator="multiply">x</button>
+            <button type="button" class="calc-button calc-button--operator" data-action="operator" data-operator="multiply">×</button>
 
             <button type="button" class="calc-button" data-digit="4">4</button>
             <button type="button" class="calc-button" data-digit="5">5</button>
@@ -61,37 +61,37 @@
             <button type="button" class="calc-button" data-digit="3">3</button>
             <button type="button" class="calc-button calc-button--operator" data-action="operator" data-operator="add">+</button>
 
-            <button type="button" class="calc-button calc-button--muted" data-action="toggle-sign">+/-</button>
+            <button type="button" class="calc-button calc-button--muted" data-action="toggle-sign">±</button>
             <button type="button" class="calc-button calc-button--wide" data-digit="0">0</button>
             <button type="button" class="calc-button" data-action="decimal">.</button>
             <button type="button" class="calc-button calc-button--accent" data-action="equals">=</button>
 
-            <button type="button" class="calc-button calc-button--muted calc-button--wide" data-action="backspace">Backspace</button>
+            <button type="button" class="calc-button calc-button--muted calc-button--wide" data-action="backspace">حذف</button>
           </section>
         </section>
 
         <aside class="info-panel">
           <section class="history-panel" aria-labelledby="history-title">
             <div class="panel-heading">
-              <h2 id="history-title">Recent calculations</h2>
-              <button type="button" class="link-button" data-command="clear-history">Clear history</button>
+              <h2 id="history-title">آخر العمليات</h2>
+              <button type="button" class="link-button" data-command="clear-history">مسح السجل</button>
             </div>
             <div id="history-list" class="history-list">
-              <p class="history-empty">No saved calculations yet. Finish an operation to pin it here.</p>
+              <p class="history-empty">لا توجد عمليات محفوظة بعد. أكمل أي عملية لتظهر هنا.</p>
             </div>
           </section>
 
           <section class="tips-panel" aria-labelledby="tips-title">
             <div class="panel-heading">
-              <h2 id="tips-title">Quick help</h2>
+              <h2 id="tips-title">مساعدة سريعة</h2>
             </div>
             <ul class="tip-list">
-              <li><strong>Keyboard:</strong> use digits, +, -, *, /, Enter, Backspace, Escape.</li>
-              <li><strong>Percent:</strong> converts the current value into a percentage. For + and -, it uses the stored value as the base.</li>
-              <li><strong>Restore:</strong> click a history card to move its result back to the display.</li>
+              <li><strong>لوحة المفاتيح:</strong> استخدم الأرقام و + و - و * و / و Enter و Backspace و Escape.</li>
+              <li><strong>النسبة المئوية:</strong> تحوّل القيمة الحالية إلى نسبة، ومع + و - تعتمد على الرقم الأول.</li>
+              <li><strong>الاستعادة:</strong> اضغط أي بطاقة من السجل لإرجاع نتيجتها إلى الشاشة.</li>
             </ul>
             <p class="footer-note">
-              The calculator keeps the latest results in local storage so they remain available after refresh.
+              يحتفظ التطبيق بآخر النتائج داخل التخزين المحلي لتبقى متاحة حتى بعد تحديث الصفحة.
             </p>
           </section>
         </aside>
