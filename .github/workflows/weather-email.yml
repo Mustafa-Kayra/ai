@@ -1,0 +1,30 @@
+name: Daily Weather Email
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  send-weather:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send Weather Email
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          WEATHER_CITY: ${{ secrets.WEATHER_CITY || 'Istanbul' }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL || secrets.GMAIL_USER }}
+        run: node agents/weather-email/index.mjs
