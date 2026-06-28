@@ -5,6 +5,7 @@
   "description": "Static AI chat app build and test tooling",
   "type": "module",
   "dependencies": {
+    "nodemailer": "^9.0.1",
     "ws": "^8.19.0"
   },
   "scripts": {
