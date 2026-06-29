@@ -35,9 +35,15 @@ Repository'nizin **Settings > Secrets and variables > Actions** bolumune asagida
 
 ### 3. Manuel Calistirma
 
+Normal calistirma (e-posta gonderir):
 ```bash
 npm install
 GMAIL_USER=ornek@gmail.com GMAIL_APP_PASSWORD="xxxx xxxx xxxx xxxx" WEATHER_CITY=Istanbul node agents/weather-email/index.mjs
+```
+
+Dry-run modu (e-posta gondermeden test):
+```bash
+DRY_RUN=true WEATHER_CITY=Istanbul node agents/weather-email/index.mjs
 ```
 
 ## Zamanlama
