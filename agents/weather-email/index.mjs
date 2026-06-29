@@ -5,16 +5,18 @@ const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
+const DRY_RUN = process.env.DRY_RUN === "true";
 
-if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+if (!DRY_RUN && (!GMAIL_USER || !GMAIL_APP_PASSWORD)) {
   console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
   console.error("Gmail App Password olusturmak icin: https://myaccount.google.com/apppasswords");
+  console.error("Not: DRY_RUN=true ile e-posta gondermeden test edebilirsiniz.");
   process.exit(1);
 }
 
 function fetchWeather(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
     https
       .get(url, (res) => {
         let data = "";
@@ -132,23 +134,23 @@ function formatWeatherEmail(weather, city) {
     <div class="forecast-row">
       <div class="period">Sabah</div>
       <div class="temps">${today.mintempC}° / ${today.maxtempC}°</div>
-      <div class="forecast-desc">${today.hourly[4] ? (today.hourly[4].lang_tr && today.hourly[4].lang_tr[0] ? today.hourly[4].lang_tr[0].value : today.hourly[4].weatherDesc[0].value) : ""}</div>
+      <div class="forecast-desc">${today.hourly[2] ? (today.hourly[2].lang_tr && today.hourly[2].lang_tr[0] ? today.hourly[2].lang_tr[0].value : today.hourly[2].weatherDesc[0].value) : ""}</div>
     </div>
     <div class="forecast-row">
       <div class="period">Öğle</div>
       <div class="temps">${today.mintempC}° / ${today.maxtempC}°</div>
-      <div class="forecast-desc">${today.hourly[8] ? (today.hourly[8].lang_tr && today.hourly[8].lang_tr[0] ? today.hourly[8].lang_tr[0].value : today.hourly[8].weatherDesc[0].value) : ""}</div>
+      <div class="forecast-desc">${today.hourly[4] ? (today.hourly[4].lang_tr && today.hourly[4].lang_tr[0] ? today.hourly[4].lang_tr[0].value : today.hourly[4].weatherDesc[0].value) : ""}</div>
     </div>
     <div class="forecast-row">
       <div class="period">Akşam</div>
       <div class="temps">${today.mintempC}° / ${today.maxtempC}°</div>
-      <div class="forecast-desc">${today.hourly[16] ? (today.hourly[16].lang_tr && today.hourly[16].lang_tr[0] ? today.hourly[16].lang_tr[0].value : today.hourly[16].weatherDesc[0].value) : ""}</div>
+      <div class="forecast-desc">${today.hourly[6] ? (today.hourly[6].lang_tr && today.hourly[6].lang_tr[0] ? today.hourly[6].lang_tr[0].value : today.hourly[6].weatherDesc[0].value) : ""}</div>
     </div>
     <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
     <div class="forecast-row">
       <div class="period">Yarın</div>
       <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
-      <div class="forecast-desc">${tomorrow.hourly[8] ? (tomorrow.hourly[8].lang_tr && tomorrow.hourly[8].lang_tr[0] ? tomorrow.hourly[8].lang_tr[0].value : tomorrow.hourly[8].weatherDesc[0].value) : ""}</div>
+      <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
     </div>
   </div>
   <div class="footer">
@@ -159,9 +161,11 @@ function formatWeatherEmail(weather, city) {
 </body>
 </html>`;
 
+  const currentDesc = current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value;
+
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${currentDesc})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
@@ -182,14 +186,6 @@ async function sendWeatherEmail() {
 
   const { html, text } = formatWeatherEmail(weather, WEATHER_CITY);
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_APP_PASSWORD,
-    },
-  });
-
   const date = new Date().toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "long",
@@ -202,6 +198,21 @@ async function sendWeatherEmail() {
     text,
     html,
   };
+
+  if (DRY_RUN) {
+    console.log(`🏁 DRY RUN: E-posta gonderimi atlandi.`);
+    console.log(`   Kime: ${RECIPIENT_EMAIL || '(GMAIL_USER belirtilmedi)'}`);
+    console.log(`   Konu: ${mailOptions.subject}`);
+    return { messageId: "dry-run", dryRun: true };
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD,
+    },
+  });
 
   console.log(`📧 E-posta gonderiliyor: ${RECIPIENT_EMAIL}...`);
   const info = await transporter.sendMail(mailOptions);
