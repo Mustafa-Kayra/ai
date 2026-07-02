@@ -14,7 +14,7 @@ if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
 
 function fetchWeather(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
     https
       .get(url, (res) => {
         let data = "";
@@ -55,6 +55,10 @@ function formatWeatherEmail(weather, city) {
     if ([200, 386, 389].includes(c)) return "⛈️";
     if ([143, 248, 260].includes(c)) return "🌫️";
     return "🌡️";
+  };
+
+  const getTrDesc = (item) => {
+    return item.lang_tr && item.lang_tr[0] ? item.lang_tr[0].value : item.weatherDesc[0].value;
   };
 
   const emoji = cToEmoji(current.weatherCode);
@@ -98,7 +102,7 @@ function formatWeatherEmail(weather, city) {
   <div class="current">
     <div class="emoji">${emoji}</div>
     <div class="temp">${current.temp_C}°C</div>
-    <div class="desc">${current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value}</div>
+    <div class="desc">${getTrDesc(current)}</div>
     <div class="feels">Hissedilen: ${current.FeelsLikeC}°C</div>
   </div>
   <div class="details">
@@ -132,23 +136,23 @@ function formatWeatherEmail(weather, city) {
     <div class="forecast-row">
        <div class="period">Sabah</div>
        <div class="temps">${today.hourly[3] ? today.hourly[3].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[3] ? (today.hourly[3].lang_tr && today.hourly[3].lang_tr[0] ? today.hourly[3].lang_tr[0].value : today.hourly[3].weatherDesc[0].value) : ""}</div>
+       <div class="forecast-desc">${today.hourly[3] ? getTrDesc(today.hourly[3]) : ""}</div>
      </div>
      <div class="forecast-row">
        <div class="period">Öğle</div>
        <div class="temps">${today.hourly[4] ? today.hourly[4].tempC + "°" : today.maxtempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[4] ? (today.hourly[4].lang_tr && today.hourly[4].lang_tr[0] ? today.hourly[4].lang_tr[0].value : today.hourly[4].weatherDesc[0].value) : ""}</div>
+       <div class="forecast-desc">${today.hourly[4] ? getTrDesc(today.hourly[4]) : ""}</div>
      </div>
      <div class="forecast-row">
        <div class="period">Akşam</div>
        <div class="temps">${today.hourly[6] ? today.hourly[6].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[6] ? (today.hourly[6].lang_tr && today.hourly[6].lang_tr[0] ? today.hourly[6].lang_tr[0].value : today.hourly[6].weatherDesc[0].value) : ""}</div>
+       <div class="forecast-desc">${today.hourly[6] ? getTrDesc(today.hourly[6]) : ""}</div>
      </div>
     <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
     <div class="forecast-row">
       <div class="period">Yarın</div>
       <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
-       <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
+       <div class="forecast-desc">${tomorrow.hourly[4] ? getTrDesc(tomorrow.hourly[4]) : ""}</div>
     </div>
   </div>
   <div class="footer">
@@ -161,7 +165,7 @@ function formatWeatherEmail(weather, city) {
 
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${getTrDesc(current)})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
