@@ -4,7 +4,7 @@ Her gun belirli bir sehir icin hava durumu bilgisini Gmail uzerinden e-posta ola
 
 ## Ozellikler
 
-- **wttr.in** API ile ucretsiz hava durumu verisi (API key gerektirmez)
+- **wttr.in** API ile ucretsiz hava durumu verisi (API key gerektirmez, `lang=tr` ile Turkce aciklamalar)
 - Gmail SMTP ile guzel formatli HTML e-posta gonderimi
 - Turkce hava durumu aciklamalari
 - Anlik sicaklik, hissedilen sicaklik, nem, ruzgar, UV indeksi, basinc, yagis
