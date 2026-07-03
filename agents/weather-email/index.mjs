@@ -14,7 +14,7 @@ if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
 
 function fetchWeather(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
     https
       .get(url, (res) => {
         let data = "";
