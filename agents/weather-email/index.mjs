@@ -5,6 +5,8 @@ const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
+const MAX_RETRIES = 3;
+const REQUEST_TIMEOUT_MS = 15000;
 
 if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
   console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
@@ -12,23 +14,47 @@ if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
   process.exit(1);
 }
 
+function getDesc(item) {
+  return item.lang_tr && item.lang_tr[0] ? item.lang_tr[0].value : item.weatherDesc[0].value;
+}
+
 function fetchWeather(city) {
   return new Promise((resolve, reject) => {
     const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
-    https
-      .get(url, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
-          }
-        });
-      })
-      .on("error", reject);
+    const req = https.get(url, { timeout: REQUEST_TIMEOUT_MS }, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`wttr.in HTTP ${res.statusCode} hatasi`));
+        res.resume();
+        return;
+      }
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.on("timeout", () => {
+      req.destroy(new Error(`wttr.in istegi ${REQUEST_TIMEOUT_MS / 1000}s icinde zaman asimina ugradi`));
+    });
   });
+}
+
+async function fetchWeatherWithRetry(city, retries = MAX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fetchWeather(city);
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = attempt * 2000;
+      console.warn(`⚠️  Deneme ${attempt}/${retries} basarisiz: ${err.message}. ${delay / 1000}s sonra tekrar denenecek...`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
 }
 
 function formatWeatherEmail(weather, city) {
@@ -98,7 +124,7 @@ function formatWeatherEmail(weather, city) {
   <div class="current">
     <div class="emoji">${emoji}</div>
     <div class="temp">${current.temp_C}°C</div>
-    <div class="desc">${current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value}</div>
+    <div class="desc">${getDesc(current)}</div>
     <div class="feels">Hissedilen: ${current.FeelsLikeC}°C</div>
   </div>
   <div class="details">
@@ -132,23 +158,23 @@ function formatWeatherEmail(weather, city) {
     <div class="forecast-row">
        <div class="period">Sabah</div>
        <div class="temps">${today.hourly[3] ? today.hourly[3].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[3] ? (today.hourly[3].lang_tr && today.hourly[3].lang_tr[0] ? today.hourly[3].lang_tr[0].value : today.hourly[3].weatherDesc[0].value) : ""}</div>
+        <div class="forecast-desc">${today.hourly[3] ? getDesc(today.hourly[3]) : ""}</div>
      </div>
      <div class="forecast-row">
        <div class="period">Öğle</div>
        <div class="temps">${today.hourly[4] ? today.hourly[4].tempC + "°" : today.maxtempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[4] ? (today.hourly[4].lang_tr && today.hourly[4].lang_tr[0] ? today.hourly[4].lang_tr[0].value : today.hourly[4].weatherDesc[0].value) : ""}</div>
+        <div class="forecast-desc">${today.hourly[4] ? getDesc(today.hourly[4]) : ""}</div>
      </div>
      <div class="forecast-row">
        <div class="period">Akşam</div>
        <div class="temps">${today.hourly[6] ? today.hourly[6].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[6] ? (today.hourly[6].lang_tr && today.hourly[6].lang_tr[0] ? today.hourly[6].lang_tr[0].value : today.hourly[6].weatherDesc[0].value) : ""}</div>
+        <div class="forecast-desc">${today.hourly[6] ? getDesc(today.hourly[6]) : ""}</div>
      </div>
     <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
     <div class="forecast-row">
       <div class="period">Yarın</div>
       <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
-       <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
+       <div class="forecast-desc">${tomorrow.hourly[4] ? getDesc(tomorrow.hourly[4]) : ""}</div>
     </div>
   </div>
   <div class="footer">
@@ -161,7 +187,7 @@ function formatWeatherEmail(weather, city) {
 
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${getDesc(current)})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
@@ -177,7 +203,7 @@ Yarın: ${tomorrow.mintempC}°C - ${tomorrow.maxtempC}°C
 async function sendWeatherEmail() {
   console.log(`🌤️  ${WEATHER_CITY} icin hava durumu aliniyor...`);
 
-  const weather = await fetchWeather(WEATHER_CITY);
+  const weather = await fetchWeatherWithRetry(WEATHER_CITY);
   console.log(`✅ Hava durumu verisi alindi.`);
 
   const { html, text } = formatWeatherEmail(weather, WEATHER_CITY);
