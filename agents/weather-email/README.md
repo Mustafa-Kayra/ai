@@ -5,11 +5,13 @@ Her gun belirli bir sehir icin hava durumu bilgisini Gmail uzerinden e-posta ola
 ## Ozellikler
 
 - **wttr.in** API ile ucretsiz hava durumu verisi (API key gerektirmez)
+- **Turkce hava durumu aciklamalari** - wttr.in `lang=tr` parametresi ile tam Turkce destek
 - Gmail SMTP ile guzel formatli HTML e-posta gonderimi
-- Turkce hava durumu aciklamalari
 - Anlik sicaklik, hissedilen sicaklik, nem, ruzgar, UV indeksi, basinc, yagis
 - Bugun ve yarin icin tahmin bilgileri
 - GitHub Actions ile her gun otomatik calisma (cron)
+- **Dry-run modu** - E-posta gondermeden test etme
+- **Retry mekanizmasi** - API hatasinda otomatik tekrar deneme (3 kez)
 
 ## Kurulum
 
@@ -40,6 +42,14 @@ npm install
 GMAIL_USER=ornek@gmail.com GMAIL_APP_PASSWORD="xxxx xxxx xxxx xxxx" WEATHER_CITY=Istanbul node agents/weather-email/index.mjs
 ```
 
+### 4. Test Modu (Dry Run)
+
+E-posta gondermeden sadece hava durumu verisini gorebilirsiniz:
+
+```bash
+WEATHER_CITY=Istanbul node agents/weather-email/index.mjs --dry-run
+```
+
 ## Zamanlama
 
 GitHub Actions workflow'u her gun **UTC 06:00** (Turkiye saatiyle yaklasik 09:00) da calisir.
@@ -53,6 +63,7 @@ GitHub Actions workflow'u her gun **UTC 06:00** (Turkiye saatiyle yaklasik 09:00
 ```
 agents/weather-email/
   index.mjs          - Ana agent kodu
+  README.md          - Dokumantasyon
 .github/workflows/
   weather-email.yml  - Gunluk zamanlanmis GitHub Actions workflow
 ```
@@ -61,9 +72,14 @@ agents/weather-email/
 
 Gonderilen e-posta sunlari icerir:
 
-- Sehir adi ve tarih
-- Anlik sicaklik ve hava durumu ikonu
+- Sehir adi ve tarih (Turkce)
+- Anlik sicaklik ve hava durumu ikonu + Turkce aciklama (orn: "Gunesli")
 - Hissedilen sicaklik
 - Nem, ruzgar, gorüs mesafesi, UV indeksi, basinç, yagis
-- Bugun icin sabah/ogle/aksam tahminleri
-- Yarin icin tahmin
+- Bugun icin sabah/ogle/aksam tahminleri (Turkce aciklamalar)
+- Yarin icin tahmin (Turkce aciklama)
+
+## Degisiklik Gecmisi
+
+- **v1.1**: `lang=tr` parametresi eklendi (tam Turkce hava durumu aciklamalari), dry-run modu, retry mekanizmasi, `getTurkishDesc()` yardimci fonksiyonu
+- **v1.0**: Ilk versiyon - temel hava durumu e-posta agenti
