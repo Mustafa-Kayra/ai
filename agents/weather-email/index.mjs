@@ -1,34 +1,62 @@
 import nodemailer from "nodemailer";
 import https from "https";
 
+const args = process.argv.slice(2);
+const DRY_RUN = args.includes("--dry-run");
+
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
 
-if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+if (!DRY_RUN && (!GMAIL_USER || !GMAIL_APP_PASSWORD)) {
   console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
   console.error("Gmail App Password olusturmak icin: https://myaccount.google.com/apppasswords");
+  console.error("Test icin: node agents/weather-email/index.mjs --dry-run");
   process.exit(1);
 }
 
-function fetchWeather(city) {
+function fetchWeather(city, retries = 3) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
-    https
-      .get(url, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
+    const attempt = (n) => {
+      const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
+      https
+        .get(url, (res) => {
+          let data = "";
+          res.on("data", (chunk) => (data += chunk));
+          res.on("end", () => {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.current_condition) {
+                resolve(parsed);
+              } else {
+                throw new Error("Gecersiz hava durumu yaniti");
+              }
+            } catch (e) {
+              if (n > 0) {
+                console.log(`⚠️  Deneme ${retries - n + 1} basarisiz, tekrar deniyor...`);
+                setTimeout(() => attempt(n - 1), 2000);
+              } else {
+                reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
+              }
+            }
+          });
+        })
+        .on("error", (err) => {
+          if (n > 0) {
+            console.log(`⚠️  Deneme ${retries - n + 1} basarisiz, tekrar deniyor...`);
+            setTimeout(() => attempt(n - 1), 2000);
+          } else {
+            reject(err);
           }
         });
-      })
-      .on("error", reject);
+    };
+    attempt(retries);
   });
+}
+
+function getTurkishDesc(item) {
+  return (item.lang_tr && item.lang_tr[0] && item.lang_tr[0].value) || item.weatherDesc[0].value;
 }
 
 function formatWeatherEmail(weather, city) {
@@ -58,6 +86,7 @@ function formatWeatherEmail(weather, city) {
   };
 
   const emoji = cToEmoji(current.weatherCode);
+  const desc = getTurkishDesc(current);
 
   const html = `
 <!DOCTYPE html>
@@ -98,7 +127,7 @@ function formatWeatherEmail(weather, city) {
   <div class="current">
     <div class="emoji">${emoji}</div>
     <div class="temp">${current.temp_C}°C</div>
-    <div class="desc">${current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value}</div>
+    <div class="desc">${desc}</div>
     <div class="feels">Hissedilen: ${current.FeelsLikeC}°C</div>
   </div>
   <div class="details">
@@ -130,25 +159,25 @@ function formatWeatherEmail(weather, city) {
   <div class="forecast">
     <h3>📅 Bugün Tahmini</h3>
     <div class="forecast-row">
-       <div class="period">Sabah</div>
-       <div class="temps">${today.hourly[3] ? today.hourly[3].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[3] ? (today.hourly[3].lang_tr && today.hourly[3].lang_tr[0] ? today.hourly[3].lang_tr[0].value : today.hourly[3].weatherDesc[0].value) : ""}</div>
-     </div>
-     <div class="forecast-row">
-       <div class="period">Öğle</div>
-       <div class="temps">${today.hourly[4] ? today.hourly[4].tempC + "°" : today.maxtempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[4] ? (today.hourly[4].lang_tr && today.hourly[4].lang_tr[0] ? today.hourly[4].lang_tr[0].value : today.hourly[4].weatherDesc[0].value) : ""}</div>
-     </div>
-     <div class="forecast-row">
-       <div class="period">Akşam</div>
-       <div class="temps">${today.hourly[6] ? today.hourly[6].tempC + "°" : today.mintempC + "°"}</div>
-       <div class="forecast-desc">${today.hourly[6] ? (today.hourly[6].lang_tr && today.hourly[6].lang_tr[0] ? today.hourly[6].lang_tr[0].value : today.hourly[6].weatherDesc[0].value) : ""}</div>
-     </div>
+      <div class="period">Sabah</div>
+      <div class="temps">${today.hourly[3] ? today.hourly[3].tempC + "°" : today.mintempC + "°"}</div>
+      <div class="forecast-desc">${today.hourly[3] ? getTurkishDesc(today.hourly[3]) : ""}</div>
+    </div>
+    <div class="forecast-row">
+      <div class="period">Öğle</div>
+      <div class="temps">${today.hourly[4] ? today.hourly[4].tempC + "°" : today.maxtempC + "°"}</div>
+      <div class="forecast-desc">${today.hourly[4] ? getTurkishDesc(today.hourly[4]) : ""}</div>
+    </div>
+    <div class="forecast-row">
+      <div class="period">Akşam</div>
+      <div class="temps">${today.hourly[6] ? today.hourly[6].tempC + "°" : today.mintempC + "°"}</div>
+      <div class="forecast-desc">${today.hourly[6] ? getTurkishDesc(today.hourly[6]) : ""}</div>
+    </div>
     <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
     <div class="forecast-row">
       <div class="period">Yarın</div>
       <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
-       <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
+      <div class="forecast-desc">${tomorrow.hourly[4] ? getTurkishDesc(tomorrow.hourly[4]) : ""}</div>
     </div>
   </div>
   <div class="footer">
@@ -161,7 +190,7 @@ function formatWeatherEmail(weather, city) {
 
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${desc})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
@@ -181,6 +210,15 @@ async function sendWeatherEmail() {
   console.log(`✅ Hava durumu verisi alindi.`);
 
   const { html, text } = formatWeatherEmail(weather, WEATHER_CITY);
+
+  if (DRY_RUN) {
+    console.log("\n📋 DRY RUN - E-posta gonderilmedi.\n");
+    console.log("=== PLAIN TEXT ICERIK ===");
+    console.log(text);
+    console.log("\n=== HTML ICERIK (ilk 500 karakter) ===");
+    console.log(html.substring(0, 500) + "...");
+    return;
+  }
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
