@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      city:
+        description: "Hava durumu sehri"
+        required: false
+        default: ""
 
 jobs:
   send-weather:
@@ -25,6 +30,6 @@ jobs:
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          WEATHER_CITY: ${{ secrets.WEATHER_CITY || 'Istanbul' }}
+          WEATHER_CITY: ${{ github.event.inputs.city || secrets.WEATHER_CITY || 'Istanbul' }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL || secrets.GMAIL_USER }}
         run: node agents/weather-email/index.mjs
