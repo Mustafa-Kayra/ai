@@ -14,7 +14,7 @@ if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
 
 function fetchWeather(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
     https
       .get(url, (res) => {
         let data = "";
@@ -161,7 +161,7 @@ function formatWeatherEmail(weather, city) {
 
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
@@ -210,7 +210,24 @@ async function sendWeatherEmail() {
   return info;
 }
 
-sendWeatherEmail().catch((err) => {
-  console.error("❌ Hata olustu:", err.message);
-  process.exit(1);
-});
+async function main() {
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await sendWeatherEmail();
+      return;
+    } catch (err) {
+      console.error(`❌ Deneme ${attempt}/${maxRetries} basarisiz:`, err.message);
+      if (attempt < maxRetries) {
+        const delay = attempt * 5000;
+        console.log(`⏳ ${delay / 1000} saniye bekleniyor...`);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        console.error("❌ Tum denemeler basarisiz oldu.");
+        process.exit(1);
+      }
+    }
+  }
+}
+
+main();
