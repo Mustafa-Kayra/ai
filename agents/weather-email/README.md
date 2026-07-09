@@ -10,6 +10,8 @@ Her gun belirli bir sehir icin hava durumu bilgisini Gmail uzerinden e-posta ola
 - Anlik sicaklik, hissedilen sicaklik, nem, ruzgar, UV indeksi, basinc, yagis
 - Bugun ve yarin icin tahmin bilgileri
 - GitHub Actions ile her gun otomatik calisma (cron)
+- **DRY_RUN modu** - E-posta gondermeden test etme
+- **Retry mekanizmasi** - Gecici API hatalarinda otomatik yeniden deneme
 
 ## Kurulum
 
@@ -32,6 +34,9 @@ Repository'nizin **Settings > Secrets and variables > Actions** bolumune asagida
 | `GMAIL_APP_PASSWORD` | Gmail App Password | `abcd efgh ijkl mnop` |
 | `WEATHER_CITY` | Hava durumu sehri (opsiyonel) | `Istanbul` (varsayilan) |
 | `RECIPIENT_EMAIL` | E-posta alici adresi (opsiyonel) | `ornek@gmail.com` (varsayilan: GMAIL_USER) |
+| `DRY_RUN` | Test modu, e-posta gondermez (opsiyonel) | `1` veya `true` |
+| `MAX_RETRIES` | Maksimum yeniden deneme sayisi (opsiyonel) | `3` (varsayilan) |
+| `RETRY_DELAY_MS` | Denemeler arasi bekleme suresi ms (opsiyonel) | `2000` (varsayilan) |
 
 ### 3. Manuel Calistirma
 
@@ -39,6 +44,14 @@ Repository'nizin **Settings > Secrets and variables > Actions** bolumune asagida
 npm install
 GMAIL_USER=ornek@gmail.com GMAIL_APP_PASSWORD="xxxx xxxx xxxx xxxx" WEATHER_CITY=Istanbul node agents/weather-email/index.mjs
 ```
+
+### 4. Test Modu (E-posta Gondermeden)
+
+```bash
+DRY_RUN=1 WEATHER_CITY=Istanbul node agents/weather-email/index.mjs
+```
+
+Bu modda hava durumu verisi alinir ve konsola yazdirilir, ancak e-posta gonderilmez. Gmail bilgileri gerekmez.
 
 ## Zamanlama
 
