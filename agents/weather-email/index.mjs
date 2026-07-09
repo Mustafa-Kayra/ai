@@ -4,12 +4,20 @@ import https from "https";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
-const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
+const DRY_RUN = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
+const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER || (DRY_RUN ? "(dry-run - alici belirtilmedi)" : undefined);
+const MAX_RETRIES = parseInt(process.env.MAX_RETRIES || "3", 10);
+const RETRY_DELAY_MS = parseInt(process.env.RETRY_DELAY_MS || "2000", 10);
 
-if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+if (!DRY_RUN && (!GMAIL_USER || !GMAIL_APP_PASSWORD)) {
   console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
   console.error("Gmail App Password olusturmak icin: https://myaccount.google.com/apppasswords");
+  console.error("Test modu icin DRY_RUN=1 kullanabilirsiniz.");
   process.exit(1);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function fetchWeather(city) {
@@ -17,11 +25,21 @@ function fetchWeather(city) {
     const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
     https
       .get(url, (res) => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(`wttr.in HTTP ${res.statusCode} hatasi (sehir: ${city})`));
+          res.resume();
+          return;
+        }
         let data = "";
         res.on("data", (chunk) => (data += chunk));
         res.on("end", () => {
           try {
-            resolve(JSON.parse(data));
+            const parsed = JSON.parse(data);
+            if (!parsed.current_condition || !parsed.weather) {
+              reject(new Error("wttr.in beklenen veri yapisini dondurmedi"));
+              return;
+            }
+            resolve(parsed);
           } catch (e) {
             reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
           }
@@ -29,6 +47,25 @@ function fetchWeather(city) {
       })
       .on("error", reject);
   });
+}
+
+async function fetchWeatherWithRetry(city) {
+  let lastError;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`📡 Deneme ${attempt}/${MAX_RETRIES} - ${city} hava durumu aliniyor...`);
+      return await fetchWeather(city);
+    } catch (err) {
+      lastError = err;
+      console.warn(`⚠️  Deneme ${attempt} basarisiz: ${err.message}`);
+      if (attempt < MAX_RETRIES) {
+        const delay = RETRY_DELAY_MS * attempt;
+        console.log(`⏳ ${delay}ms bekleniyor...`);
+        await sleep(delay);
+      }
+    }
+  }
+  throw new Error(`Hava durumu ${MAX_RETRIES} deneme sonrasi alinamadi: ${lastError.message}`);
 }
 
 function formatWeatherEmail(weather, city) {
@@ -177,18 +214,10 @@ Yarın: ${tomorrow.mintempC}°C - ${tomorrow.maxtempC}°C
 async function sendWeatherEmail() {
   console.log(`🌤️  ${WEATHER_CITY} icin hava durumu aliniyor...`);
 
-  const weather = await fetchWeather(WEATHER_CITY);
+  const weather = await fetchWeatherWithRetry(WEATHER_CITY);
   console.log(`✅ Hava durumu verisi alindi.`);
 
   const { html, text } = formatWeatherEmail(weather, WEATHER_CITY);
-
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_APP_PASSWORD,
-    },
-  });
 
   const date = new Date().toLocaleDateString("tr-TR", {
     day: "numeric",
@@ -202,6 +231,22 @@ async function sendWeatherEmail() {
     text,
     html,
   };
+
+  if (DRY_RUN) {
+    console.log(`🔧 DRY RUN MODU - E-posta gonderilmiyor`);
+    console.log(`📧 Kime: ${RECIPIENT_EMAIL}`);
+    console.log(`📧 Konu: ${mailOptions.subject}`);
+    console.log(`📝 Duz yazi icerik:\n${text}`);
+    return { messageId: "dry-run", dryRun: true };
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD,
+    },
+  });
 
   console.log(`📧 E-posta gonderiliyor: ${RECIPIENT_EMAIL}...`);
   const info = await transporter.sendMail(mailOptions);
