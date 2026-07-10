@@ -5,10 +5,13 @@ Her gun belirli bir sehir icin hava durumu bilgisini Gmail uzerinden e-posta ola
 ## Ozellikler
 
 - **wttr.in** API ile ucretsiz hava durumu verisi (API key gerektirmez)
+- **Turkce** hava durumu aciklamalari (`lang=tr` parametresi ile)
 - Gmail SMTP ile guzel formatli HTML e-posta gonderimi
-- Turkce hava durumu aciklamalari
 - Anlik sicaklik, hissedilen sicaklik, nem, ruzgar, UV indeksi, basinc, yagis
 - Bugun ve yarin icin tahmin bilgileri
+- **Gundogumu, gun batimi ve ay evresi** bilgileri
+- **Retry mekanizması** — wttr.in API gecici hatalarında otomatik yeniden deneme (varsayılan 3 deneme)
+- Istek zaman asimi korumasi (15 saniye)
 - GitHub Actions ile her gun otomatik calisma (cron)
 
 ## Kurulum
@@ -32,6 +35,7 @@ Repository'nizin **Settings > Secrets and variables > Actions** bolumune asagida
 | `GMAIL_APP_PASSWORD` | Gmail App Password | `abcd efgh ijkl mnop` |
 | `WEATHER_CITY` | Hava durumu sehri (opsiyonel) | `Istanbul` (varsayilan) |
 | `RECIPIENT_EMAIL` | E-posta alici adresi (opsiyonel) | `ornek@gmail.com` (varsayilan: GMAIL_USER) |
+| `WEATHER_MAX_RETRIES` | API hata durumunda maksimum deneme sayisi (opsiyonel) | `3` (varsayilan) |
 
 ### 3. Manuel Calistirma
 
@@ -62,8 +66,9 @@ agents/weather-email/
 Gonderilen e-posta sunlari icerir:
 
 - Sehir adi ve tarih
-- Anlik sicaklik ve hava durumu ikonu
+- Anlik sicaklik ve hava durumu ikonu (Turkce aciklama)
 - Hissedilen sicaklik
 - Nem, ruzgar, gorüs mesafesi, UV indeksi, basinç, yagis
 - Bugun icin sabah/ogle/aksam tahminleri
 - Yarin icin tahmin
+- Gundogumu, gun batimi ve ay evresi
