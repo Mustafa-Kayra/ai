@@ -5,6 +5,7 @@ const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
+const MAX_RETRIES = parseInt(process.env.WEATHER_MAX_RETRIES || "3", 10);
 
 if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
   console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
@@ -12,23 +13,57 @@ if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
   process.exit(1);
 }
 
-function fetchWeather(city) {
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function fetchWeatherOnce(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
-    https
-      .get(url, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
+    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
+    const req = https.get(url, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`wttr.in HTTP ${res.statusCode}`));
+          return;
+        }
+        try {
+          const parsed = JSON.parse(data);
+          if (!parsed.current_condition || !parsed.weather) {
+            reject(new Error("wttr.in beklenen veri yapısını döndürmedi"));
+            return;
           }
-        });
-      })
-      .on("error", reject);
+          resolve(parsed);
+        } catch (e) {
+          reject(new Error(`Hava durumu verisi ayristirilamadi: ${e.message}`));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(15000, () => {
+      req.destroy(new Error("wttr.in istek zaman aşımına uğradı"));
+    });
   });
+}
+
+async function fetchWeather(city) {
+  let lastError;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`   Deneme ${attempt}/${MAX_RETRIES}...`);
+      return await fetchWeatherOnce(city);
+    } catch (err) {
+      lastError = err;
+      console.error(`   ⚠️  Deneme ${attempt} başarısız: ${err.message}`);
+      if (attempt < MAX_RETRIES) {
+        const delay = attempt * 3000;
+        console.log(`   ${delay / 1000} sn beklenip tekrar denenecek...`);
+        await sleep(delay);
+      }
+    }
+  }
+  throw new Error(`Hava durumu ${MAX_RETRIES} deneme sonrasında alınamadı: ${lastError?.message}`);
 }
 
 function formatWeatherEmail(weather, city) {
@@ -59,6 +94,11 @@ function formatWeatherEmail(weather, city) {
 
   const emoji = cToEmoji(current.weatherCode);
 
+  const astro = today.astronomy[0] || {};
+  const sunrise = astro.sunrise || "—";
+  const sunset = astro.sunset || "—";
+  const moonPhase = astro.moon_phase || "—";
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -86,6 +126,10 @@ function formatWeatherEmail(weather, city) {
   .forecast-row .period { font-weight: bold; color: #555; width: 80px; }
   .forecast-row .temps { color: #666; flex: 1; text-align: center; }
   .forecast-row .forecast-desc { color: #888; font-size: 13px; flex: 1; text-align: right; }
+  .astro { display: flex; justify-content: space-around; padding: 15px 20px; border-top: 1px solid #eee; background: #fafafa; }
+  .astro-item { text-align: center; }
+  .astro-item .label { font-size: 12px; color: #999; }
+  .astro-item .value { font-size: 15px; font-weight: bold; color: #555; margin-top: 3px; }
   .footer { padding: 20px; text-align: center; font-size: 12px; color: #aaa; background: #fafafa; }
 </style>
 </head>
@@ -144,13 +188,27 @@ function formatWeatherEmail(weather, city) {
        <div class="temps">${today.hourly[6] ? today.hourly[6].tempC + "°" : today.mintempC + "°"}</div>
        <div class="forecast-desc">${today.hourly[6] ? (today.hourly[6].lang_tr && today.hourly[6].lang_tr[0] ? today.hourly[6].lang_tr[0].value : today.hourly[6].weatherDesc[0].value) : ""}</div>
      </div>
-    <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
-    <div class="forecast-row">
-      <div class="period">Yarın</div>
-      <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
-       <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
-    </div>
-  </div>
+     <h3 style="margin-top:20px">📅 Yarın Tahmini</h3>
+     <div class="forecast-row">
+       <div class="period">Yarın</div>
+       <div class="temps">${tomorrow.mintempC}° / ${tomorrow.maxtempC}°</div>
+        <div class="forecast-desc">${tomorrow.hourly[4] ? (tomorrow.hourly[4].lang_tr && tomorrow.hourly[4].lang_tr[0] ? tomorrow.hourly[4].lang_tr[0].value : tomorrow.hourly[4].weatherDesc[0].value) : ""}</div>
+     </div>
+   </div>
+   <div class="astro">
+     <div class="astro-item">
+       <div class="label">🌅 Gündoğumu</div>
+       <div class="value">${sunrise}</div>
+     </div>
+     <div class="astro-item">
+       <div class="label">🌇 Gün Batımı</div>
+       <div class="value">${sunset}</div>
+     </div>
+     <div class="astro-item">
+       <div class="label">🌙 Ay Evresi</div>
+       <div class="value">${moonPhase}</div>
+     </div>
+   </div>
   <div class="footer">
     Bu e-posta otomatik olarak Weather Agent tarafından gönderilmiştir.<br>
     Veri kaynağı: wttr.in | Şehir: ${city}
@@ -161,13 +219,14 @@ function formatWeatherEmail(weather, city) {
 
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
 
 Bugün: ${today.mintempC}°C - ${today.maxtempC}°C
 Yarın: ${tomorrow.mintempC}°C - ${tomorrow.maxtempC}°C
+Gündoğumu: ${sunrise} | Gün Batımı: ${sunset} | Ay: ${moonPhase}
 
 --- Weather Agent tarafından otomatik gönderildi ---`;
 
