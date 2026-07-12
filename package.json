@@ -15,7 +15,7 @@
     "build:puter": "node scripts/build.mjs --target puter",
     "proxy": "node scripts/proxy.mjs",
     "split:html": "node scripts/split-html.mjs",
-    "test": "node tests/smoke.test.mjs",
+    "test": "node tests/run-all.mjs",
     "check": "npm run test && npm run build"
   },
   "engines": {
