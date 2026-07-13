@@ -420,11 +420,20 @@
         if (signinPanel) signinPanel.classList.add('hidden');
         if (headerGithubBtn) headerGithubBtn.style.display = 'none';
         if (headerAvatarBtn) headerAvatarBtn.style.display = 'flex';
+
+        const welcomeTitle = document.getElementById('welcome-title');
+        if (welcomeTitle) {
+          const firstName = (name || '').split(' ')[0];
+          welcomeTitle.textContent = firstName ? `Merhaba, ${firstName}!` : 'Merhaba!';
+        }
       } else {
         if (userPanel) userPanel.classList.add('hidden');
         if (signinPanel) signinPanel.classList.remove('hidden');
         if (headerGithubBtn) headerGithubBtn.style.display = 'flex';
         if (headerAvatarBtn) headerAvatarBtn.style.display = 'none';
+
+        const welcomeTitle = document.getElementById('welcome-title');
+        if (welcomeTitle) welcomeTitle.textContent = 'Nasil yardimci olabilirim?';
       }
     }
 
