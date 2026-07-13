@@ -1,25 +1,37 @@
 import nodemailer from "nodemailer";
 import https from "https";
+import { fileURLToPath } from "url";
 
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const WEATHER_CITY = process.env.WEATHER_CITY || "Istanbul";
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || GMAIL_USER;
+const DRY_RUN = process.env.DRY_RUN === "true";
 
-if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-  console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
-  console.error("Gmail App Password olusturmak icin: https://myaccount.google.com/apppasswords");
-  process.exit(1);
+function requireCredentials() {
+  if (!DRY_RUN && (!GMAIL_USER || !GMAIL_APP_PASSWORD)) {
+    console.error("HATA: GMAIL_USER ve GMAIL_APP_PASSWORD ortam degiskenleri zorunludur.");
+    console.error("Gmail App Password olusturmak icin: https://myaccount.google.com/apppasswords");
+    console.error("Not: DRY_RUN=true ile e-posta gondermeden test edebilirsiniz.");
+    process.exit(1);
+  }
 }
 
-function fetchWeather(city) {
+export function buildWeatherUrl(city) {
+  return `https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=tr`;
+}
+
+export function fetchWeather(city) {
   return new Promise((resolve, reject) => {
-    const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
-    https
-      .get(url, (res) => {
+    const url = buildWeatherUrl(city);
+    const req = https
+      .get(url, { headers: { "User-Agent": "curl/8.0 (weather-email-agent)" } }, (res) => {
         let data = "";
         res.on("data", (chunk) => (data += chunk));
         res.on("end", () => {
+          if (res.statusCode !== 200) {
+            return reject(new Error(`wttr.in HTTP ${res.statusCode}: ${data.slice(0, 120)}`));
+          }
           try {
             resolve(JSON.parse(data));
           } catch (e) {
@@ -28,10 +40,13 @@ function fetchWeather(city) {
         });
       })
       .on("error", reject);
+    req.setTimeout(15000, () => {
+      req.destroy(new Error("wttr.in istegi zaman asimina ugradi (15s)"));
+    });
   });
 }
 
-function formatWeatherEmail(weather, city) {
+export function formatWeatherEmail(weather, city) {
   const current = weather.current_condition[0];
   const today = weather.weather[0];
   const tomorrow = weather.weather[1];
@@ -159,9 +174,11 @@ function formatWeatherEmail(weather, city) {
 </body>
 </html>`;
 
+  const currentDesc = current.lang_tr && current.lang_tr[0] ? current.lang_tr[0].value : current.weatherDesc[0].value;
+
   const text = `${emoji} ${city} Hava Durumu - ${date}
 
-Şu An: ${current.temp_C}°C (${current.weatherDesc[0].value})
+Şu An: ${current.temp_C}°C (${currentDesc})
 Hissedilen: ${current.FeelsLikeC}°C
 Nem: ${current.humidity}%
 Rüzgar: ${current.windspeedKmph} km/s
@@ -174,21 +191,13 @@ Yarın: ${tomorrow.mintempC}°C - ${tomorrow.maxtempC}°C
   return { html, text };
 }
 
-async function sendWeatherEmail() {
+export async function sendWeatherEmail() {
   console.log(`🌤️  ${WEATHER_CITY} icin hava durumu aliniyor...`);
 
   const weather = await fetchWeather(WEATHER_CITY);
   console.log(`✅ Hava durumu verisi alindi.`);
 
   const { html, text } = formatWeatherEmail(weather, WEATHER_CITY);
-
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_APP_PASSWORD,
-    },
-  });
 
   const date = new Date().toLocaleDateString("tr-TR", {
     day: "numeric",
@@ -203,6 +212,23 @@ async function sendWeatherEmail() {
     html,
   };
 
+  if (DRY_RUN) {
+    console.log(`🏁 DRY RUN: E-posta gonderimi atlandi.`);
+    console.log(`   Kime: ${RECIPIENT_EMAIL || "(GMAIL_USER belirtilmedi)"}`);
+    console.log(`   Konu: ${mailOptions.subject}`);
+    return { messageId: "dry-run", dryRun: true };
+  }
+
+  requireCredentials();
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD,
+    },
+  });
+
   console.log(`📧 E-posta gonderiliyor: ${RECIPIENT_EMAIL}...`);
   const info = await transporter.sendMail(mailOptions);
   console.log(`✅ E-posta basariyla gonderildi! Message ID: ${info.messageId}`);
@@ -210,7 +236,28 @@ async function sendWeatherEmail() {
   return info;
 }
 
-sendWeatherEmail().catch((err) => {
-  console.error("❌ Hata olustu:", err.message);
-  process.exit(1);
-});
+export async function main() {
+  requireCredentials();
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await sendWeatherEmail();
+      return;
+    } catch (err) {
+      console.error(`❌ Deneme ${attempt}/${maxRetries} basarisiz:`, err.message);
+      if (attempt < maxRetries) {
+        const delay = attempt * 5000;
+        console.log(`⏳ ${delay / 1000} saniye beklenip tekrar denenecek...`);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        console.error("❌ Tum denemeler basarisiz oldu.");
+        process.exit(1);
+      }
+    }
+  }
+}
+
+// Only run automatically when executed directly (not when imported by tests).
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main();
+}

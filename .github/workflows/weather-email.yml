@@ -4,9 +4,48 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "agents/weather-email/**"
+      - ".github/workflows/weather-email.yml"
+  pull_request:
+    paths:
+      - "agents/weather-email/**"
+      - ".github/workflows/weather-email.yml"
 
 jobs:
+  # E-posta gondermeden agent'in calistigini dogrular (sifre gerektirmez).
+  # Gercek wttr.in cagrisi + formatlama adimlarini test eder.
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run agent tests
+        run: npm test
+
+      - name: Dry-run weather agent
+        env:
+          DRY_RUN: "true"
+          WEATHER_CITY: Istanbul
+          RECIPIENT_EMAIL: dry-run@example.com
+        run: node agents/weather-email/index.mjs
+
   send-weather:
+    # Sadece zamanlanmis calismalarda ve manuel tetiklemede e-posta gonderilir.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: dry-run
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
