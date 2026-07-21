@@ -2,6 +2,8 @@
 
 This repository now contains the current browser-only AI chat application and its supporting static build tooling.
 
+https://vsllm.com/i/9jLY
+
 ## Run locally
 
 ```bash
